@@ -1,0 +1,80 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "NorthCel",
+  "scopeName": "source.northcel",
+  "fileTypes": ["ncel"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#keywords" },
+    { "include": "#functions" },
+    { "include": "#attributes" },
+    { "include": "#colors" },
+    { "include": "#numbers" },
+    { "include": "#strings" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.northcel",
+          "match": "//.*$"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.northcel",
+          "match": "\\b(northcel|scene|film|frame|paper|def|use|layer|wash|bend_swarm|swarm|stroke|ribbon)\\b"
+        }
+      ]
+    },
+    "functions": {
+      "patterns": [
+        {
+          "name": "support.function.northcel",
+          "match": "\\b(lerp|sin|cos|step|rgb)\\b"
+        }
+      ]
+    },
+    "attributes": {
+      "patterns": [
+        {
+          "name": "variable.parameter.northcel",
+          "match": "\\b(width|height|fps|frames|precision|seed|tone|color|antialias_grid|grain|rings|agents|boil|translate|taper|dx|dy)(?=\\s*:)"
+        }
+      ]
+    },
+    "colors": {
+      "patterns": [
+        {
+          "name": "constant.other.color.rgb-value.northcel",
+          "match": "#[0-9A-Fa-f]{3,6}\\b"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.northcel",
+          "match": "-?\\b\\d+(\\.\\d+)?(px|deg)?\\b"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.northcel",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.northcel",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

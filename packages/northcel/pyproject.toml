@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "northcel"
+version = "0.1.0"
+description = "NorthCel (.ncel) — the AI-drawn video programming language combining MoonBit typed ASTs, Bend parallel swarms, and GLSL 4x4 subpixel rendering."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary" }
+authors = [{ name = "North Noir" }]
+keywords = [
+  "northcel",
+  "ncel",
+  "ai-drawn-video",
+  "animation",
+  "hand-drawn",
+  "dsl",
+  "northnoir",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Multimedia :: Graphics",
+  "Topic :: Multimedia :: Video",
+]
+dependencies = [
+  "numpy>=1.24",
+  "Pillow>=10.0",
+]
+
+[project.urls]
+Homepage = "https://northnoir.com/northcel"
+Documentation = "https://northnoir.com/northcel"
+Repository = "https://github.com/syver777/NorthNoir/tree/main/packages/northcel"
+
+[project.scripts]
+northcel = "northcel.cli:main"
+ncel = "northcel.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["northcel*"]
+
+[tool.setuptools.package-data]
+northcel = ["examples/*.ncel", "conformance/*.ncel", "conformance/*.json"]

@@ -1,0 +1,665 @@
+"""Lexer and recursive-descent parser for NorthCel (.ncel) with line:column diagnostics."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+import math
+import re
+from typing import Any
+
+from .ast_nodes import (
+    BoilSpec,
+    ColorValue,
+    DefBlock,
+    DocumentNode,
+    FilmNode,
+    LayerNode,
+    PaperSpec,
+    RibbonNode,
+    SceneItem,
+    SceneNode,
+    SourceSpan,
+    StrokeNode,
+    SwarmNode,
+    UseNode,
+)
+from .config import SPEC_VERSION
+
+
+class NorthCelSyntaxError(SyntaxError):
+    """Structured syntax error with 1-based line and column."""
+
+    def __init__(self, message: str, line: int, column: int) -> None:
+        super().__init__(f"{line}:{column}: {message}")
+        self.message = message
+        self.line = line
+        self.column = column
+
+
+@dataclass(frozen=True)
+class Token:
+    kind: str
+    value: str
+    line: int
+    column: int
+
+
+@dataclass(frozen=True)
+class ExprValue:
+    """Represents a constant or pure time-dependent expression (`lerp`, `sin`, `cos`, `hold`, param ref)."""
+
+    op: str
+    args: tuple[Any, ...]
+
+    def eval(self, env: dict[str, float]) -> float:
+        if self.op == "const":
+            return float(self.args[0])
+        if self.op == "var":
+            name = str(self.args[0])
+            if name not in env:
+                raise KeyError(f"Undefined parameter or variable '{name}'")
+            return float(env[name])
+        if self.op == "neg":
+            return -self.args[0].eval(env)
+        if self.op == "add":
+            return self.args[0].eval(env) + self.args[1].eval(env)
+        if self.op == "sub":
+            return self.args[0].eval(env) - self.args[1].eval(env)
+        if self.op == "mul":
+            return self.args[0].eval(env) * self.args[1].eval(env)
+        if self.op == "div":
+            denom = self.args[1].eval(env)
+            return self.args[0].eval(env) / (denom if abs(denom) > 1e-12 else 1.0)
+        if self.op == "lerp":
+            a = self.args[0].eval(env)
+            b = self.args[1].eval(env)
+            u = max(0.0, min(1.0, self.args[2].eval(env)))
+            return a + (b - a) * u
+        if self.op == "sin":
+            return math.sin(self.args[0].eval(env))
+        if self.op == "cos":
+            return math.cos(self.args[0].eval(env))
+        if self.op == "step":
+            edge = self.args[0].eval(env)
+            x = self.args[1].eval(env)
+            return 0.0 if x < edge else 1.0
+        raise ValueError(f"Unknown expression op '{self.op}'")
+
+
+_TOKEN_SPEC = re.compile(
+    r"""
+    (?P<WS>[ \t\r]+)|
+    (?P<NL>\n)|
+    (?P<COMMENT>//[^\n]*)|
+    (?P<STRING>"(?:\\.|[^"\\])*")|
+    (?P<HEX>\#[0-9A-Fa-f]{3,6}\b)|
+    (?P<UNIT_NUM>-?(?:\d+\.\d+|\d+)(?:px|deg)\b)|
+    (?P<NUMBER>-?(?:\d+\.\d+|\d+))|
+    (?P<IDENT>[A-Za-z_][A-Za-z0-9_]*)|
+    (?P<PUNCT>[{}()\[\]:,;+\-*/=])
+    """,
+    re.VERBOSE,
+)
+
+
+def tokenize(source: str) -> list[Token]:
+    tokens: list[Token] = []
+    line = 1
+    line_start = 0
+    pos = 0
+    n = len(source)
+    while pos < n:
+        m = _TOKEN_SPEC.match(source, pos)
+        if not m:
+            col = pos - line_start + 1
+            ch = source[pos]
+            raise NorthCelSyntaxError(f"Unexpected character {ch!r}", line, col)
+        kind = m.lastgroup or "UNKNOWN"
+        text = m.group()
+        col = pos - line_start + 1
+        pos = m.end()
+        if kind == "NL":
+            line += 1
+            line_start = pos
+            continue
+        if kind in ("WS", "COMMENT"):
+            continue
+        tokens.append(Token(kind=kind, value=text, line=line, column=col))
+    tokens.append(Token(kind="EOF", value="", line=line, column=pos - line_start + 1))
+    return tokens
+
+
+class _Parser:
+    def __init__(self, tokens: list[Token]) -> None:
+        self.tokens = tokens
+        self.idx = 0
+
+    def cur(self) -> Token:
+        return self.tokens[self.idx]
+
+    def peek(self, offset: int = 1) -> Token:
+        i = min(len(self.tokens) - 1, self.idx + offset)
+        return self.tokens[i]
+
+    def advance(self) -> Token:
+        tok = self.tokens[self.idx]
+        if self.idx < len(self.tokens) - 1:
+            self.idx += 1
+        return tok
+
+    def expect(self, kind: str, value: str | None = None) -> Token:
+        tok = self.cur()
+        if tok.kind != kind or (value is not None and tok.value != value):
+            expected = f"'{value}'" if value is not None else kind
+            got = f"'{tok.value}'" if tok.value else tok.kind
+            raise NorthCelSyntaxError(f"Expected {expected}, got {got}", tok.line, tok.column)
+        return self.advance()
+
+    def match(self, kind: str, value: str | None = None) -> Token | None:
+        tok = self.cur()
+        if tok.kind == kind and (value is None or tok.value == value):
+            return self.advance()
+        return None
+
+    def parse_document(self) -> DocumentNode:
+        first = self.cur()
+        span = SourceSpan(first.line, first.column)
+        spec_ver = SPEC_VERSION
+        if self.cur().kind == "IDENT" and self.cur().value == "northcel":
+            self.advance()
+            ver_tok = self.cur()
+            if ver_tok.kind == "STRING":
+                spec_ver = self.advance().value[1:-1]
+            elif ver_tok.kind == "NUMBER":
+                spec_ver = self.advance().value
+            else:
+                raise NorthCelSyntaxError(
+                    "Expected version string or number after 'northcel'", ver_tok.line, ver_tok.column
+                )
+            self.match("PUNCT", ";")
+
+        root_tok = self.cur()
+        if root_tok.kind == "IDENT" and root_tok.value == "scene":
+            root: SceneNode | FilmNode = self.parse_scene()
+        elif root_tok.kind == "IDENT" and root_tok.value == "film":
+            root = self.parse_film()
+        else:
+            raise NorthCelSyntaxError(
+                f"Expected 'scene' or 'film' declaration, got '{root_tok.value or root_tok.kind}'",
+                root_tok.line,
+                root_tok.column,
+            )
+
+        if self.cur().kind != "EOF":
+            extra = self.cur()
+            raise NorthCelSyntaxError(
+                f"Unexpected trailing token '{extra.value}'", extra.line, extra.column
+            )
+        return DocumentNode(spec_version=spec_ver, root=root, span=span)
+
+    def parse_scene(self) -> SceneNode:
+        kw = self.expect("IDENT", "scene")
+        name_tok = self.expect("IDENT")
+        attrs = self.parse_attr_list() if self.cur().value == "(" else {}
+        self.expect("PUNCT", "{")
+
+        width = int(self._eval_const(attrs.get("width", 1024)))
+        height = int(self._eval_const(attrs.get("height", 1024)))
+        fps = int(self._eval_const(attrs.get("fps", 6)))
+        seed = int(self._eval_const(attrs.get("seed", 42)))
+        precision = str(attrs.get("precision", "0.25px"))
+
+        paper = PaperSpec()
+        defs: dict[str, DefBlock] = {}
+        items: list[SceneItem] = []
+
+        while not (self.cur().kind == "PUNCT" and self.cur().value == "}"):
+            if self.cur().kind == "EOF":
+                raise NorthCelSyntaxError("Unclosed 'scene' block", kw.line, kw.column)
+            tok = self.cur()
+            if tok.kind == "IDENT" and tok.value == "paper":
+                paper = self.parse_paper()
+            elif tok.kind == "IDENT" and tok.value == "def":
+                d = self.parse_def()
+                defs[d.name] = d
+            elif tok.kind == "IDENT" and tok.value == "use":
+                items.append(self.parse_use())
+            elif tok.kind == "IDENT" and tok.value in ("layer", "wash"):
+                items.append(self.parse_layer())
+            elif tok.kind == "IDENT" and tok.value in ("bend_swarm", "swarm"):
+                items.append(self.parse_swarm())
+            elif tok.kind == "IDENT" and tok.value == "stroke":
+                items.append(self.parse_stroke())
+            elif tok.kind == "IDENT" and tok.value == "ribbon":
+                items.append(self.parse_ribbon())
+            else:
+                raise NorthCelSyntaxError(
+                    f"Unknown scene statement '{tok.value}'", tok.line, tok.column
+                )
+
+        self.expect("PUNCT", "}")
+        return SceneNode(
+            name=name_tok.value,
+            width=width,
+            height=height,
+            fps=fps,
+            precision=precision,
+            seed=seed,
+            paper=paper,
+            defs=defs,
+            items=items,
+            span=SourceSpan(kw.line, kw.column),
+        )
+
+    def parse_film(self) -> FilmNode:
+        kw = self.expect("IDENT", "film")
+        name_tok = self.expect("IDENT")
+        attrs = self.parse_attr_list() if self.cur().value == "(" else {}
+        self.expect("PUNCT", "{")
+
+        width = int(self._eval_const(attrs.get("width", 1024)))
+        height = int(self._eval_const(attrs.get("height", 1024)))
+        fps = int(self._eval_const(attrs.get("fps", 6)))
+        frames = int(self._eval_const(attrs.get("frames", 2)))
+        seed = int(self._eval_const(attrs.get("seed", 42)))
+        precision = str(attrs.get("precision", "0.25px"))
+
+        paper = PaperSpec()
+        defs: dict[str, DefBlock] = {}
+        items: list[SceneItem] = []
+        frame_overrides: dict[int, SceneNode] = {}
+
+        while not (self.cur().kind == "PUNCT" and self.cur().value == "}"):
+            if self.cur().kind == "EOF":
+                raise NorthCelSyntaxError("Unclosed 'film' block", kw.line, kw.column)
+            tok = self.cur()
+            if tok.kind == "IDENT" and tok.value == "paper":
+                paper = self.parse_paper()
+            elif tok.kind == "IDENT" and tok.value == "def":
+                d = self.parse_def()
+                defs[d.name] = d
+            elif tok.kind == "IDENT" and tok.value == "use":
+                items.append(self.parse_use())
+            elif tok.kind == "IDENT" and tok.value in ("layer", "wash"):
+                items.append(self.parse_layer())
+            elif tok.kind == "IDENT" and tok.value in ("bend_swarm", "swarm"):
+                items.append(self.parse_swarm())
+            elif tok.kind == "IDENT" and tok.value == "stroke":
+                items.append(self.parse_stroke())
+            elif tok.kind == "IDENT" and tok.value == "ribbon":
+                items.append(self.parse_ribbon())
+            elif tok.kind == "IDENT" and tok.value == "frame":
+                f_idx, f_scene = self.parse_frame_override(width, height, fps, precision, seed, paper)
+                frame_overrides[f_idx] = f_scene
+            else:
+                raise NorthCelSyntaxError(
+                    f"Unknown film statement '{tok.value}'", tok.line, tok.column
+                )
+
+        self.expect("PUNCT", "}")
+        return FilmNode(
+            name=name_tok.value,
+            width=width,
+            height=height,
+            fps=fps,
+            frames=frames,
+            precision=precision,
+            seed=seed,
+            paper=paper,
+            defs=defs,
+            items=items,
+            frame_overrides=frame_overrides,
+            span=SourceSpan(kw.line, kw.column),
+        )
+
+    def parse_frame_override(
+        self,
+        width: int,
+        height: int,
+        fps: int,
+        precision: str,
+        seed: int,
+        default_paper: PaperSpec,
+    ) -> tuple[int, SceneNode]:
+        kw = self.expect("IDENT", "frame")
+        idx_tok = self.expect("NUMBER")
+        f_idx = int(float(idx_tok.value))
+        self.expect("PUNCT", "{")
+        paper = default_paper
+        defs: dict[str, DefBlock] = {}
+        items: list[SceneItem] = []
+        while not (self.cur().kind == "PUNCT" and self.cur().value == "}"):
+            if self.cur().kind == "EOF":
+                raise NorthCelSyntaxError("Unclosed 'frame' block", kw.line, kw.column)
+            tok = self.cur()
+            if tok.kind == "IDENT" and tok.value == "paper":
+                paper = self.parse_paper()
+            elif tok.kind == "IDENT" and tok.value == "def":
+                d = self.parse_def()
+                defs[d.name] = d
+            elif tok.kind == "IDENT" and tok.value == "use":
+                items.append(self.parse_use())
+            elif tok.kind == "IDENT" and tok.value in ("layer", "wash"):
+                items.append(self.parse_layer())
+            elif tok.kind == "IDENT" and tok.value in ("bend_swarm", "swarm"):
+                items.append(self.parse_swarm())
+            elif tok.kind == "IDENT" and tok.value == "stroke":
+                items.append(self.parse_stroke())
+            elif tok.kind == "IDENT" and tok.value == "ribbon":
+                items.append(self.parse_ribbon())
+            else:
+                raise NorthCelSyntaxError(f"Unknown frame statement '{tok.value}'", tok.line, tok.column)
+        self.expect("PUNCT", "}")
+        return (
+            f_idx,
+            SceneNode(
+                name=f"frame_{f_idx}",
+                width=width,
+                height=height,
+                fps=fps,
+                precision=precision,
+                seed=seed,
+                paper=paper,
+                defs=defs,
+                items=items,
+                span=SourceSpan(kw.line, kw.column),
+            ),
+        )
+
+    def parse_paper(self) -> PaperSpec:
+        kw = self.expect("IDENT", "paper")
+        attrs = self.parse_kv_brace_or_paren()
+        color = self._extract_color(attrs, default_tone=239, span=SourceSpan(kw.line, kw.column))
+        aa = int(self._eval_const(attrs.get("antialias_grid", 4)))
+        grain = float(self._eval_const(attrs.get("grain", 0.0)))
+        return PaperSpec(color=color, antialias_grid=aa, grain=grain, span=SourceSpan(kw.line, kw.column))
+
+    def parse_def(self) -> DefBlock:
+        kw = self.expect("IDENT", "def")
+        name_tok = self.expect("IDENT")
+        params: dict[str, float] = {}
+        if self.cur().value == "(":
+            raw_attrs = self.parse_attr_list()
+            for k, v in raw_attrs.items():
+                params[k] = float(self._eval_const(v))
+        self.expect("PUNCT", "{")
+        items: list[LayerNode | SwarmNode | StrokeNode | RibbonNode] = []
+        while not (self.cur().kind == "PUNCT" and self.cur().value == "}"):
+            if self.cur().kind == "EOF":
+                raise NorthCelSyntaxError(f"Unclosed 'def {name_tok.value}' block", kw.line, kw.column)
+            tok = self.cur()
+            if tok.kind == "IDENT" and tok.value in ("layer", "wash"):
+                items.append(self.parse_layer())
+            elif tok.kind == "IDENT" and tok.value in ("bend_swarm", "swarm"):
+                items.append(self.parse_swarm())
+            elif tok.kind == "IDENT" and tok.value == "stroke":
+                items.append(self.parse_stroke())
+            elif tok.kind == "IDENT" and tok.value == "ribbon":
+                items.append(self.parse_ribbon())
+            else:
+                raise NorthCelSyntaxError(
+                    f"Unsupported statement '{tok.value}' inside def block", tok.line, tok.column
+                )
+        self.expect("PUNCT", "}")
+        return DefBlock(name=name_tok.value, params=params, items=items, span=SourceSpan(kw.line, kw.column))
+
+    def parse_use(self) -> UseNode:
+        kw = self.expect("IDENT", "use")
+        name_tok = self.expect("IDENT")
+        args = self.parse_attr_list() if self.cur().value == "(" else {}
+        self.match("PUNCT", ";")
+        return UseNode(def_name=name_tok.value, args=args, span=SourceSpan(kw.line, kw.column))
+
+    def parse_layer(self) -> LayerNode:
+        kw = self.advance()  # layer or wash
+        name_tok = self.expect("IDENT")
+        attrs = self.parse_attr_list()
+        self.expect("PUNCT", "{")
+        payload_tok = self.expect("STRING")
+        self.expect("PUNCT", "}")
+        color = self._extract_color(attrs, default_tone=14, span=SourceSpan(kw.line, kw.column))
+        rings_cnt = int(self._eval_const(attrs["rings"])) if "rings" in attrs else None
+        boil = self._extract_boil(attrs)
+        tx = self._extract_translate(attrs)
+        return LayerNode(
+            name=name_tok.value,
+            color=color,
+            rings_count=rings_cnt,
+            payload=payload_tok.value[1:-1],
+            boil=boil,
+            translate_expr=tx,
+            span=SourceSpan(kw.line, kw.column),
+        )
+
+    def parse_swarm(self) -> SwarmNode:
+        kw = self.advance()  # bend_swarm or swarm
+        name_tok = self.expect("IDENT")
+        attrs = self.parse_attr_list()
+        self.expect("PUNCT", "{")
+        payload_tok = self.expect("STRING")
+        self.expect("PUNCT", "}")
+        color = self._extract_color(attrs, default_tone=14, span=SourceSpan(kw.line, kw.column))
+        agents = int(self._eval_const(attrs.get("agents", 1)))
+        boil = self._extract_boil(attrs)
+        tx = self._extract_translate(attrs)
+        return SwarmNode(
+            name=name_tok.value,
+            agents=agents,
+            color=color,
+            payload=payload_tok.value[1:-1],
+            boil=boil,
+            translate_expr=tx,
+            span=SourceSpan(kw.line, kw.column),
+        )
+
+    def parse_stroke(self) -> StrokeNode:
+        kw = self.expect("IDENT", "stroke")
+        name_tok = self.expect("IDENT")
+        attrs = self.parse_attr_list()
+        self.expect("PUNCT", "{")
+        points: list[tuple[Any, Any]] = []
+        while not (self.cur().kind == "PUNCT" and self.cur().value == "}"):
+            self.expect("PUNCT", "(")
+            x_expr = self.parse_expr()
+            self.expect("PUNCT", ",")
+            y_expr = self.parse_expr()
+            self.expect("PUNCT", ")")
+            self.match("PUNCT", ",")
+            points.append((x_expr, y_expr))
+        self.expect("PUNCT", "}")
+        color = self._extract_color(attrs, default_tone=14, span=SourceSpan(kw.line, kw.column))
+        if "taper" in attrs and isinstance(attrs["taper"], tuple) and len(attrs["taper"]) == 2:
+            w0 = float(self._eval_const(attrs["taper"][0]))
+            w1 = float(self._eval_const(attrs["taper"][1]))
+        else:
+            w = float(self._eval_const(attrs.get("width", 2.5)))
+            w0, w1 = w, w
+        boil = self._extract_boil(attrs)
+        return StrokeNode(
+            name=name_tok.value,
+            color=color,
+            width_start=w0,
+            width_end=w1,
+            points=points,
+            boil=boil,
+            span=SourceSpan(kw.line, kw.column),
+        )
+
+    def parse_ribbon(self) -> RibbonNode:
+        kw = self.expect("IDENT", "ribbon")
+        name_tok = self.expect("IDENT")
+        attrs = self.parse_attr_list() if self.cur().value == "(" else {}
+        self.expect("PUNCT", "{")
+        points: list[tuple[Any, Any, float]] = []
+        while not (self.cur().kind == "PUNCT" and self.cur().value == "}"):
+            self.expect("PUNCT", "(")
+            x_expr = self.parse_expr()
+            self.expect("PUNCT", ",")
+            y_expr = self.parse_expr()
+            self.expect("PUNCT", ",")
+            w_val = float(self._eval_const(self.parse_expr()))
+            self.expect("PUNCT", ")")
+            self.match("PUNCT", ",")
+            points.append((x_expr, y_expr, w_val))
+        self.expect("PUNCT", "}")
+        color = self._extract_color(attrs, default_tone=14, span=SourceSpan(kw.line, kw.column))
+        boil = self._extract_boil(attrs)
+        return RibbonNode(
+            name=name_tok.value,
+            color=color,
+            points=points,
+            boil=boil,
+            span=SourceSpan(kw.line, kw.column),
+        )
+
+    def parse_kv_brace_or_paren(self) -> dict[str, Any]:
+        if self.cur().value == "(":
+            return self.parse_attr_list()
+        self.expect("PUNCT", "{")
+        attrs: dict[str, Any] = {}
+        while not (self.cur().kind == "PUNCT" and self.cur().value == "}"):
+            key = self.expect("IDENT").value
+            self.expect("PUNCT", ":")
+            attrs[key] = self.parse_attr_value()
+            self.match("PUNCT", ",")
+        self.expect("PUNCT", "}")
+        return attrs
+
+    def parse_attr_list(self) -> dict[str, Any]:
+        self.expect("PUNCT", "(")
+        attrs: dict[str, Any] = {}
+        while not (self.cur().kind == "PUNCT" and self.cur().value == ")"):
+            key = self.expect("IDENT").value
+            if self.cur().value in (":", "="):
+                self.advance()
+            else:
+                tok = self.cur()
+                raise NorthCelSyntaxError(f"Expected ':' after attribute '{key}'", tok.line, tok.column)
+            attrs[key] = self.parse_attr_value()
+            self.match("PUNCT", ",")
+        self.expect("PUNCT", ")")
+        return attrs
+
+    def parse_attr_value(self) -> Any:
+        tok = self.cur()
+        if tok.kind == "HEX":
+            return ColorValue.from_hex(self.advance().value)
+        if tok.kind == "STRING":
+            return self.advance().value[1:-1]
+        if tok.kind == "UNIT_NUM":
+            return self.advance().value
+        if tok.kind == "IDENT" and tok.value == "rgb" and self.peek().value == "(":
+            self.advance()
+            self.expect("PUNCT", "(")
+            r = int(self._eval_const(self.parse_expr()))
+            self.expect("PUNCT", ",")
+            g = int(self._eval_const(self.parse_expr()))
+            self.expect("PUNCT", ",")
+            b = int(self._eval_const(self.parse_expr()))
+            self.expect("PUNCT", ")")
+            return ColorValue.from_rgb(r, g, b)
+        if tok.kind == "PUNCT" and tok.value == "(":
+            self.advance()
+            items = [self.parse_expr()]
+            while self.match("PUNCT", ","):
+                items.append(self.parse_expr())
+            self.expect("PUNCT", ")")
+            return tuple(items)
+        return self.parse_expr()
+
+    def parse_expr(self) -> ExprValue:
+        node = self.parse_term()
+        while self.cur().kind == "PUNCT" and self.cur().value in ("+", "-"):
+            op = self.advance().value
+            right = self.parse_term()
+            node = ExprValue("add" if op == "+" else "sub", (node, right))
+        return node
+
+    def parse_term(self) -> ExprValue:
+        node = self.parse_factor()
+        while self.cur().kind == "PUNCT" and self.cur().value in ("*", "/"):
+            op = self.advance().value
+            right = self.parse_factor()
+            node = ExprValue("mul" if op == "*" else "div", (node, right))
+        return node
+
+    def parse_factor(self) -> ExprValue:
+        tok = self.cur()
+        if tok.kind == "PUNCT" and tok.value == "-":
+            self.advance()
+            return ExprValue("neg", (self.parse_factor(),))
+        if tok.kind == "NUMBER":
+            self.advance()
+            return ExprValue("const", (float(tok.value),))
+        if tok.kind == "UNIT_NUM":
+            self.advance()
+            raw = re.sub(r"(px|deg)$", "", tok.value)
+            return ExprValue("const", (float(raw),))
+        if tok.kind == "IDENT":
+            ident = self.advance().value
+            if self.cur().kind == "PUNCT" and self.cur().value == "(":
+                self.advance()
+                args = []
+                if not (self.cur().kind == "PUNCT" and self.cur().value == ")"):
+                    args.append(self.parse_expr())
+                    while self.match("PUNCT", ","):
+                        args.append(self.parse_expr())
+                self.expect("PUNCT", ")")
+                if ident not in ("lerp", "sin", "cos", "step"):
+                    raise NorthCelSyntaxError(f"Unknown function '{ident}'", tok.line, tok.column)
+                return ExprValue(ident, tuple(args))
+            return ExprValue("var", (ident,))
+        if tok.kind == "PUNCT" and tok.value == "(":
+            self.advance()
+            inner = self.parse_expr()
+            self.expect("PUNCT", ")")
+            return inner
+        raise NorthCelSyntaxError(f"Expected expression, got '{tok.value or tok.kind}'", tok.line, tok.column)
+
+    def _eval_const(self, val: Any) -> float:
+        if isinstance(val, (int, float)):
+            return float(val)
+        if isinstance(val, str):
+            raw = re.sub(r"(px|deg)$", "", val.strip())
+            return float(raw)
+        if isinstance(val, ExprValue):
+            return val.eval({"t": 0.0, "f": 0.0, "seed": 42.0})
+        raise ValueError(f"Cannot evaluate constant from {val!r}")
+
+    def _extract_color(self, attrs: dict[str, Any], default_tone: int, span: SourceSpan) -> ColorValue:
+        if "color" in attrs:
+            c = attrs["color"]
+            if isinstance(c, ColorValue):
+                return c
+            if isinstance(c, str) and c.startswith("#"):
+                return ColorValue.from_hex(c)
+            raise NorthCelSyntaxError("Invalid 'color' attribute value", span.line, span.column)
+        if "tone" in attrs:
+            t = int(round(self._eval_const(attrs["tone"])))
+            return ColorValue.from_tone(t)
+        return ColorValue.from_tone(default_tone)
+
+    def _extract_boil(self, attrs: dict[str, Any]) -> BoilSpec | None:
+        if "boil" not in attrs:
+            return None
+        b = attrs["boil"]
+        if isinstance(b, tuple) and len(b) >= 2:
+            amp = float(self._eval_const(b[0]))
+            freq = float(self._eval_const(b[1]))
+            return BoilSpec(amplitude_px=amp, frequency=freq)
+        amp = float(self._eval_const(b))
+        return BoilSpec(amplitude_px=amp, frequency=1.0)
+
+    def _extract_translate(self, attrs: dict[str, Any]) -> tuple[Any, Any]:
+        if "translate" in attrs and isinstance(attrs["translate"], tuple) and len(attrs["translate"]) == 2:
+            return (attrs["translate"][0], attrs["translate"][1])
+        dx = attrs.get("dx", ExprValue("const", (0.0,)))
+        dy = attrs.get("dy", ExprValue("const", (0.0,)))
+        return (dx, dy)
+
+
+def parse_ncel(source: str) -> DocumentNode:
+    """Parses a NorthCel (.ncel) source string into a DocumentNode."""
+    tokens = tokenize(source)
+    parser = _Parser(tokens)
+    return parser.parse_document()

@@ -1,0 +1,36 @@
+{
+  "name": "northcel-vscode",
+  "displayName": "NorthCel (.ncel) Language Support",
+  "description": "Syntax highlighting and language configuration for NorthCel (.ncel) AI-drawn video files.",
+  "version": "0.1.0",
+  "publisher": "northnoir",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "northcel",
+        "aliases": [
+          "NorthCel",
+          "northcel",
+          "ncel"
+        ],
+        "extensions": [
+          ".ncel"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "northcel",
+        "scopeName": "source.northcel",
+        "path": "./syntaxes/northcel.tmLanguage.json"
+      }
+    ]
+  }
+}

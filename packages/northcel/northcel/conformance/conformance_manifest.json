@@ -1,0 +1,128 @@
+{
+  "spec_version": "0.1.0-draft",
+  "tolerance_mae": 1.0,
+  "cases": [
+    {
+      "name": "01_evenodd_aperture",
+      "file": "01_evenodd_aperture.ncel",
+      "probes": [
+        {
+          "x": 4,
+          "y": 4,
+          "rgb": [
+            240,
+            240,
+            240
+          ],
+          "note": "outside outer square (paper)"
+        },
+        {
+          "x": 12,
+          "y": 12,
+          "rgb": [
+            20,
+            20,
+            20
+          ],
+          "note": "inside outer square, outside hole (dark)"
+        },
+        {
+          "x": 32,
+          "y": 32,
+          "rgb": [
+            240,
+            240,
+            240
+          ],
+          "note": "inside inner hole (even-odd aperture cutout -> paper)"
+        }
+      ]
+    },
+    {
+      "name": "02_color_stroke_ribbon",
+      "file": "02_color_stroke_ribbon.ncel",
+      "probes": [
+        {
+          "x": 4,
+          "y": 4,
+          "rgb": [
+            16,
+            32,
+            48
+          ],
+          "note": "paper #102030"
+        },
+        {
+          "x": 32,
+          "y": 16,
+          "rgb": [
+            240,
+            128,
+            64
+          ],
+          "note": "center of tapered stroke #F08040"
+        },
+        {
+          "x": 32,
+          "y": 44,
+          "rgb": [
+            64,
+            224,
+            208
+          ],
+          "note": "center of ribbon #40E0D0"
+        }
+      ]
+    },
+    {
+      "name": "03_film_def_use_boil",
+      "file": "03_film_def_use_boil.ncel",
+      "probes_by_frame": {
+        "0": [
+          {
+            "x": 16,
+            "y": 16,
+            "rgb": [
+              30,
+              30,
+              30
+            ],
+            "note": "frame 0 box at x in [8..24]"
+          },
+          {
+            "x": 36,
+            "y": 16,
+            "rgb": [
+              235,
+              235,
+              235
+            ],
+            "note": "frame 0 outside shifted box"
+          }
+        ],
+        "2": [
+          {
+            "x": 16,
+            "y": 16,
+            "rgb": [
+              235,
+              235,
+              235
+            ],
+            "note": "frame 2 box shifted right by +20px"
+          },
+          {
+            "x": 36,
+            "y": 16,
+            "rgb": [
+              30,
+              30,
+              30
+            ],
+            "note": "frame 2 inside shifted box [28..44]"
+          }
+        ]
+      }
+    }
+  ]
+}

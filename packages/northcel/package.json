@@ -1,0 +1,35 @@
+{
+  "name": "northcel",
+  "version": "0.1.0",
+  "description": "NorthCel (.ncel) — AI-drawn video programming language parser, validator, formatter, and CLI bridge.",
+  "license": "Proprietary",
+  "author": "North Noir",
+  "homepage": "https://northnoir.com/northcel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/syver777/NorthNoir.git",
+    "directory": "packages/northcel"
+  },
+  "main": "js/index.cjs",
+  "bin": {
+    "northcel": "bin/northcel.js",
+    "ncel": "bin/northcel.js"
+  },
+  "files": [
+    "bin/northcel.js",
+    "js/index.cjs",
+    "editors/vscode/package.json",
+    "editors/vscode/language-configuration.json",
+    "editors/vscode/syntaxes/northcel.tmLanguage.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "northcel",
+    "ncel",
+    "ai-drawn-video",
+    "animation",
+    "dsl",
+    "northnoir"
+  ]
+}

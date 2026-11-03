@@ -1,0 +1,9 @@
+northcel "0.1.0-draft"
+
+film ReusableFilm(width: 64, height: 64, fps: 6, frames: 3, precision: 0.25px, seed: 77) {
+  paper { tone: 235, antialias_grid: 4 }
+  def Box(dx: 0, dy: 0) {
+    layer patch(tone: 30, rings: 1) { "32,32 64,0 0,64 -64,0" }
+  }
+  use Box(dx: lerp(0, 20, t), dy: 0)
+}

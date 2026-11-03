@@ -1,0 +1,7 @@
+northcel "0.1.0-draft"
+
+scene ColorStrokeRibbon(width: 64, height: 64, fps: 12, precision: 0.25px) {
+  paper { color: #102030, antialias_grid: 4 }
+  stroke beam(color: #F08040, taper: (8, 4)) { (8, 16), (56, 16) }
+  ribbon wave(color: #40E0D0) { (8, 44, 10), (32, 44, 6), (56, 44, 10) }
+}
