@@ -177,11 +177,11 @@ def validate_document(doc: DocumentNode) -> list[ValidationDiagnostic]:
                 root.span.column,
             )
         )
-    if root.precision not in ("0.25px", "1px"):
+    if root.precision not in ("0.25px", "0.25px-b63", "1px"):
         out.append(
             ValidationDiagnostic(
                 "error",
-                f"Unsupported precision '{root.precision}' (expected '0.25px' or '1px')",
+                f"Unsupported precision '{root.precision}' (expected '0.25px', '0.25px-b63', or '1px')",
                 root.span.line,
                 root.span.column,
             )

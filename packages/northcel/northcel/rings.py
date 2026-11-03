@@ -1,4 +1,4 @@
-"""NorthCel ring-chain encoders and decoders (0.25px quarter-pixel & 1px Base-63)."""
+"""NorthCel ring-chain encoders and decoders (0.25px, 0.25px Base-63, and 1px Base-63)."""
 
 from __future__ import annotations
 
@@ -58,23 +58,28 @@ def decode_ring_q25(ring_str: str) -> list[tuple[float, float]]:
     return pts
 
 
-def encode_ring_b63_1px(ring: Sequence[Sequence[float]]) -> str:
-    """Encodes a closed polygon ring into 1-pixel Base-63 relative deltas (`x0,y0:c1c2...`)."""
+def _encode_b63_scaled(ring: Sequence[Sequence[float]], scale: float) -> str:
     if len(ring) < 3:
         raise RingEncodingError("A polygon ring requires at least 3 vertices.")
-    pts = [(int(round(float(p[0]))), int(round(float(p[1])))) for p in ring]
+    pts = [(int(round(float(p[0]) * scale)), int(round(float(p[1]) * scale))) for p in ring]
     dedup = [pts[0]]
     for pt in pts[1:]:
         if pt != dedup[-1]:
             dedup.append(pt)
     if len(dedup) < 3:
-        raise RingEncodingError("Ring collapses to fewer than 3 distinct 1px vertices.")
+        raise RingEncodingError("Ring collapses to fewer than 3 distinct vertices.")
     expanded = [dedup[0]]
     for nx, ny in dedup[1:]:
         cx, cy = expanded[-1]
         while abs(nx - cx) > 31 or abs(ny - cy) > 31:
-            sx = max(-31, min(31, nx - cx))
-            sy = max(-31, min(31, ny - cy))
+            dx_rem = nx - cx
+            dy_rem = ny - cy
+            dist = max(abs(dx_rem), abs(dy_rem))
+            steps = (dist + 30) // 31
+            sx = int(round(dx_rem / float(steps)))
+            sy = int(round(dy_rem / float(steps)))
+            sx = max(-31, min(31, sx))
+            sy = max(-31, min(31, sy))
             cx += sx
             cy += sy
             expanded.append((cx, cy))
@@ -89,8 +94,7 @@ def encode_ring_b63_1px(ring: Sequence[Sequence[float]]) -> str:
     return "".join(out)
 
 
-def decode_ring_b63_1px(ring_str: str) -> list[tuple[float, float]]:
-    """Decodes a 1-pixel Base-63 relative delta chain (`x0,y0:c1c2...`)."""
+def _decode_b63_scaled(ring_str: str, inv_scale: float) -> list[tuple[float, float]]:
     s = ring_str.strip()
     if ":" not in s:
         raise RingEncodingError("Base-63 ring string must contain ':' after 'x0,y0'.")
@@ -105,17 +109,37 @@ def decode_ring_b63_1px(ring_str: str) -> list[tuple[float, float]]:
         raise RingEncodingError(f"Invalid Base-63 start coordinates '{head}'.") from exc
     if len(tail) % 2 != 0:
         raise RingEncodingError("Base-63 delta tail must have an even number of characters.")
-    pts: list[tuple[float, float]] = [(float(x), float(y))]
+    pts: list[tuple[float, float]] = [(x * inv_scale, y * inv_scale)]
     for i in range(0, len(tail), 2):
         c1, c2 = tail[i], tail[i + 1]
         if c1 not in B63_MAP or c2 not in B63_MAP:
             raise RingEncodingError(f"Invalid Base-63 character pair '{c1}{c2}' at offset {i}.")
         x += B63_MAP[c1]
         y += B63_MAP[c2]
-        pts.append((float(x), float(y)))
+        pts.append((x * inv_scale, y * inv_scale))
     if len(pts) < 3:
         raise RingEncodingError(f"Decoded Base-63 ring has only {len(pts)} vertices (< 3).")
     return pts
+
+
+def encode_ring_b63_1px(ring: Sequence[Sequence[float]]) -> str:
+    """Encodes a closed polygon ring into 1-pixel Base-63 relative deltas (`x0,y0:c1c2...`)."""
+    return _encode_b63_scaled(ring, scale=1.0)
+
+
+def decode_ring_b63_1px(ring_str: str) -> list[tuple[float, float]]:
+    """Decodes a 1-pixel Base-63 relative delta chain (`x0,y0:c1c2...`)."""
+    return _decode_b63_scaled(ring_str, inv_scale=1.0)
+
+
+def encode_ring_b63_q25(ring: Sequence[Sequence[float]]) -> str:
+    """Encodes a closed polygon ring into quarter-pixel (0.25px) Base-63 relative deltas (`qx0,qy0:c1c2...`)."""
+    return _encode_b63_scaled(ring, scale=4.0)
+
+
+def decode_ring_b63_q25(ring_str: str) -> list[tuple[float, float]]:
+    """Decodes a quarter-pixel (0.25px) Base-63 relative delta chain (`qx0,qy0:c1c2...`)."""
+    return _decode_b63_scaled(ring_str, inv_scale=0.25)
 
 
 def decode_rings_payload(payload: str, precision: str = "0.25px") -> list[list[tuple[float, float]]]:
@@ -130,7 +154,10 @@ def decode_rings_payload(payload: str, precision: str = "0.25px") -> list[list[t
             continue
         try:
             if ":" in part_s and " " not in part_s:
-                rings.append(decode_ring_b63_1px(part_s))
+                if precision == "0.25px-b63":
+                    rings.append(decode_ring_b63_q25(part_s))
+                else:
+                    rings.append(decode_ring_b63_1px(part_s))
             elif precision == "1px" and ":" in part_s:
                 rings.append(decode_ring_b63_1px(part_s))
             else:
@@ -146,6 +173,8 @@ def encode_rings_payload(rings: Sequence[Sequence[Sequence[float]]], precision: 
     for r in rings:
         if precision == "1px":
             encoded.append(encode_ring_b63_1px(r))
+        elif precision == "0.25px-b63":
+            encoded.append(encode_ring_b63_q25(r))
         else:
             encoded.append(encode_ring_q25(r))
     return "|".join(encoded)

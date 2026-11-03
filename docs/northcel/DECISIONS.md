@@ -42,3 +42,23 @@ This document records the key architectural, experimental, and naming decisions 
 - **Context:** The initial prototype used the working name `NoirLang` and extension `.noir`. However, `.noir` collides directly with Aztec's zero-knowledge proof language **Noir** (`noir-lang.org`, `.nr`/`.noir`), creating ecosystem, syntax-highlighting, and search confusion.
 - **Decision:** Rename the language to **NorthCel**, file extension **`.ncel`**, CLI commands **`northcel`** and **`ncel`**, PyPI package **`northcel`**, npm package **`northcel`**, and public docs URL **`https://northnoir.com/northcel`**. Keep all naming constants in a single module (`packages/northcel/northcel/config.py`).
 - **Evidence:** Both `northcel` on PyPI and `northcel` on npm were verified unoccupied (`HTTP 404`) prior to release.
+
+---
+
+## Decision 5 · 2026-11-03: Add `precision: 0.25px-b63`, `palette`, `cel`/`outline`, and Frame `drop` Deltas in v0.2.0
+
+- **Context:** In Phase B, we tested NorthCel `0.1.0` on **Test Video 7** — a complete 15-second, 90-drawing (`1536×864`) Ruvil 7.3 images-as-frames film (monochrome opening → jump → blue sky & clouds → colour arrival → cloud landing → grass landing → sitting with walking duck), both via automated contour fitting (all 90 frames) and hand-written AI authoring (8 representative frames across 3 self-review rounds).
+- **Measured Weaknesses of `0.1.0` Exposed by the 90-Frame Video:**
+  1. **Source size explosion on 90 subpixel frames:** Space-separated `0.25px` text coordinates plus uncleaned antialias boundary halos took `6,704,285 bytes` (`74.5 KB/frame`, `4.25M tokens`) for the 90 frames.
+  2. **Duplicate fill + stroke coordinates in AI-authored cels:** In `0.1.0`, every hand-authored cloud, shirt, trouser leg, shoe, and duck body required a `layer` block for the fill and a second `stroke` block repeating the exact same coordinates for the black ink outline (`8,830 bytes/frame` in Round 3).
+  3. **Per-frame color drift & antialias fringe misclassification:** Fitting colors per frame without a shared `palette` and without excluding the 3px greyscale antialias halo around black ink caused dark olive pants to be misclassified as brown hair in early v0.2 tests (`f0066..f0083`) and caused subtle frame-to-frame hue drift.
+  4. **Inability to patch/drop inherited layers in `film`:** `frame k` overrides in `0.1.0` only appended layers on top of base layers instead of replacing or dropping named layers in place.
+- **Decision (Implemented in `0.2.0`):**
+  1. Add `precision: 0.25px-b63` (Quarter-Pixel Base-63 relative encoding with collinear step subdivision) + 3px ink-halo exclusion and chromaticity gating (`chroma > 28`, R-G hair separation).
+  2. Add `palette { name: #RRGGBB, ... }` and `$name` references.
+  3. Add `cel` / `outline: ($ink, Wpx)` coupled fill + boundary ink stroke primitive.
+  4. Add in-place named layer replacement and `drop <layer_name>` inside `film` `frame k` blocks.
+- **Measured Before vs. After Evidence:**
+  - **90-Frame Fitted Film:** Source size dropped from **`6,704,285 B` (`4,249,852 tok`) to `914,478 B` (`684,528 tok` — `-86.4%` bytes / `7.33×` smaller)**, Global Windowed SSIM improved from **`0.9719` to `0.9756`** (Block SSIM `0.9728`), Exact Canny Edge IoU improved from **`0.4412` to `0.4959`**, and render speed improved from `1.037s/frame` to **`0.957s/frame`**.
+  - **8 AI-Authored Frames:** Mean source size dropped from **`8,830 B` (`5,052 tok`) to `4,718 B` (`3,303 tok` — `-46.6%` bytes)** while improving Block SSIM (`0.7852 -> 0.7869`) and Edge IoU (`0.0303 -> 0.0317`).
+

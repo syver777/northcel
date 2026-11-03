@@ -25,7 +25,7 @@
       "patterns": [
         {
           "name": "keyword.control.northcel",
-          "match": "\\b(northcel|scene|film|frame|paper|def|use|layer|wash|bend_swarm|swarm|stroke|ribbon)\\b"
+          "match": "\\b(northcel|scene|film|frame|palette|paper|def|use|drop|cel|layer|wash|bend_swarm|swarm|stroke|ribbon)\\b"
         }
       ]
     },
@@ -41,7 +41,7 @@
       "patterns": [
         {
           "name": "variable.parameter.northcel",
-          "match": "\\b(width|height|fps|frames|precision|seed|tone|color|antialias_grid|grain|rings|agents|boil|translate|taper|dx|dy)(?=\\s*:)"
+          "match": "\\b(width|height|fps|frames|precision|seed|tone|color|fill|outline|ink_width|ink|antialias_grid|grain|rings|agents|boil|translate|taper|dx|dy)(?=\\s*:)"
         }
       ]
     },

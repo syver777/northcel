@@ -8,6 +8,7 @@ All example `.ncel` files ship inside `packages/northcel/northcel/examples/` and
 
 | Example File | Mode / Description | Bytes | `cl100k` Tokens | Frames |
 | --- | --- | ---: | ---: | ---: |
+| `tv7_f0076_ai_cel.ncel` | **AI-Authored v0.2 Colour Cel Scene** (*Test Video 7* `f0076`: seated man + walking duck using `palette`, `cel`, `outline`, `0.25px-b63`) | **6,306 B** | **4,438 tok** | 1 frame (`1536×864`) |
 | `lantern_film.ncel` | **AI-Authored Animated Film** (`film`, `def`/`use`, `stroke`, `ribbon`, `bend_swarm`, color, `boil`) | **1,068 B** | **458 tok** | 6 frames |
 | `shower_f0001_compact.ncel` | **Compact 1px Base-63 Traced Still** (`precision: 1px`, 4 washes + 160 Bend swarm agents) | **14,686 B** | **9,465 tok** | 1 frame (`f0001`) |
 | `shower_f0001.ncel` | **Subpixel 0.25px Traced Still** (`precision: 0.25px`, exact quarter-pixel relative chains) | **66,178 B** | **44,881 tok** | 1 frame (`f0001`) |

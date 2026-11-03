@@ -84,3 +84,19 @@ Therefore, for training a generative model to emit `.ncel` from scratch or from 
   4. **Surgical Edit Isolation (`Adjust` Locality):** Verify that editing layer `X` produces `0.0` pixel difference outside layer `X`'s bounding mask.
   5. **Token Efficiency:** `cl100k` tokens per rendered second of video.
 - **Storage:** Keep training artifacts in a dedicated bucket/directory (`work/training/northcel-dataset/` locally or a private Supabase/GCS bucket), storing compressed `.ncel` text alongside `metrics.json` manifests.
+
+---
+
+## 6. Phase B Empirical Results on *Test Video 7* (90 Drawings @ 1536×864) & Training Implications
+
+In Phase B, we executed the first full teacher-video conversion pipeline on **Test Video 7** (`90` distinct Ruvil 7.3 drawings at `6 fps`, `1536×864`, `15.0s` MP4):
+
+1. **Fitted Upper Bound (`v0.2` `0.25px-b63` + `palette`):**
+   - **Mean Block SSIM:** `0.9728` | **Mean Global Windowed SSIM:** `0.9756` | **Exact Canny Edge IoU:** `0.4959` (`1px`-tolerant Edge F1: `0.9467`).
+   - **Mean Frame Size:** **`10,161 bytes` (`7,606 cl100k tokens`) per frame** (`914,478 bytes` / `684,528 tokens` for all 90 frames — **86.4% smaller** than `v0.1` subpixel text encoding).
+   - **Implication for Training:** At `~7.6k tokens/frame` in `0.25px-b63` mode (and `~2.5k–4.5k tokens/frame` on simpler frames or `1px` mode), a single full-resolution subpixel `.ncel` frame **now fits comfortably inside a single standard LLM completion (`8k–16k` output tokens)**!
+2. **AI-Authored Baseline (8 Representative Frames Written by Hand, Zero Tracing):**
+   - Achieved **`0.7869` Mean Block SSIM (`0.8527` Global SSIM)** in only **`4,718 bytes` (`3,303 tokens`) per frame** using `v0.2` `cel` + `palette`.
+   - **What a Model Must Learn During Training:**
+     - **Strengths already solved by the grammar:** Layer ordering, `palette` color consistency, coupled fill+outline `cel` closure, and background reuse (`clouds`, `grass_fill`).
+     - **Bottleneck to target in fine-tuning:** Articulated 2D limb/hand/finger proportions and organic cloud/cloth contour rhythms using `0.25px-b63` relative delta strings (`qx0,qy0:c1c2...`).

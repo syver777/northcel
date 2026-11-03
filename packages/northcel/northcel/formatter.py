@@ -1,4 +1,4 @@
-"""Canonical formatter for NorthCel (.ncel) AST documents."""
+"""Canonical formatter for NorthCel (.ncel) v0.2 AST documents."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from .ast_nodes import (
     ColorValue,
     DefBlock,
     DocumentNode,
+    DropNode,
     FilmNode,
     LayerNode,
     PaperSpec,
@@ -48,7 +49,17 @@ def _fmt_expr(e: Any) -> str:
     return str(e)
 
 
+def _fmt_color_val(c: ColorValue) -> str:
+    if c.palette_ref:
+        return f"${c.palette_ref}"
+    if c.is_grey:
+        return str(c.r)
+    return c.to_hex()
+
+
 def _fmt_color_kv(c: ColorValue) -> str:
+    if c.palette_ref:
+        return f"color: ${c.palette_ref}"
     if c.is_grey:
         return f"tone: {c.r}"
     return f"color: {c.to_hex()}"
@@ -69,6 +80,21 @@ def _fmt_translate_kv(tx: tuple[Any, Any]) -> str:
     return f", translate: ({s0}, {s1})"
 
 
+def _fmt_outline_kv(c: ColorValue | None, w: float) -> str:
+    if c is None or w <= 0.0:
+        return ""
+    return f", outline: ({_fmt_color_val(c)}, {_fmt_num(w)}px)"
+
+
+def _fmt_palette(pal: dict[str, ColorValue], indent: str = "  ") -> list[str]:
+    if not pal:
+        return []
+    parts = []
+    for k, v in pal.items():
+        parts.append(f"{k}: {v.to_hex() if not v.is_grey else v.r}")
+    return [f"{indent}palette {{ {', '.join(parts)} }}"]
+
+
 def _fmt_paper(p: PaperSpec, indent: str = "  ") -> str:
     parts = [_fmt_color_kv(p.color), f"antialias_grid: {p.antialias_grid}"]
     if p.grain > 0:
@@ -79,9 +105,14 @@ def _fmt_paper(p: PaperSpec, indent: str = "  ") -> str:
 def _fmt_item(item: SceneItem, indent: str = "  ") -> list[str]:
     if isinstance(item, LayerNode):
         rings_part = f", rings: {item.rings_count}" if item.rings_count is not None else ""
-        extra = _fmt_boil_kv(item.boil) + _fmt_translate_kv(item.translate_expr)
+        extra = (
+            _fmt_outline_kv(item.outline_color, item.outline_width)
+            + _fmt_boil_kv(item.boil)
+            + _fmt_translate_kv(item.translate_expr)
+        )
+        kw = "cel" if (item.outline_color is not None and item.outline_width > 0) else "layer"
         return [
-            f'{indent}layer {item.name}({_fmt_color_kv(item.color)}{rings_part}{extra}) {{ "{item.payload}" }}'
+            f'{indent}{kw} {item.name}({_fmt_color_kv(item.color)}{rings_part}{extra}) {{ "{item.payload}" }}'
         ]
     if isinstance(item, SwarmNode):
         extra = _fmt_boil_kv(item.boil) + _fmt_translate_kv(item.translate_expr)
@@ -103,6 +134,8 @@ def _fmt_item(item: SceneItem, indent: str = "  ") -> list[str]:
     if isinstance(item, UseNode):
         args_s = ", ".join(f"{k}: {_fmt_expr(v)}" for k, v in item.args.items())
         return [f"{indent}use {item.def_name}({args_s})"]
+    if isinstance(item, DropNode):
+        return [f"{indent}drop {item.target_name}"]
     return []
 
 
@@ -134,6 +167,7 @@ def format_document(doc: DocumentNode, include_version_header: bool = True) -> s
         if root.seed != 42:
             attrs.append(f"seed: {root.seed}")
         lines.append(f"scene {root.name}({', '.join(attrs)}) {{")
+        lines.extend(_fmt_palette(root.palette, "  "))
         lines.append(_fmt_paper(root.paper, "  "))
         for d in root.defs.values():
             lines.extend(_fmt_def(d, "  "))
@@ -150,6 +184,7 @@ def format_document(doc: DocumentNode, include_version_header: bool = True) -> s
             f"seed: {root.seed}",
         ]
         lines.append(f"film {root.name}({', '.join(attrs)}) {{")
+        lines.extend(_fmt_palette(root.palette, "  "))
         lines.append(_fmt_paper(root.paper, "  "))
         for d in root.defs.values():
             lines.extend(_fmt_def(d, "  "))

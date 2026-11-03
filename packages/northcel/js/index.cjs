@@ -10,9 +10,9 @@ const CONFIG = Object.freeze({
   FILE_EXTENSION: ".ncel",
   CLI_COMMAND: "northcel",
   CLI_SHORT_ALIAS: "ncel",
-  PACKAGE_VERSION: "0.1.0",
-  SPEC_VERSION: "0.1.0-draft",
-  SUPPORTED_SPEC_VERSIONS: ["0.1", "0.1.0", "0.1.0-draft"],
+  PACKAGE_VERSION: "0.2.0",
+  SPEC_VERSION: "0.2.0-draft",
+  SUPPORTED_SPEC_VERSIONS: ["0.1", "0.1.0", "0.1.0-draft", "0.2", "0.2.0", "0.2.0-draft"],
   DOCS_URL: "https://northnoir.com/northcel",
 });
 
@@ -78,7 +78,12 @@ function decodeRingsPayload(payload, precision = "0.25px") {
     .map((p) => p.trim())
     .filter(Boolean)
     .map((part) => {
-      if (part.includes(":") && !part.includes(" ")) return decodeRingB63(part);
+      if (part.includes(":") && !part.includes(" ")) {
+        if (precision === "0.25px-b63") {
+          return decodeRingB63(part).map(([x, y]) => [x * 0.25, y * 0.25]);
+        }
+        return decodeRingB63(part);
+      }
       if (precision === "1px" && part.includes(":")) return decodeRingB63(part);
       return decodeRingQ25(part);
     });

@@ -1,6 +1,6 @@
 {
   "name": "northcel",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "NorthCel (.ncel) — AI-drawn video programming language parser, validator, formatter, and CLI bridge.",
   "license": "Proprietary",
   "author": "North Noir",

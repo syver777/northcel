@@ -30,6 +30,7 @@ from .ast_nodes import (
     ColorValue,
     DefBlock,
     DocumentNode,
+    DropNode,
     FilmNode,
     LayerNode,
     PaperSpec,
@@ -154,8 +155,23 @@ def _expand_items(
     layers_out: list[tuple[str, ColorValue, list[list[tuple[float, float]]]]] = []
     named_index: dict[str, int] = {}
 
+    def upsert_layer(name: str, color: ColorValue, rings: list[list[tuple[float, float]]]) -> None:
+        if name in named_index:
+            layers_out[named_index[name]] = (name, color, rings)
+        else:
+            named_index[name] = len(layers_out)
+            layers_out.append((name, color, rings))
+
     def process_list(seq: list[SceneItem], local_env: dict[str, float]) -> None:
         for item_idx, item in enumerate(seq):
+            if isinstance(item, DropNode):
+                if item.target_name in named_index:
+                    layers_out[named_index[item.target_name]] = (item.target_name, ColorValue.from_tone(0), [])
+                out_key = f"{item.target_name}__outline"
+                if out_key in named_index:
+                    layers_out[named_index[out_key]] = (out_key, ColorValue.from_tone(0), [])
+                continue
+
             if isinstance(item, UseNode):
                 d = defs[item.def_name]
                 child_env = dict(local_env)
@@ -184,8 +200,18 @@ def _expand_items(
                         bx, by = boil_offset(seed, frame_idx, item_idx, ri, vi, item.boil)
                         pts.append((x + tx + bx, y + ty + by))
                     final_rings.append(pts)
-                named_index[item.name] = len(layers_out)
-                layers_out.append((item.name, item.color, final_rings))
+                upsert_layer(item.name, item.color, final_rings)
+
+                if item.outline_color is not None and item.outline_width > 0.0:
+                    stroke_rings: list[list[tuple[float, float]]] = []
+                    for r in final_rings:
+                        if len(r) >= 3:
+                            closed = list(r) + [r[0]]
+                            sr = _stroke_to_ring(closed, item.outline_width, item.outline_width)
+                            if len(sr) >= 3:
+                                stroke_rings.append(sr)
+                    if stroke_rings:
+                        upsert_layer(f"{item.name}__outline", item.outline_color, stroke_rings)
 
             elif isinstance(item, SwarmNode):
                 raw_rings = decode_rings_payload(item.payload, precision=precision)

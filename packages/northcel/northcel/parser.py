@@ -1,4 +1,4 @@
-"""Lexer and recursive-descent parser for NorthCel (.ncel) with line:column diagnostics."""
+"""Lexer and recursive-descent parser for NorthCel (.ncel) v0.2 with line:column diagnostics."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from .ast_nodes import (
     ColorValue,
     DefBlock,
     DocumentNode,
+    DropNode,
     FilmNode,
     LayerNode,
     PaperSpec,
@@ -46,7 +47,7 @@ class Token:
 
 @dataclass(frozen=True)
 class ExprValue:
-    """Represents a constant or pure time-dependent expression (`lerp`, `sin`, `cos`, `hold`, param ref)."""
+    """Represents a constant or pure time-dependent expression (`lerp`, `sin`, `cos`, `step`, param ref)."""
 
     op: str
     args: tuple[Any, ...]
@@ -93,10 +94,10 @@ _TOKEN_SPEC = re.compile(
     (?P<COMMENT>//[^\n]*)|
     (?P<STRING>"(?:\\.|[^"\\])*")|
     (?P<HEX>\#[0-9A-Fa-f]{3,6}\b)|
-    (?P<UNIT_NUM>-?(?:\d+\.\d+|\d+)(?:px|deg)\b)|
+    (?P<UNIT_NUM>-?(?:\d+\.\d+|\d+)(?:px-b63|px|deg)\b)|
     (?P<NUMBER>-?(?:\d+\.\d+|\d+))|
     (?P<IDENT>[A-Za-z_][A-Za-z0-9_]*)|
-    (?P<PUNCT>[{}()\[\]:,;+\-*/=])
+    (?P<PUNCT>[{}()\[\]:,;+\-*/=$])
     """,
     re.VERBOSE,
 )
@@ -133,6 +134,7 @@ class _Parser:
     def __init__(self, tokens: list[Token]) -> None:
         self.tokens = tokens
         self.idx = 0
+        self.active_palette: dict[str, ColorValue] = {}
 
     def cur(self) -> Token:
         return self.tokens[self.idx]
@@ -209,6 +211,8 @@ class _Parser:
         seed = int(self._eval_const(attrs.get("seed", 42)))
         precision = str(attrs.get("precision", "0.25px"))
 
+        palette: dict[str, ColorValue] = {}
+        self.active_palette = palette
         paper = PaperSpec()
         defs: dict[str, DefBlock] = {}
         items: list[SceneItem] = []
@@ -217,15 +221,19 @@ class _Parser:
             if self.cur().kind == "EOF":
                 raise NorthCelSyntaxError("Unclosed 'scene' block", kw.line, kw.column)
             tok = self.cur()
-            if tok.kind == "IDENT" and tok.value == "paper":
+            if tok.kind == "IDENT" and tok.value == "palette":
+                palette.update(self.parse_palette())
+            elif tok.kind == "IDENT" and tok.value == "paper":
                 paper = self.parse_paper()
             elif tok.kind == "IDENT" and tok.value == "def":
                 d = self.parse_def()
                 defs[d.name] = d
             elif tok.kind == "IDENT" and tok.value == "use":
                 items.append(self.parse_use())
-            elif tok.kind == "IDENT" and tok.value in ("layer", "wash"):
-                items.append(self.parse_layer())
+            elif tok.kind == "IDENT" and tok.value == "drop":
+                items.append(self.parse_drop())
+            elif tok.kind == "IDENT" and tok.value in ("layer", "wash", "cel"):
+                items.append(self.parse_layer(is_cel=(tok.value == "cel")))
             elif tok.kind == "IDENT" and tok.value in ("bend_swarm", "swarm"):
                 items.append(self.parse_swarm())
             elif tok.kind == "IDENT" and tok.value == "stroke":
@@ -245,6 +253,7 @@ class _Parser:
             fps=fps,
             precision=precision,
             seed=seed,
+            palette=palette,
             paper=paper,
             defs=defs,
             items=items,
@@ -264,6 +273,8 @@ class _Parser:
         seed = int(self._eval_const(attrs.get("seed", 42)))
         precision = str(attrs.get("precision", "0.25px"))
 
+        palette: dict[str, ColorValue] = {}
+        self.active_palette = palette
         paper = PaperSpec()
         defs: dict[str, DefBlock] = {}
         items: list[SceneItem] = []
@@ -273,15 +284,19 @@ class _Parser:
             if self.cur().kind == "EOF":
                 raise NorthCelSyntaxError("Unclosed 'film' block", kw.line, kw.column)
             tok = self.cur()
-            if tok.kind == "IDENT" and tok.value == "paper":
+            if tok.kind == "IDENT" and tok.value == "palette":
+                palette.update(self.parse_palette())
+            elif tok.kind == "IDENT" and tok.value == "paper":
                 paper = self.parse_paper()
             elif tok.kind == "IDENT" and tok.value == "def":
                 d = self.parse_def()
                 defs[d.name] = d
             elif tok.kind == "IDENT" and tok.value == "use":
                 items.append(self.parse_use())
-            elif tok.kind == "IDENT" and tok.value in ("layer", "wash"):
-                items.append(self.parse_layer())
+            elif tok.kind == "IDENT" and tok.value == "drop":
+                items.append(self.parse_drop())
+            elif tok.kind == "IDENT" and tok.value in ("layer", "wash", "cel"):
+                items.append(self.parse_layer(is_cel=(tok.value == "cel")))
             elif tok.kind == "IDENT" and tok.value in ("bend_swarm", "swarm"):
                 items.append(self.parse_swarm())
             elif tok.kind == "IDENT" and tok.value == "stroke":
@@ -289,7 +304,7 @@ class _Parser:
             elif tok.kind == "IDENT" and tok.value == "ribbon":
                 items.append(self.parse_ribbon())
             elif tok.kind == "IDENT" and tok.value == "frame":
-                f_idx, f_scene = self.parse_frame_override(width, height, fps, precision, seed, paper)
+                f_idx, f_scene = self.parse_frame_override(width, height, fps, precision, seed, paper, palette)
                 frame_overrides[f_idx] = f_scene
             else:
                 raise NorthCelSyntaxError(
@@ -305,6 +320,7 @@ class _Parser:
             frames=frames,
             precision=precision,
             seed=seed,
+            palette=palette,
             paper=paper,
             defs=defs,
             items=items,
@@ -320,27 +336,35 @@ class _Parser:
         precision: str,
         seed: int,
         default_paper: PaperSpec,
+        parent_palette: dict[str, ColorValue],
     ) -> tuple[int, SceneNode]:
         kw = self.expect("IDENT", "frame")
         idx_tok = self.expect("NUMBER")
         f_idx = int(float(idx_tok.value))
         self.expect("PUNCT", "{")
         paper = default_paper
+        local_palette = dict(parent_palette)
+        prev_palette = self.active_palette
+        self.active_palette = local_palette
         defs: dict[str, DefBlock] = {}
         items: list[SceneItem] = []
         while not (self.cur().kind == "PUNCT" and self.cur().value == "}"):
             if self.cur().kind == "EOF":
                 raise NorthCelSyntaxError("Unclosed 'frame' block", kw.line, kw.column)
             tok = self.cur()
-            if tok.kind == "IDENT" and tok.value == "paper":
+            if tok.kind == "IDENT" and tok.value == "palette":
+                local_palette.update(self.parse_palette())
+            elif tok.kind == "IDENT" and tok.value == "paper":
                 paper = self.parse_paper()
             elif tok.kind == "IDENT" and tok.value == "def":
                 d = self.parse_def()
                 defs[d.name] = d
             elif tok.kind == "IDENT" and tok.value == "use":
                 items.append(self.parse_use())
-            elif tok.kind == "IDENT" and tok.value in ("layer", "wash"):
-                items.append(self.parse_layer())
+            elif tok.kind == "IDENT" and tok.value == "drop":
+                items.append(self.parse_drop())
+            elif tok.kind == "IDENT" and tok.value in ("layer", "wash", "cel"):
+                items.append(self.parse_layer(is_cel=(tok.value == "cel")))
             elif tok.kind == "IDENT" and tok.value in ("bend_swarm", "swarm"):
                 items.append(self.parse_swarm())
             elif tok.kind == "IDENT" and tok.value == "stroke":
@@ -350,6 +374,7 @@ class _Parser:
             else:
                 raise NorthCelSyntaxError(f"Unknown frame statement '{tok.value}'", tok.line, tok.column)
         self.expect("PUNCT", "}")
+        self.active_palette = prev_palette
         return (
             f_idx,
             SceneNode(
@@ -359,12 +384,26 @@ class _Parser:
                 fps=fps,
                 precision=precision,
                 seed=seed,
+                palette=local_palette,
                 paper=paper,
                 defs=defs,
                 items=items,
                 span=SourceSpan(kw.line, kw.column),
             ),
         )
+
+    def parse_palette(self) -> dict[str, ColorValue]:
+        self.expect("IDENT", "palette")
+        raw = self.parse_kv_brace_or_paren()
+        out: dict[str, ColorValue] = {}
+        for k, v in raw.items():
+            if isinstance(v, ColorValue):
+                out[k] = v
+            elif isinstance(v, (int, float, ExprValue)):
+                out[k] = ColorValue.from_tone(int(round(self._eval_const(v))))
+            elif isinstance(v, str) and v.startswith("#"):
+                out[k] = ColorValue.from_hex(v)
+        return out
 
     def parse_paper(self) -> PaperSpec:
         kw = self.expect("IDENT", "paper")
@@ -388,8 +427,8 @@ class _Parser:
             if self.cur().kind == "EOF":
                 raise NorthCelSyntaxError(f"Unclosed 'def {name_tok.value}' block", kw.line, kw.column)
             tok = self.cur()
-            if tok.kind == "IDENT" and tok.value in ("layer", "wash"):
-                items.append(self.parse_layer())
+            if tok.kind == "IDENT" and tok.value in ("layer", "wash", "cel"):
+                items.append(self.parse_layer(is_cel=(tok.value == "cel")))
             elif tok.kind == "IDENT" and tok.value in ("bend_swarm", "swarm"):
                 items.append(self.parse_swarm())
             elif tok.kind == "IDENT" and tok.value == "stroke":
@@ -410,8 +449,14 @@ class _Parser:
         self.match("PUNCT", ";")
         return UseNode(def_name=name_tok.value, args=args, span=SourceSpan(kw.line, kw.column))
 
-    def parse_layer(self) -> LayerNode:
-        kw = self.advance()  # layer or wash
+    def parse_drop(self) -> DropNode:
+        kw = self.expect("IDENT", "drop")
+        name_tok = self.expect("IDENT")
+        self.match("PUNCT", ";")
+        return DropNode(target_name=name_tok.value, span=SourceSpan(kw.line, kw.column))
+
+    def parse_layer(self, is_cel: bool = False) -> LayerNode:
+        kw = self.advance()  # layer, wash, or cel
         name_tok = self.expect("IDENT")
         attrs = self.parse_attr_list()
         self.expect("PUNCT", "{")
@@ -421,6 +466,7 @@ class _Parser:
         rings_cnt = int(self._eval_const(attrs["rings"])) if "rings" in attrs else None
         boil = self._extract_boil(attrs)
         tx = self._extract_translate(attrs)
+        outline_col, outline_w = self._extract_outline(attrs, is_cel, SourceSpan(kw.line, kw.column))
         return LayerNode(
             name=name_tok.value,
             color=color,
@@ -428,6 +474,8 @@ class _Parser:
             payload=payload_tok.value[1:-1],
             boil=boil,
             translate_expr=tx,
+            outline_color=outline_col,
+            outline_width=outline_w,
             span=SourceSpan(kw.line, kw.column),
         )
 
@@ -544,6 +592,14 @@ class _Parser:
         tok = self.cur()
         if tok.kind == "HEX":
             return ColorValue.from_hex(self.advance().value)
+        if tok.kind == "PUNCT" and tok.value == "$":
+            self.advance()
+            ref_tok = self.expect("IDENT")
+            if ref_tok.value not in self.active_palette:
+                raise NorthCelSyntaxError(
+                    f"Undefined palette color '${ref_tok.value}'", ref_tok.line, ref_tok.column
+                )
+            return ColorValue.from_palette_ref(ref_tok.value, self.active_palette[ref_tok.value])
         if tok.kind == "STRING":
             return self.advance().value[1:-1]
         if tok.kind == "UNIT_NUM":
@@ -560,9 +616,9 @@ class _Parser:
             return ColorValue.from_rgb(r, g, b)
         if tok.kind == "PUNCT" and tok.value == "(":
             self.advance()
-            items = [self.parse_expr()]
+            items = [self.parse_attr_value()]
             while self.match("PUNCT", ","):
-                items.append(self.parse_expr())
+                items.append(self.parse_attr_value())
             self.expect("PUNCT", ")")
             return tuple(items)
         return self.parse_expr()
@@ -593,7 +649,7 @@ class _Parser:
             return ExprValue("const", (float(tok.value),))
         if tok.kind == "UNIT_NUM":
             self.advance()
-            raw = re.sub(r"(px|deg)$", "", tok.value)
+            raw = re.sub(r"(px-b63|px|deg)$", "", tok.value)
             return ExprValue("const", (float(raw),))
         if tok.kind == "IDENT":
             ident = self.advance().value
@@ -620,24 +676,50 @@ class _Parser:
         if isinstance(val, (int, float)):
             return float(val)
         if isinstance(val, str):
-            raw = re.sub(r"(px|deg)$", "", val.strip())
+            raw = re.sub(r"(px-b63|px|deg)$", "", val.strip())
             return float(raw)
         if isinstance(val, ExprValue):
             return val.eval({"t": 0.0, "f": 0.0, "seed": 42.0})
         raise ValueError(f"Cannot evaluate constant from {val!r}")
 
+    def _resolve_color_val(self, c: Any, span: SourceSpan) -> ColorValue:
+        if isinstance(c, ColorValue):
+            return c
+        if isinstance(c, str) and c.startswith("#"):
+            return ColorValue.from_hex(c)
+        if isinstance(c, ExprValue) and c.op == "var" and str(c.args[0]) in self.active_palette:
+            nm = str(c.args[0])
+            return ColorValue.from_palette_ref(nm, self.active_palette[nm])
+        raise NorthCelSyntaxError("Invalid color attribute value", span.line, span.column)
+
     def _extract_color(self, attrs: dict[str, Any], default_tone: int, span: SourceSpan) -> ColorValue:
-        if "color" in attrs:
-            c = attrs["color"]
-            if isinstance(c, ColorValue):
-                return c
-            if isinstance(c, str) and c.startswith("#"):
-                return ColorValue.from_hex(c)
-            raise NorthCelSyntaxError("Invalid 'color' attribute value", span.line, span.column)
+        for key in ("color", "fill"):
+            if key in attrs:
+                return self._resolve_color_val(attrs[key], span)
         if "tone" in attrs:
             t = int(round(self._eval_const(attrs["tone"])))
             return ColorValue.from_tone(t)
         return ColorValue.from_tone(default_tone)
+
+    def _extract_outline(
+        self, attrs: dict[str, Any], is_cel: bool, span: SourceSpan
+    ) -> tuple[ColorValue | None, float]:
+        if "outline" not in attrs and "ink_width" not in attrs and not is_cel:
+            return (None, 0.0)
+        default_col = self.active_palette.get("ink", ColorValue.from_hex("#0D0D0D"))
+        if "outline" in attrs:
+            ov = attrs["outline"]
+            if isinstance(ov, tuple) and len(ov) == 2:
+                col = self._resolve_color_val(ov[0], span)
+                w = float(self._eval_const(ov[1]))
+                return (col, w)
+            w = float(self._eval_const(ov))
+            return (default_col, w)
+        if "ink_width" in attrs:
+            w = float(self._eval_const(attrs["ink_width"]))
+            col = self._resolve_color_val(attrs["ink"], span) if "ink" in attrs else default_col
+            return (col, w)
+        return (None, 0.0)
 
     def _extract_boil(self, attrs: dict[str, Any]) -> BoilSpec | None:
         if "boil" not in attrs:

@@ -1,4 +1,4 @@
-"""Typed AST nodes for NorthCel (.ncel) v0.1."""
+"""Typed AST nodes for NorthCel (.ncel) v0.2."""
 
 from __future__ import annotations
 
@@ -14,21 +14,22 @@ class SourceSpan:
 
 @dataclass(frozen=True)
 class ColorValue:
-    """Represents either a greyscale tone (0..255) or an RGB color (r, g, b)."""
+    """Represents either a greyscale tone (0..255), an RGB color (r, g, b), or a palette reference."""
 
     r: int
     g: int
     b: int
     is_grey: bool = True
+    palette_ref: str | None = None
 
     @classmethod
     def from_tone(cls, tone: int) -> "ColorValue":
         v = int(tone)
-        return cls(r=v, g=v, b=v, is_grey=True)
+        return cls(r=v, g=v, b=v, is_grey=True, palette_ref=None)
 
     @classmethod
     def from_rgb(cls, r: int, g: int, b: int) -> "ColorValue":
-        return cls(r=int(r), g=int(g), b=int(b), is_grey=(r == g == b))
+        return cls(r=int(r), g=int(g), b=int(b), is_grey=(r == g == b), palette_ref=None)
 
     @classmethod
     def from_hex(cls, hex_str: str) -> "ColorValue":
@@ -38,7 +39,11 @@ class ColorValue:
         r = int(h[0:2], 16)
         g = int(h[2:4], 16)
         b = int(h[4:6], 16)
-        return cls(r=r, g=g, b=b, is_grey=(r == g == b))
+        return cls(r=r, g=g, b=b, is_grey=(r == g == b), palette_ref=None)
+
+    @classmethod
+    def from_palette_ref(cls, name: str, resolved: "ColorValue") -> "ColorValue":
+        return cls(r=resolved.r, g=resolved.g, b=resolved.b, is_grey=resolved.is_grey, palette_ref=name)
 
     def to_hex(self) -> str:
         return f"#{self.r:02X}{self.g:02X}{self.b:02X}"
@@ -70,6 +75,8 @@ class LayerNode:
     payload: str
     boil: BoilSpec | None = None
     translate_expr: tuple[Any, Any] = (0.0, 0.0)
+    outline_color: ColorValue | None = None
+    outline_width: float = 0.0
     span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
 
 
@@ -105,6 +112,14 @@ class RibbonNode:
 
 
 @dataclass(frozen=True)
+class DropNode:
+    """v0.2 Frame Delta primitive: removes a named layer/item inherited from the base film."""
+
+    target_name: str
+    span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
+
+
+@dataclass(frozen=True)
 class DefBlock:
     name: str
     params: dict[str, float]
@@ -119,7 +134,7 @@ class UseNode:
     span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
 
 
-SceneItem = LayerNode | SwarmNode | StrokeNode | RibbonNode | UseNode
+SceneItem = LayerNode | SwarmNode | StrokeNode | RibbonNode | UseNode | DropNode
 
 
 @dataclass(frozen=True)
@@ -130,6 +145,7 @@ class SceneNode:
     fps: int = 6
     precision: str = "0.25px"
     seed: int = 42
+    palette: dict[str, ColorValue] = field(default_factory=dict)
     paper: PaperSpec = field(default_factory=PaperSpec)
     defs: dict[str, DefBlock] = field(default_factory=dict)
     items: list[SceneItem] = field(default_factory=list)
@@ -145,6 +161,7 @@ class FilmNode:
     frames: int = 2
     precision: str = "0.25px"
     seed: int = 42
+    palette: dict[str, ColorValue] = field(default_factory=dict)
     paper: PaperSpec = field(default_factory=PaperSpec)
     defs: dict[str, DefBlock] = field(default_factory=dict)
     items: list[SceneItem] = field(default_factory=list)

@@ -26,8 +26,10 @@ from northcel import (
     NorthCelSyntaxError,
     SPEC_VERSION,
     decode_ring_b63_1px,
+    decode_ring_b63_q25,
     decode_ring_q25,
     encode_ring_b63_1px,
+    encode_ring_b63_q25,
     encode_ring_q25,
     format_document,
     parse_ncel,
@@ -51,7 +53,13 @@ class TestConfigAndRings(unittest.TestCase):
         self.assertEqual(FILE_EXTENSION, ".ncel")
         self.assertEqual(CLI_COMMAND, "northcel")
         self.assertEqual(CLI_SHORT_ALIAS, "ncel")
-        self.assertEqual(SPEC_VERSION, "0.1.0-draft")
+        self.assertEqual(SPEC_VERSION, "0.2.0-draft")
+
+    def test_ring_b63_q25_roundtrip(self) -> None:
+        ring = [(12.25, 40.5), (18.75, 40.5), (18.75, 46.25), (12.25, 46.25)]
+        enc = encode_ring_b63_q25(ring)
+        dec = decode_ring_b63_q25(enc)
+        self.assertEqual(dec, ring)
 
     def test_ring_q25_roundtrip(self) -> None:
         ring = [(10.25, 20.5), (30.75, 20.5), (30.75, 45.0), (10.25, 45.0)]
@@ -135,6 +143,37 @@ class TestDeterminismAndV01Features(unittest.TestCase):
         self.assertEqual(forward, shuffled)
         # Ensure frames actually animate (frame 0 != frame 2)
         self.assertNotEqual(forward[0], forward[2])
+
+    def test_v02_palette_cel_outline_and_frame_deltas(self) -> None:
+        sky_ring = encode_ring_b63_q25([(0, 0), (64, 0), (64, 64), (0, 64)])
+        box_ring = encode_ring_b63_q25([(12, 12), (40, 12), (40, 40), (12, 40)])
+        hill_ring = encode_ring_b63_q25([(0, 44), (64, 44), (64, 64), (0, 64)])
+        src = f'''northcel "0.2.0-draft"
+
+film DeltaCelTest(width: 64, height: 64, fps: 6, frames: 2, precision: 0.25px-b63, seed: 42) {{
+  palette {{ sky: #70CCF5, grass: #62AC56, white: #FAFAFA, ink: #0D0D0D }}
+  paper {{ color: #FAFAFA, antialias_grid: 4 }}
+  layer sky_bg(color: $sky, rings: 1) {{ "{sky_ring}" }}
+  cel cloud_box(color: $white, rings: 1, outline: ($ink, 4px)) {{ "{box_ring}" }}
+  frame 1 {{
+    drop cloud_box
+    layer grass_hill(color: $grass, rings: 1) {{ "{hill_ring}" }}
+  }}
+}}
+'''
+        doc = parse_ncel(src)
+        self.assertEqual([d for d in validate_document(doc) if d.level == "error"], [])
+        canon = format_document(doc, include_version_header=True)
+        doc2 = parse_ncel(canon)
+        self.assertEqual(canon, format_document(doc2, include_version_header=True))
+        f0 = render_document_frame(doc, 0)
+        f1 = render_document_frame(doc, 1)
+        self.assertEqual(f0.shape, (64, 64, 3))
+        self.assertEqual(f1.shape, (64, 64, 3))
+        # In frame 0, pixel (24, 24) is inside white cloud_box; in frame 1 cloud_box was dropped!
+        self.assertEqual(f0[24, 24].tolist(), [250, 250, 250])
+        self.assertEqual(f1[24, 24].tolist(), [112, 204, 245])
+        self.assertEqual(f1[52, 24].tolist(), [98, 172, 86])
 
     def test_cli_check_fmt_info_render_film(self) -> None:
         sample = EXAMPLES_DIR / "lantern_film.ncel"

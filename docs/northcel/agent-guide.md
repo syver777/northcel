@@ -61,7 +61,17 @@ When a user asks to tweak a single detail (e.g., *"make the rain heavier"* or *"
 
 ---
 
-## 4. Common Errors & Fixes
+## 4. Lessons from Phase B: Authoring 8 Frames of *Test Video 7* by Hand
+
+In Phase B, an AI agent authored 8 representative frames (`1536×864`) of *Test Video 7* by hand across 3 look-and-fix rounds (`f0001`, `f0028`, `f0037`, `f0043`, `f0055`, `f0067`, `f0076`, `f0085`):
+
+1. **Always use `cel` + `palette` (`v0.2`) instead of separate `layer` + `stroke` blocks:**
+   In `v0.1`, writing a separate `layer` fill and `stroke` outline for every cloud, shirt, pant leg, and duck part doubled the token count (`8,830 B / 5,052 tok`) and caused gaps where the stroke drifted from the fill. Switching to `v0.2`'s `cel name(color: $shirt, outline: ($ink, 5px))` cut AI-authored file size by **46.6%** (`4,718 B / 3,303 tok`) and guaranteed zero fill-to-outline gaps.
+2. **Beware the SSIM Trap on Hand-Authored Linework:**
+   Adding fine interior lines in Round 2 and Round 3 (cloud outlines, facial features, grass tufts) makes the drawing look **much** more like a real cartoon to a human eye, yet can lower pixel-level Block SSIM by `0.01–0.02` if a 5px black outline is shifted by 4–8 pixels from the teacher's exact line position (because a shifted black line on white paper incurs a double pixel penalty). Judge AI-authored frames by **structural completeness + Edge IoU + visual inspection**, not raw pixel SSIM alone.
+3. **Where an Unassisted LLM Struggles Without a Fitter:**
+   - **Easy for an LLM (`0.88–0.93` SSIM):** Isolated heads (`f0001`), simple frontal standing poses (`f0028`), flat sky/ground horizons, and reusable props (`clouds`, `grass_tufts`).
+   - **Hard for an LLM (`0.70–0.75` SSIM):** Complex foreshortened limbs (`f0037` airborne bent knees), articulated hands with 5 spread fingers (`f0055`, `f0067`), and overlapping seated legs (`f0076`, `f0085`). For complex character poses, pair an LLM layout/rig planner with a contour/part template library or fitted keyframe cels.
 
 | Diagnostic | Cause | Fix |
 | --- | --- | --- |

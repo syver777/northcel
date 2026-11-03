@@ -6,14 +6,14 @@
 - **File Extension:** `.ncel`
 - **CLI Commands:** `northcel` (short alias: `ncel`)
 - **Packages:** PyPI `northcel`, npm `northcel`
-- **Current Version:** `0.1.0` (Specification `0.1.0-draft`)
+- **Current Version:** `0.2.0` (Specification `0.2.0-draft`, backward compatible with `0.1.0-draft`)
 - **Public Documentation URL:** `https://northnoir.com/northcel`
 
 ---
 
 ## Documentation Index
 
-1. **[Language Specification (`0.1.0-draft`)](spec/SPEC-0.1.0-draft.md)** — Normative EBNF grammar, coordinate/ring-chain encodings (`0.25px` quarter-pixel and `1px` Base-63), rendering semantics, error diagnostics, and conformance rules.
+1. **[Language Specification (`0.2.0-draft`)](spec/SPEC-0.2.0-draft.md)** (and archival [`0.1.0-draft`](spec/SPEC-0.1.0-draft.md)) — Normative EBNF grammar, coordinate/ring-chain encodings (`0.25px`, `0.25px-b63`, and `1px` Base-63), `palette`, coupled `cel` outlines, frame `drop` deltas, rendering semantics, error diagnostics, and conformance rules.
 2. **[Tutorial: Your First `.ncel` Film](tutorial.md)** — Step-by-step guide to installing `northcel`, writing a scene with washes, strokes, ribbons, and parallel swarms, and rendering an animated film.
 3. **[Format & Tooling Reference](reference.md)** — Complete attribute reference for `scene`, `film`, `paper`, `def`/`use`, `layer`/`wash`, `bend_swarm`, `stroke`, and `ribbon`, plus CLI flags and editor grammar notes.
 4. **[AI-Agent Guide (`agent-guide.md`)](agent-guide.md)** — How coding agents (Claude Code, OpenCode, Codex, Cursor, Gemini CLI) should author `.ncel`, run self-review gates (`check`, `render`, diff), and perform surgical `Adjust` edits.
