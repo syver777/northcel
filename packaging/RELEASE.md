@@ -87,6 +87,20 @@ npm install -g northcel@0.3.1 && northcel verify
 git tag -a v0.3.1 -m "NorthCel 0.3.1" && git push origin v0.3.1
 ```
 
+## Homebrew formula
+
+`packaging/homebrew/Formula/northcel.rb` pins the **published** artifacts (it was
+tested against 0.2.1). Publishing 0.3.1 means re-pinning it: the `url`/`resource`
+sha256 values must be the 0.3.1 files from `dist/python/` (or the PyPI JSON for
+0.3.1), `version` bumped, and `brew audit --strict` re-run. The tap repository
+`syver777/homebrew-northcel` is the published copy; commit the same change there.
+
+```sh
+brew audit --strict --formula ./packaging/homebrew/Formula/northcel.rb
+brew install --build-from-source ./packaging/homebrew/Formula/northcel.rb
+northcel doctor && northcel verify
+```
+
 ## Version policy
 
 - The **tools** version moves (`0.3.1`, `0.3.2`, …).
