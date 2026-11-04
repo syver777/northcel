@@ -48,12 +48,12 @@ assets:
 
 # Every copy of the licence texts must be byte-identical to the root ones.
 check-licenses:
-	@for d in python python/northcel-native js/northcel js/northcel-linux-x64; do \
-		for f in LICENSE-MIT LICENSE-APACHE; do \
-			cmp -s $$f $$d/$$f || { echo "$$d/$$f differs from $$f"; exit 1; }; \
+	@for f in LICENSE-MIT LICENSE-APACHE; do \
+		for copy in $$(git ls-files "*/$$f" "*/**/$$f"); do \
+			cmp -s $$f $$copy || { echo "$$copy differs from $$f"; exit 1; }; \
 		done; \
 	done
-	@echo "licence copies in sync"
+	@echo "licence copies in sync ($$(git ls-files '*/LICENSE-*' '*/**/LICENSE-MIT' '*/**/LICENSE-APACHE' | wc -l) copies)"
 
 dist: dist-py dist-npm
 
