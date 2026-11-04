@@ -1,0 +1,26 @@
+northcel "0.2.0-draft"
+
+// A duck walk at 12 fps. The body bobs, the two legs swing in opposite phase,
+// and the head follows the body. The legs are strokes so the swing is written
+// directly into their coordinates.
+
+film DuckWalk(width: 360, height: 200, fps: 12, frames: 12, precision: 0.25px, seed: 707) {
+  palette { ink: #22262E, duck: #F2D48A, beak: #E08A3C, pond: #7FA6B8 }
+  paper { color: #F6F1E7, antialias_grid: 4 }
+
+  layer pond(color: $pond, rings: 1) { "0,660 1440,0 0,220 -1440,0" }
+  layer grass(color: #7CA06A, rings: 1) { "0,700 1440,0 0,100 -1440,0" }
+
+  layer body(color: $duck, rings: 1, boil: 0.2px, translate: (0, sin(t * 12.56636) * 3)) { "888,500 -7,32 -20,29 -31,24 -40,17 -46,9 -48,0 -46,-9 -40,-17 -31,-24 -20,-29 -7,-32 7,-32 20,-29 31,-24 40,-17 46,-9 48,0 46,9 40,17 31,24 20,29" }
+  layer tail(color: $duck, rings: 1, translate: (0, sin(t * 12.56636) * 3)) { "560,472 -88,-56 24,96" }
+  layer head(color: $duck, rings: 1, translate: (0, sin(t * 12.56636) * 3 - sin(t * 6.28318) * 2)) { "968,340 -5,30 -16,27 -23,19 -29,11 -30,0 -29,-11 -23,-19 -16,-27 -5,-30 5,-30 16,-27 23,-19 29,-11 30,0 29,11 23,19 16,27" }
+  layer beak(color: $beak, rings: 1, translate: (0, sin(t * 12.56636) * 3 - sin(t * 6.28318) * 2)) { "952,336 104,24 -104,32" }
+  layer eye(color: $ink, rings: 1, translate: (0, sin(t * 12.56636) * 3 - sin(t * 6.28318) * 2)) { "924,320 -2,9 -6,6 -8,0 -6,-6 -2,-9 2,-9 6,-6 8,0 6,6" }
+
+  stroke leg_l(color: $beak, taper: (4, 3)) {
+    (170, 148 + sin(t * 12.56636) * 3), (170 + sin(t * 6.28318) * 16, 176)
+  }
+  stroke leg_r(color: $beak, taper: (4, 3)) {
+    (196, 148 + sin(t * 12.56636) * 3), (196 - sin(t * 6.28318) * 16, 176)
+  }
+}

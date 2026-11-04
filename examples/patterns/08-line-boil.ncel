@@ -1,0 +1,15 @@
+northcel "0.2.0-draft"
+
+// Line boil. Nothing in the drawing moves; only the hand wobbles. Four frames
+// at 8 fps, one seed, one amplitude per element, no cross-frame state.
+
+film LineBoil(width: 360, height: 220, fps: 8, frames: 4, precision: 0.25px, seed: 808) {
+  palette { ink: #22262E, sky: #CDE3EA, hill: #7CA06A, leaf: #4F6B45, trunk: #6B4A32 }
+  paper { color: #F6F1E7, antialias_grid: 4, grain: 0.02 }
+
+  layer sky(color: $sky, rings: 1) { "0,0 1440,0 0,880 -1440,0" }
+  cel hill(color: $hill, outline: ($ink, 2.5px), boil: 0.9px) { "0,640 280,-88 320,80 360,-88 480,80 0,256 -1440,0" }
+  cel tree(color: $trunk, outline: ($ink, 2px), boil: 0.5px) { "1000,640 0,-256 200,0 0,256" }
+  cel foliage(color: $leaf, outline: ($ink, 2px), boil: 1.1px) { "1252,320 -7,37 -22,34 -34,26 -42,17 -47,6 -47,-6 -42,-17 -34,-26 -22,-34 -7,-37 7,-37 22,-34 34,-26 42,-17 47,-6 47,6 42,17 34,26 22,34" }
+  stroke ridge_line(color: $ink, taper: (2.6, 1.4), boil: 0.8px) { (36, 54), (84, 40), (132, 52), (180, 38), (228, 50) }
+}

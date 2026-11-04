@@ -1,0 +1,30 @@
+northcel "0.2.0-draft"
+
+// A 6 fps head turn, drawn as cels: features slide in two quarter turns and the
+// silhouette swaps to a profile for the peak frame, then returns. Everything is
+// a pure function of t, f and the seed.
+
+film HeadTurnSix(width: 360, height: 200, fps: 6, frames: 6, precision: 0.25px, seed: 108) {
+  palette { ink: #22262E, skin: #E8B48C, hair: #3A2E2A, shirt: #5E7D8A }
+  paper { color: #F6F1E7, antialias_grid: 4 }
+
+  layer shoulders(color: $shirt, rings: 1) { "280,800 40,-160 160,-56 80,16 320,0 80,-16 160,56 40,160" }
+  layer neck(color: $skin, rings: 1) { "640,520 160,0 0,140 -160,0" }
+  layer head(color: $skin, rings: 1) { "900,380 -6,54 -18,50 -29,43 -37,33 -43,21 -47,7 -47,-7 -43,-21 -37,-33 -29,-43 -18,-50 -6,-54 6,-54 18,-50 29,-43 37,-33 43,-21 47,-7 47,7 43,21 37,33 29,43 18,50" }
+  layer hair(color: $hair, rings: 1) { "540,380 20,-100 60,-72 100,-32 100,32 60,72 20,100 -40,-40 -60,-36 -80,-12 -80,12 -60,36" }
+
+  layer eye_l(color: #FFFFFF, rings: 1, translate: (step(2, f) * 6 + step(4, f) * 6 - step(5, f) * 12, 0)) { "680,368 -4,16 -10,12 -14,4 -14,-4 -10,-12 -4,-16 4,-16 10,-12 14,-4 14,4 10,12" }
+  layer eye_r(color: #FFFFFF, rings: 1, translate: (step(2, f) * 6 + step(4, f) * 6 - step(5, f) * 12, 0)) { "788,368 -4,16 -10,12 -14,4 -14,-4 -10,-12 -4,-16 4,-16 10,-12 14,-4 14,4 10,12" }
+  layer pupil_l(color: $ink, rings: 1, translate: (step(2, f) * 6 + step(4, f) * 6 - step(5, f) * 12, 0)) { "652,372 0,16 -4,-16 4,-16" }
+  layer pupil_r(color: $ink, rings: 1, translate: (step(2, f) * 6 + step(4, f) * 6 - step(5, f) * 12, 0)) { "788,372 0,16 -4,-16 4,-16" }
+  layer nose(color: $skin, rings: 1, translate: (step(2, f) * 8 + step(4, f) * 8 - step(5, f) * 16, 0)) { "696,432 48,0 -24,32" }
+  stroke mouth(color: $ink, taper: (2, 2)) { (168 + step(2, f) * 10 + step(4, f) * 10 - step(5, f) * 20, 120), (192 + step(2, f) * 10 + step(4, f) * 10 - step(5, f) * 20, 120) }
+
+  frame 4 {
+    layer hair(color: $hair, rings: 1) { "580,380 20,-100 80,-48 100,16 40,48 -52,-64 -80,-44 -80,24 -48,76" }
+    layer head(color: $skin, rings: 1) { "600,240 100,-20 80,20 40,48 68,92 -60,24 12,44 -48,64 -72,48 -60,24 -52,-64 -24,-100" }
+    layer ear(color: $skin, rings: 1) { "572,400 -4,24 -10,18 -14,6 -14,-6 -10,-18 -4,-24 4,-24 10,-18 14,-6 14,6 10,18" }
+    drop eye_r
+    drop pupil_r
+  }
+}
