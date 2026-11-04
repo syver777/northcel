@@ -10,9 +10,10 @@
 #   brew install northcel          # or: brew install syver777/northcel/northcel
 #
 # `northcel` is the single install name; `ncel` is the short command alias the
-# package itself installs. The reference implementation is built from this
-# formula's own pinned sdist; the launcher and the native bundle are sha256-pinned
-# wheels. Nothing is downloaded on first run.
+# package itself installs. Two artifacts are pinned: this formula's own `url`
+# (the `northcel` sdist, which is both the reference implementation and the
+# launcher) and the `northcel-native` platform wheel. Nothing is downloaded on
+# first run.
 #
 # Upstream source, issues and releases: https://github.com/syver777/northcel
 # (the project home). The product page is https://northnoir.com/northcel.
@@ -21,14 +22,14 @@ class Northcel < Formula
 
   desc "Drawing language for AI-drawn video with a native MoonBit + Bend + GLSL runtime"
   homepage "https://github.com/syver777/northcel"
-  url "https://files.pythonhosted.org/packages/59/a9/8f1be6743916c73d7af84974264452975884eb4df15c2af86dc728df4dcc/northcel-0.2.1.tar.gz"
-  sha256 "b9c5ff520e3926936242b7b34d2c9bc50983a2c469e0dfc75820686aeb08f66d"
+  url "https://files.pythonhosted.org/packages/0f/c5/6642d40caa9df78d2addbafc42faa1a96722fd17d79833d1b86de2d56a0e/northcel-0.3.1.tar.gz"
+  sha256 "57a90003b005864bdf033d686a89b33a3577a81be623a8ca4b6388c9566aeca5"
   license any_of: ["MIT", "Apache-2.0"]
 
   depends_on arch: :x86_64
   depends_on :linux
   depends_on "mesa" # libEGL + llvmpipe: the GL driver that compiles the GLSL
-  depends_on "python@3.12" # the pinned wheels are cp312
+  depends_on "python@3.12" # the pinned wheel is cp312
 
   # numpy and Pillow are required by the Python reference renderer, which is also
   # the conformance oracle and the only formatter (`northcel fmt`, `--no-native`).
@@ -56,37 +57,31 @@ class Northcel < Formula
 
   # The native bundle: MoonBit-compiled typed AST stage, Bend 0.2.38, HVM 2.0.22,
   # the EGL surfaceless GL host and both GLSL shaders. manylinux_2_39 => glibc 2.39.
-  resource "ncel-native" do
-    url "https://files.pythonhosted.org/packages/ee/a3/c77c60acb74a125486cc7710d66de189dc8f655156038bba5e0c6dc39b7c/ncel_native-0.2.1-py3-none-manylinux_2_39_x86_64.whl"
-    sha256 "0b5f6f74ee41ed904e5c7e8b83f168c2bcf922b3ea7da2792c3babff7f88d06e"
-  end
-
-  # The launcher: platform verdict, native dispatch, labelled Python fallback,
-  # doctor/verify/check/info/render/film/fmt/guide/toolchain. Installed last so
-  # its `ncel` script wins over the reference package's shorter one.
-  resource "ncel" do
-    url "https://files.pythonhosted.org/packages/75/fd/3dd3fe02ebd500cc7f05665542a3fbc7511484357ff075d554d5695a01ab/ncel-0.2.1-py3-none-any.whl"
-    sha256 "85f5a73cd0745085a182731d8ff23e83a033c3a670fdecd319181cd57c8b46a1"
+  # Homebrew requires a resource name to differ from the formula name, which is why
+  # the main package is the `url` and only the platform wheel is a resource.
+  resource "northcel-native" do
+    url "https://files.pythonhosted.org/packages/bd/55/49dc6c886a88c0c69cb140bfd3338bd9ae09b4fbdf1577412d0d846ed5c0/northcel_native-0.3.1-py3-none-manylinux_2_39_x86_64.whl"
+    sha256 "bfa79300df1acbc200be245d64bbdcb7b057f22c2be40a5bda409fd90b9e6add"
   end
 
   def install
     venv = virtualenv_create(libexec, "python3.12")
 
     # Homebrew's pip runs with --no-deps, so every dependency is installed first
-    # and explicitly.
+    # and explicitly. Since 0.3.1 there is one Python distribution: the sdist is the
+    # reference implementation *and* the launcher (scripts `northcel` and `ncel`).
     %w[numpy pillow setuptools wheel].each { |name| install_wheel(venv, name) }
 
-    # `buildpath` is this formula's pinned northcel sdist: the reference parser,
-    # validator, formatter and renderer (the conformance oracle).
     venv.pip_install buildpath, build_isolation: false
 
-    %w[ncel-native ncel].each { |name| install_wheel(venv, name) }
+    install_wheel(venv, "northcel-native")
 
     # The declared `mesa` dependency is the GL runtime actually used: point the
     # dynamic loader at it so this install is self-contained instead of quietly
     # borrowing the distribution's Mesa. A Homebrew `mesa` upgrade is picked up
-    # through `opt_lib` without rebuilding this formula.
-    (bin/"northcel").write_env_script libexec/"bin/ncel",
+    # through `opt_lib` without rebuilding this formula — and since 0.3.1 the
+    # launcher's own EGL probe reads LD_LIBRARY_PATH, so it sees this Mesa too.
+    (bin/"northcel").write_env_script libexec/"bin/northcel",
                                       LD_LIBRARY_PATH: "#{formula_opt_lib("mesa")}:${LD_LIBRARY_PATH}"
 
     # One install name: `northcel`. `ncel` stays as the package's short alias.
@@ -108,23 +103,23 @@ class Northcel < Formula
       the bundled Python reference implementation, which labels its output as
       non-native. macOS and Windows are not supported by this formula.
 
-      If `northcel doctor` reports "no libEGL.so.1 found", the launcher's platform
-      probe (ncel 0.2.1) only looks in the distribution's standard library paths.
-      Install the distribution's EGL runtime once and nothing else changes:
+      The launcher finds EGL in this formula's Mesa through LD_LIBRARY_PATH (it also
+      searches HOMEBREW_PREFIX and the distribution paths). If `northcel doctor`
+      still reports "no libEGL.so.1 found", install the distribution's EGL runtime
+      once and nothing else changes:
         Debian/Ubuntu: sudo apt install libegl1 libgl1
         Fedora/RHEL:   sudo dnf install mesa-libEGL mesa-dri-drivers
-      Rendering itself still uses the Mesa installed by this formula.
     EOS
   end
 
   test do
-    assert_match "0.2.1", shell_output("#{bin}/northcel version")
-    assert_match "0.2.1", shell_output("#{bin}/ncel version")
+    assert_match "0.3.1", shell_output("#{bin}/northcel version")
+    assert_match "0.3.1", shell_output("#{bin}/ncel version")
     assert_match "\"ok\": true", shell_output("#{bin}/northcel doctor --json")
     system bin/"northcel", "verify"
 
     # A real render from the bundled fixture, through the installed command only.
-    starter = libexec/"lib/python3.12/site-packages/ncel/data/starter.ncel"
+    starter = libexec/"lib/python3.12/site-packages/northcel/data/starter.ncel"
     assert_path_exists starter
     system bin/"northcel", "render", starter, "-o", testpath/"frame.png"
     assert_path_exists testpath/"frame.png"

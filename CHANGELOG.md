@@ -22,37 +22,68 @@ MIT OR Apache-2.0. Nothing in the language changed.
   the reference implementation *and* the native launcher as a single distribution
   with the console scripts `northcel` and `ncel`; it depends on the platform wheel
   `northcel-native`. `npm install -g northcel` installs the launcher plus the
-  optional `northcel-linux-x64` bundle. `ncel` is the short command alias, never a
+  optional `northcel-linux-x64` bundle. `ncel` is the short command alias, not a
   package name.
-- The npm `northcel` package now exposes a single merged CLI (`bin/northcel.js`)
-  that dispatches native → Python reference → PARTIAL JS pre-check, instead of two
-  separate scripts with two different behaviours.
+- **PyPI was consolidated in one release.** Before 0.3.1 the package was split
+  three ways (`ncel` = launcher, `ncel-native` = native runtime, `northcel` =
+  reference only); installing one did not give you the others. Now `northcel` is
+  the only package a user installs, it carries both entry points, and the old names
+  are re-published as deprecation-only shells that depend on the new ones.
+- The npm `northcel` package exposes a single merged CLI (`northcel` and `ncel`
+  both run it) that dispatches native → Python reference → PARTIAL JS pre-check,
+  instead of two separate scripts with two different behaviours.
 - Package metadata points at `github.com/syver777/northcel`; `homepage`, `bugs`,
   `repository` and the documentation links moved with the code.
 - Repository layout: `python/` (reference + launcher), `python/northcel-native/`,
   `js/northcel/`, `js/northcel-linux-x64/`, `native/`, `docs/`, `packaging/`,
   `editors/`.
+- The Homebrew formula collapsed from three pinned resources to two
+  (`northcel` 0.3.1 + `northcel-native` 0.3.1); the install command is unchanged.
 
 ### Licensed
 - Dual **MIT OR Apache-2.0** (was proprietary). NorthNoir itself is unchanged.
 
 ### Added
-- GitHub Actions CI: Python 3.10–3.13, JS tests, `npm pack`, wheel build + install
-  smoke test, and a conformance job that renders the same frames with both
-  implementations.
+- GitHub Actions CI: Python 3.10–3.13, JS on Node 20/22, `npm pack` (with a
+  packed-file assertion), wheel build + clean-venv install smoke test, and a
+  conformance job that renders the same frames with both implementations.
 - `Makefile` with `make test`, `make lint`, `make dist`, `make verify`.
 - `CODE_OF_CONDUCT.md`, and a rewritten `CONTRIBUTING.md` and `SECURITY.md`.
-
-### Deprecated
-- PyPI `ncel` and `ncel-native`, and npm `@ncel/linux-x64`, are deprecated aliases
-  that now install/point at the `northcel` packages. Existing installs keep working.
+- `python/tests/test_launcher_platform.py`: EGL discovery regression cover (see the
+  fix below), and an `info --json` CLI-parity test.
 
 ### Fixed
+- **`find_egl_runtime()` now finds a non-distribution Mesa.** It only looked at the
+  distribution's library directories and `ldconfig -p`, so a Homebrew (keg-only)
+  Mesa, or one supplied purely through `LD_LIBRARY_PATH`, was invisible: `northcel`
+  refused to use a native runtime that was installed and working, and fell back to
+  the labelled Python reference. It now searches `LD_LIBRARY_PATH`, `$HOMEBREW_PREFIX`,
+  `/home/linuxbrew/.linuxbrew`, `~/.linuxbrew`, `/usr/local` (including keg-only
+  `opt/*/lib`), the Python prefix, then the distribution paths and `ldconfig -p` —
+  the same order the dynamic loader uses. The honest failure message now names the
+  places that were searched and still says how to install Mesa.
+- **CI job failures on the first run are fixed at their cause, not by weakening
+  tests.** The `node` jobs spawn the real Python reference in two delegation tests
+  and never installed its `numpy`/`Pillow` dependencies; the `wheel` smoke test
+  called `northcel info FILE --json`, which the reference CLI did not accept even
+  though both the launcher usage and the native runtime document it. `info` now
+  accepts `--json` (it only ever prints JSON) in every implementation.
+- **`make lint` no longer runs `ruff format --check`.** The repository deliberately
+  does not reformat the reference implementation (see `ruff.toml`), so that step
+  failed on untouched files; CI and `make lint` now run the same check.
 - `starter.ncel`, the fixture `northcel verify` renders, was previously generated
   into a git-ignored directory and therefore missing from a clean checkout. It is
   now a tracked example like every other fixture.
 - The launcher no longer treats the Python reference as a separate distribution it
   must find by name: it imports the reference from its own package.
+- `northcel guide` and the npm guide are the same generated text again: the wheel's
+  copy still described the pre-merge npm package (`npx northcel guide` as a "Python
+  CLI bridge") and said tools 0.2.1. `sync-assets.py --check` now guards both copies.
+
+### Deprecated
+- PyPI `ncel` and `ncel-native`, and npm `@ncel/linux-x64`, are deprecated aliases
+  that now install/point at the `northcel` packages at 0.3.1. Existing installs keep
+  working; the new names are what the documentation says.
 
 ---
 

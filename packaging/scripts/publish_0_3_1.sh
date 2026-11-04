@@ -23,6 +23,15 @@ VERSION="0.3.1"
 DRY_RUN=0
 [ "${1:-}" = "--dry-run" ] && DRY_RUN=1
 
+# PyPI credentials: TWINE_PASSWORD wins if it is already set; otherwise use the
+# long-lived upload token that lives in the VM environment ($NORTH_NOIR_PYPI_API,
+# loaded by `northnoir-env`). Value is never echoed or written anywhere.
+if [ -z "${TWINE_PASSWORD:-}" ] && [ -n "${NORTH_NOIR_PYPI_API:-}" ]; then
+  TWINE_USERNAME="__token__"
+  TWINE_PASSWORD="$NORTH_NOIR_PYPI_API"
+  export TWINE_USERNAME TWINE_PASSWORD
+fi
+
 cd "$ROOT"
 if [ "$DRY_RUN" -eq 0 ] && [ -n "$(git status --porcelain)" ]; then
   echo "refusing to publish from a dirty tree" >&2

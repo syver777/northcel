@@ -8,8 +8,8 @@ Mesa/EGL (llvmpipe) context. One command should be enough.
 
 | Path | Command | Status |
 | --- | --- | --- |
-| PyPI (primary) | `pip install northcel` | `northcel` 0.2.1 published (reference only); 0.3.1 adds the launcher — built and verified here, publish commands prepared, not published |
-| npm | `npm install -g northcel` | 0.3.0 published; 0.3.1 tarballs built and verified here, not published |
+| PyPI (primary) | `pip install northcel` | **0.3.1 published** — one distribution with the reference implementation and the launcher, depending on `northcel-native` 0.3.1 |
+| npm | `npm install -g northcel` | 0.3.0 published; 0.3.1 tarballs built and verified here, publish pending the owner |
 | Homebrew tap | `brew tap syver777/northcel && brew install northcel` | formula in `packaging/homebrew/`; the tap repository is `syver777/homebrew-northcel` |
 | One-line curl | `curl -fsSL …/packaging/install.sh \| bash` | tested here; works publicly now that this repository is public |
 
