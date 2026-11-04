@@ -13,11 +13,24 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { spawnSync } = require('child_process');
 
 const PACKAGE_VERSION = '0.3.1';
 const NATIVE_RUNTIME_VERSION = '0.2.0';
 const SPEC_VERSION = '0.2.0-draft';
 const EXIT_NO_NATIVE = 3;
+
+// Mirrors the Python launcher (northcel/launcher/platform_info.py): the loader
+// searches LD_LIBRARY_PATH and the Homebrew prefixes, so the platform gate must too.
+const HOMEBREW_PREFIXES = ['/home/linuxbrew/.linuxbrew', '/usr/local'];
+const DISTRO_LIB_DIRS = [
+  '/usr/lib/x86_64-linux-gnu',
+  '/usr/lib64',
+  '/usr/lib',
+  '/lib/x86_64-linux-gnu',
+  '/lib64',
+  '/lib',
+];
 
 function glibcVersion() {
   try {
@@ -56,8 +69,9 @@ function platformVerdict() {
 
   if (reasons.length === 0 && !hasEgl()) {
     reasons.push(
-      'no libEGL.so.1 found: GLSL is compiled by the GL driver, so the Mesa/EGL runtime ' +
-        'is required (apt install libegl1 libgl1 mesa-libgallium | ' +
+      'no libEGL.so.1 found in LD_LIBRARY_PATH, the Homebrew prefix, or the ' +
+        'distribution library paths: GLSL is compiled by the GL driver, so the ' +
+        'Mesa/EGL runtime is required (apt install libegl1 libgl1 mesa-libgallium | ' +
         'dnf install mesa-libEGL mesa-dri-drivers).'
     );
   }
@@ -76,14 +90,45 @@ function compareVersions(a, b) {
   return 0;
 }
 
+function eglSearchDirs() {
+  // The gate must see what `dlopen("libEGL.so.1")` sees, or it refuses to render a
+  // machine that can render: Homebrew installs Mesa keg-only under its prefix (never
+  // in $PREFIX/lib), and LD_LIBRARY_PATH is precisely what the loader would use.
+  const dirs = [];
+  for (const entry of (process.env.LD_LIBRARY_PATH || '').split(path.delimiter)) {
+    if (entry) dirs.push(entry);
+  }
+  const prefixes = [];
+  if (process.env.HOMEBREW_PREFIX) prefixes.push(process.env.HOMEBREW_PREFIX);
+  prefixes.push(...HOMEBREW_PREFIXES);
+  if (process.env.HOME) prefixes.push(path.join(process.env.HOME, '.linuxbrew'));
+  for (const prefix of prefixes) {
+    dirs.push(path.join(prefix, 'lib'), path.join(prefix, 'lib64'));
+    let kegs = [];
+    try {
+      kegs = fs.readdirSync(path.join(prefix, 'opt')).sort();
+    } catch (err) {
+      /* no kegs under this prefix */
+    }
+    for (const keg of kegs) {
+      dirs.push(path.join(prefix, 'opt', keg, 'lib'), path.join(prefix, 'opt', keg, 'lib64'));
+    }
+  }
+  dirs.push(...DISTRO_LIB_DIRS);
+  return dirs;
+}
+
 function hasEgl() {
-  const candidates = [
-    '/usr/lib/x86_64-linux-gnu/libEGL.so.1',
-    '/usr/lib64/libEGL.so.1',
-    '/usr/lib/libEGL.so.1',
-    '/lib/x86_64-linux-gnu/libEGL.so.1',
-  ];
-  return candidates.some((p) => fs.existsSync(p));
+  if (eglSearchDirs().some((p) => fs.existsSync(path.join(p, 'libEGL.so.1')))) return true;
+  // Last resort, matching the Python launcher: ask the loader cache.
+  try {
+    const out = spawnSync('ldconfig', ['-p'], { encoding: 'utf8', timeout: 10000 });
+    return String(out.stdout || '')
+      .split('\n')
+      .some((line) => line.includes('libEGL.so.1') && line.includes('=>'));
+  } catch (err) {
+    return false;
+  }
 }
 
 function firstResolvable(names) {
@@ -162,4 +207,7 @@ module.exports = {
   platformVerdict,
   verifyBundle,
   manifest,
+  // exposed for the EGL regression test; not part of the CLI surface
+  eglSearchDirs,
+  hasEgl,
 };

@@ -43,6 +43,21 @@ class TestToolContract(unittest.TestCase):
                 doc = parse_ncel(snippet)
                 self.assertEqual([d for d in validate_document(doc) if d.level == "error"], [], str(path))
 
+    def test_info_accepts_the_documented_json_flag(self):
+        # `info FILE [--json]` is the documented contract in the launcher usage and in
+        # native/README.md; the reference CLI must accept the flag too (it only ever
+        # prints JSON), or a script written for one implementation fails on the other.
+        with tempfile.TemporaryDirectory() as tmp:
+            file = Path(tmp) / "starter.ncel"
+            file.write_text((ROOT / "northcel/examples/starter.ncel").read_text())
+            plain, with_flag = io.StringIO(), io.StringIO()
+            with redirect_stdout(plain):
+                self.assertEqual(main(["info", str(file)]), 0)
+            with redirect_stdout(with_flag):
+                self.assertEqual(main(["info", str(file), "--json"]), 0)
+            self.assertEqual(with_flag.getvalue(), plain.getvalue())
+            self.assertEqual(json.loads(with_flag.getvalue())["kind"], "scene")
+
     def test_spec_and_render_implementation_unchanged(self):
         # Explicit negative coverage: partial checks do not replace the full validator.
         doc = parse_ncel("film F(fps: 0, width: -10) { use Missing }")

@@ -56,6 +56,10 @@ def generated_assets() -> dict[Path, str]:
     return {
         ROOT / "rules.json": json.dumps(rules, indent=2) + "\n",
         ROOT / "northcel/AGENT-GUIDE.md": compact,
+        # Same canonical text for `northcel guide` in the wheel: one guide, two
+        # implementations, so a copy that drifts is a CI failure rather than a slow
+        # divergence (the wheel's copy still described the pre-merge npm package).
+        PY / "AGENT-GUIDE.md": compact,
     }
 
 

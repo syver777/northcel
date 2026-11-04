@@ -1,7 +1,9 @@
-# NorthCel quick agent guide — tools 0.2.1, spec 0.2.0-draft
+# NorthCel quick agent guide — tools 0.3.1, spec 0.2.0-draft
 
-Discover this guide offline with `npx northcel guide`. The npm package is a
-zero-dependency **partial JS pre-check and Python CLI bridge**, not a renderer.
+Discover this guide offline with `northcel guide` (or `npx northcel guide`). The
+npm package runs the native runtime on Linux x86_64 and otherwise falls back to the
+Python reference, with a zero-dependency **partial JS pre-check** for `check` when
+neither is available. There is no JavaScript renderer.
 
 ## Start here (a complete 3-second film)
 

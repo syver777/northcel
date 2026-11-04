@@ -271,6 +271,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_info = sub.add_parser("info", help="Inspect scene/film metadata, layers, rings, and vertex counts.")
     p_info.add_argument("file", help="Path to .ncel file")
+    # `info` only ever speaks JSON, so `--json` is accepted and ignored — but it must be
+    # accepted: the launcher and the native runtime both document `info FILE [--json]`
+    # (see launcher/cli.py USAGE and native/README.md), and a script written against
+    # one implementation has to keep working against the other.
+    p_info.add_argument("--json", action="store_true", help="Output JSON (always on; accepted for CLI parity)")
     p_info.set_defaults(func=cmd_info)
 
     p_render = sub.add_parser("render", help="Render a single frame of a .ncel scene or film to PNG.")
