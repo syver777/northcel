@@ -33,7 +33,7 @@ that is a later phase, not a packaging toggle.
 | `ncel` wheel (PyPI) | 50 KB | CLI: doctor/verify/check/info/render/film/fmt/guide + fixtures + pins |
 | `ncel-native` wheel (PyPI, manylinux_2_39_x86_64) | 2.8 MB | `ncel-native`, `ncel-ast` (MoonBit), `ncel-gl`, `bend`, `hvm`, GLSL shaders, manifest |
 | `northcel` wheel (PyPI) | 140 KB | Python reference parser/validator/formatter (oracle + labelled fallback) |
-| numpy + Pillow (PyPI, for the reference) | ~22 MB | required by `northcel` |
+| numpy + Pillow (PyPI, for the reference) | 23.8 MB download (50 MB installed) | required by `northcel`; `pip install ncel` total: 26.8 MB download, 58 MB installed |
 | npm `ncel` tarball | 36 KB | launcher + guide + fixtures + pins |
 | npm `@ncel/linux-x64` tarball | 2.85 MB | the same native bundle |
 | `install.sh` | 12 KB | provisioning script |

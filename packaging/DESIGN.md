@@ -70,10 +70,12 @@ behaviour switch. (The brief allowed a separate pure-Python fallback wheel; a
 single wheel with a platform marker is the same thing without a second code path
 to drift.)
 
-Estimated wheel size: **~70 KB** compressed (fixtures are 67 KB of `.ncel` text;
-shower `f0001` is the only large one). Install footprint with dependencies:
-**~24 MB** (numpy 18 MB + Pillow 4.5 MB, needed by the reference renderer and
-`ncel fmt`).
+Measured wheel: **49,709 B** compressed (the fixtures are 67 KB of `.ncel` text;
+shower `f0001` is the only large one). A full `pip install ncel` downloads
+**26.8 MB** — ncel 50 KB + ncel-native 2.8 MB + northcel 140 KB + numpy 16.7 MB +
+Pillow 7.1 MB (the two heavy ones are only for the reference renderer and
+`ncel fmt`) — and occupies **58 MB** of site-packages (43 MB of it numpy), 110 MB for
+the whole virtualenv.
 
 ### 2.2 PyPI `ncel-native` 0.2.1 — platform wheel (`py3-none-manylinux_2_39_x86_64`)
 
