@@ -1,32 +1,39 @@
 # GitHub Actions
 
-`ci.yml` is the CI definition. It is **not active yet**, and that is
-deliberate rather than an oversight:
+CI lives at **`.github/workflows/ci.yml`** and runs on every push to `main`, on every
+pull request, and on demand (`workflow_dispatch`) from the Actions tab. The badge in
+the top-level README points at it.
 
-> GitHub refuses to let a repository token create or update files under
-> `.github/workflows/` unless that token carries the **`workflow`** scope. The
-> credential used for the initial extraction had `repo` scope only, so any file inside
-> `.github/workflows/` — whatever its extension — could not be pushed at all, so the
-> definition lives one directory up until the scope is granted.
+| Job | Runner | What it proves |
+| --- | --- | --- |
+| `python 3.10` / `3.11` / `3.12` / `3.13` | ubuntu-latest | the reference implementation imports, lints (3.12 only: ruff) and passes its suite on every supported Python |
+| `node 20` / `node 22` | ubuntu-latest | generated assets are in sync, the launcher/pre-check tests pass — including the two that spawn the *real* Python reference, so numpy and Pillow are installed for them — and `npm pack` ships exactly the expected files |
+| `wheel build + install smoke test` | ubuntu-latest | sdist + wheel build, `twine check`, install into a clean venv, and `northcel`/`ncel`/`check`/`info`/`render` behave; the render receipt says `python-reference` / `native: false` |
+| `conformance (both implementations)` | ubuntu-latest | reference probes and forward/reverse determinism; native agreement is reported as **SKIP**, never as a pass, because no native bundle ships in CI |
+| `licence copies in sync` | ubuntu-latest | every `LICENSE-MIT`/`LICENSE-APACHE` copy is byte-identical to the root texts |
+| `native build + conformance (manual)` | ubuntu-24.04 | provisions the 101 MB MoonBit toolchain, builds the C GL host with Mesa/EGL, runs `native/tests/run-tests.sh` and compares native frames to the reference |
 
-To enable CI, rename the file (and give the pushing credential the `workflow`
-scope, or add the file through the GitHub web editor):
+## Running the heavy native job
+
+It only runs when you ask for it, because it downloads a large toolchain and builds C:
 
 ```sh
-mkdir -p .github/workflows && git mv .github/ci.yml .github/workflows/ci.yml
-git commit -m "Enable CI" && git push
+gh workflow run ci.yml                       # Actions → CI → Run workflow also works
+gh run watch "$(gh run list --workflow ci.yml --limit 1 --json databaseId -q '.[0].databaseId')"
 ```
 
-What the workflow does once enabled:
+Repeat a single job locally instead when you only changed the Python or the JS side:
 
-| Job | What it proves |
-| --- | --- |
-| `python` (3.10–3.13) | the reference implementation imports, lints and passes its suite on every supported Python |
-| `js` (Node 20/22) | the launcher and pre-check tests pass, generated assets are in sync, and `npm pack` ships exactly the expected files |
-| `wheel` | the sdist and wheel build, pass `twine check`, install into a clean venv, and a render is honestly labelled `python-reference` |
-| `conformance` | reference probes and forward/reverse determinism (native agreement is reported as SKIP, never as a pass, because no bundle ships in CI) |
-| `licences` | every licence copy is byte-identical to the root texts |
-| `native` (manual) | builds the MoonBit + Bend/HVM2 + GLSL tree, runs the native suite, and compares native frames to the reference |
+```sh
+make test        # Python reference suite + JS tests + conformance
+make lint        # ruff, node --check, generated-asset check, licence copies
+```
 
-Nothing in this repository is red because of it: the workflow is inert until it is
-in `workflows/`.
+## Why the workflow is not at `.github/ci.yml`
+
+It used to be. The credential that extracted this repository had `repo` scope only,
+GitHub refuses to push into `.github/workflows/` without the `workflow` scope, so the
+definition sat one directory up and CI did not run. The scope was granted, the file
+was moved to `.github/workflows/ci.yml` in `8fe5d8c`, and CI has run on every push
+since. That history is kept here because the leftover draft caused a stale "CI is not
+active" note in several places; nothing else depends on it.

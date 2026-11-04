@@ -150,8 +150,8 @@ tests/                  cross-implementation conformance runner
 ## Development
 
 ```console
-$ make test           # Python reference suite + JS tests
-$ make lint           # ruff (Python) + node --check
+$ make test           # Python reference suite + JS tests + conformance
+$ make lint           # ruff, JS syntax, asset/pins freshness, licence copies
 $ make dist           # wheels + sdist + npm tarballs into dist/
 $ make verify         # install the built artifacts into fresh dirs and render
 ```
@@ -160,6 +160,22 @@ Requirements: Python ≥ 3.10, Node ≥ 16. The native tree additionally needs t
 MoonBit compiler, a C compiler and Mesa/EGL headers — see
 [`native/BUILD.md`](native/BUILD.md). A clean clone can run the Python reference
 and the JS pre-check without any of that.
+
+### Continuous integration
+
+GitHub Actions runs on every push to `main` and every pull request:
+Python 3.10–3.13 (lint on 3.12), Node 20/22 (JS tests, `npm pack` and a packed-file
+assertion), a wheel build + clean-venv install smoke test, cross-implementation
+conformance, and a licence-copy check. The heavy native job —
+MoonBit toolchain, C GL host, native suite and native-vs-reference conformance —
+is **manual** because it downloads a 101 MB toolchain and needs Mesa/EGL:
+
+```console
+$ gh workflow run ci.yml        # or Actions → CI → Run workflow
+```
+
+What each job proves, and why the workflow file moved from `.github/ci.yml` to
+`.github/workflows/ci.yml`, is in [`.github/README.md`](.github/README.md).
 
 ## Status
 

@@ -63,8 +63,8 @@ $ cd native && make && bash tests/run-tests.sh
 - One topic per pull request; keep the diff readable.
 - Add a test that fails before your change and passes after it.
 - Update `CHANGELOG.md` under `## [Unreleased]`.
-- CI must be green: Python 3.10–3.12 tests, JS tests, `npm pack`, wheel build +
-  install smoke test, conformance. The native build job is manual
+- CI must be green: Python 3.10–3.13, JS on Node 20 and 22, `npm pack`, wheel build
+  + install test, conformance. The native build job is manual
   (`workflow_dispatch`) because it downloads a 101 MB toolchain.
 
 ## Commits

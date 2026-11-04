@@ -36,8 +36,9 @@ conformance:
 lint: lint-py lint-js assets check-licenses
 
 lint-py:
+	# `ruff check` only: the reference implementation is deliberately not reformatted
+	# (see ruff.toml), so `ruff format --check` would fail on untouched code.
 	$(PYTHON) -m ruff check $(PYDIR) tests packaging/scripts
-	$(PYTHON) -m ruff format --check $(PYDIR) tests packaging/scripts
 
 lint-js:
 	@for f in $(JSDIR)/bin/northcel.js $(JSDIR)/lib/locate.js $(JSDIR)/index.cjs; do \

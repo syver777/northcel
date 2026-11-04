@@ -65,6 +65,15 @@ jobs:
         run: |
           python3 packaging/scripts/gen_pins.py
           python3 js/northcel/scripts/sync-assets.py --check
+      - name: Python reference dependencies for the delegation tests
+        # Two JS tests ("actual Python reference check delegates…" and "pipx-style
+        # Python entrypoint on PATH delegates…") deliberately spawn the *real* Python
+        # reference to prove delegation is not the JS pre-check in disguise. The
+        # reference imports numpy and Pillow, so this job needs them installed; it is
+        # the reference package's own dependency set, not a test dependency.
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy Pillow
       - name: Stage fixtures for packing
         run: bash packaging/scripts/stage_npm_data.sh
       - name: JS tests
