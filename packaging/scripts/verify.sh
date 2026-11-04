@@ -43,9 +43,11 @@ mkdir -p "$WORK"
 echo "NorthCel packaging verification in $WORK"
 
 if [ "$SKIP_PIP" -eq 0 ]; then
-  echo "== pip: built wheels (offline, --no-index)"
+  echo "== pip: built wheels"
   new_venv "$WORK/pip"
-  check "pip install built wheels" "$WORK/pip/bin/pip" install -q --no-index \
+  # --find-links serves the just-built northcel + northcel-native; numpy and Pillow
+  # still come from the index (they are dependencies, not artifacts of this repo).
+  check "pip install built wheels" "$WORK/pip/bin/pip" install -q \
         --find-links "$ROOT/dist/python" northcel
   check "northcel doctor" "$WORK/pip/bin/northcel" doctor
   check "northcel verify" "$WORK/pip/bin/northcel" verify

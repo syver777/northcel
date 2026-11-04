@@ -1,7 +1,7 @@
 {
   "schema": "northcel-pins/1",
   "generated_from": "native/toolchain.lock",
-  "northcel_version": "0.3.1",
+  "northcel_version": "0.2.2",
   "native_runtime_version": "0.2.0",
   "spec_version": "0.2.0-draft",
   "target": "linux-x86_64",
