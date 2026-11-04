@@ -1,7 +1,17 @@
 #!/usr/bin/env bash
 # ncel one-line installer for Linux x86_64.
 #
+# Public one-liner (needs the script at a public URL; the repository is private
+# today, so use the local or authenticated form until it is public or a release
+# asset is published):
+#
 #   curl -fsSL https://raw.githubusercontent.com/syver777/NorthNoir/main/packaging/install.sh | bash
+#
+# Forms that work today:
+#
+#   bash packaging/install.sh                       # from a checkout
+#   gh api repos/syver777/NorthNoir/contents/packaging/install.sh \
+#     -H "Accept: application/vnd.github.raw" | bash        # authenticated
 #
 # Installs the `ncel` CLI (native NorthCel runtime: MoonBit + Bend/HVM2 + GLSL via
 # Mesa/EGL) into user space, verifies every bundled checksum, and proves the

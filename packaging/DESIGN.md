@@ -137,11 +137,20 @@ does `brew install syver777/ncel/ncel` work.
 
 ### 2.5 `curl … | bash` Linux installer
 
-`packaging/install.sh`, served from the repo raw URL until a release asset exists:
+`packaging/install.sh`. The intended public form is
 
 ```
 curl -fsSL https://raw.githubusercontent.com/syver777/NorthNoir/main/packaging/install.sh | bash
 ```
+
+**That URL is not publicly fetchable today: the `syver777/NorthNoir` repository is
+private** (verified 2026-11-04: anonymous `raw.githubusercontent.com` and
+`api.github.com` both answer 404 while an authenticated `git ls-remote` succeeds).
+So the script is verified from the checkout (`bash packaging/install.sh`) and via
+`gh api … --header "Accept: application/vnd.github.raw" | bash`; it becomes a true
+public one-liner when the repository is made public or the file is attached to a
+GitHub release. The public one-command path that works right now is
+`pip install ncel`.
 
 Behaviour: detect OS/arch/glibc, verify the GL runtime, create
 `~/.local/share/ncel/venv` with the system `python3`, `pip install --only-binary=:all: ncel==0.2.1`

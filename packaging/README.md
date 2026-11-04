@@ -72,7 +72,21 @@ distinct frames, and byte-identical repeats.
 curl -fsSL https://raw.githubusercontent.com/syver777/NorthNoir/main/packaging/install.sh | bash
 ```
 
-It checks arch/glibc, checks the Mesa/EGL runtime, creates
+**Hosting caveat, stated plainly:** that URL only works once the script is publicly
+reachable. The `syver777/NorthNoir` repository is **private today** (anonymous
+`raw.githubusercontent.com` answers 404), so right now use one of:
+
+```
+bash packaging/install.sh                                        # from the checkout
+gh api repos/syver777/NorthNoir/contents/packaging/install.sh \
+  -H "Accept: application/vnd.github.raw" | bash                 # authenticated
+```
+
+or the already-public one-command path `pip install ncel`. Making the repository
+public (or attaching the script to a GitHub release) turns the `curl` form into a
+true one-liner with no change to the script.
+
+The script checks arch/glibc, checks the Mesa/EGL runtime, creates
 `~/.local/share/ncel/venv`, `pip install ncel==0.2.1` (pip verifies the index
 hashes), verifies the bundle manifest itself, links `~/.local/bin/ncel`, and runs
 `ncel verify`. Non-root; the only privileged action is `--install-mesa`, which is
