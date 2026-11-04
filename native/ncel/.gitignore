@@ -1,0 +1,6 @@
+build/
+.toolchain/
+moonbit/_build/
+moonbit/cmd/ncel_ast/pkg.generated.mbti
+test-out/
+artifacts/

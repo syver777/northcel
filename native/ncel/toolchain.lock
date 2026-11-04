@@ -1,0 +1,107 @@
+{
+  "schema": "ncel-toolchain-lock/1",
+  "product": "ncel-native",
+  "product_version": "0.2.0",
+  "spec_version": "0.2.0-draft",
+  "target": "linux-x86_64",
+  "verified_on": "2026-11-04",
+  "download_total_bytes": 103828758,
+  "build_output_bytes_estimate": 12000000,
+  "tools": [
+    {
+      "name": "moonbit-cli",
+      "version": "0.1.20261102 (ea07287 2026-11-02)",
+      "source": "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-x86_64.tar.gz",
+      "archive_sha256": "dd1d6d793c9675405ef32b39bce66d40041e2052a9c3f2f403e0a9da98bd94fd",
+      "archive_bytes": 101006330,
+      "license": "Apache-2.0 (bundled core LICENSE)",
+      "provides": ["moon", "moonc", "moonrun", "moonfmt"],
+      "install_path": ".toolchain/moon",
+      "notes": "moon reports 0.1.20261102; the archive is served from a 'latest' URL, so the sha256 is the authoritative pin. The MoonBit native backend compiles with the host C compiler (gcc 13)."
+    },
+    {
+      "name": "moonbit-core",
+      "version": "core-latest @ 2026-11-04",
+      "source": "https://cli.moonbitlang.com/cores/core-latest.tar.gz",
+      "archive_sha256": "b5b33afc759b8ae332346f357f42235d4c8d54afd91bb891b22ead3d746fa74f",
+      "archive_bytes": 2797220,
+      "license": "Apache-2.0",
+      "install_path": ".toolchain/moon/lib/core",
+      "notes": "Standard library bundled with the pinned MoonBit CLI. Only moonbitlang/core/{string,math,env,encoding/utf8} are used."
+    },
+    {
+      "name": "bend-lang",
+      "version": "0.2.38",
+      "source": "https://crates.io/crates/bend-lang/0.2.38",
+      "build": "cargo install bend-lang --version 0.2.38 --locked",
+      "license": "Apache-2.0",
+      "binary": "vendor/linux-x86_64/bin/bend",
+      "binary_sha256": "fa13b42684fdb3625c769cf22b94228745c4f17383699dff744846b2181c47bb",
+      "binary_bytes": 3606752,
+      "notes": "Emits HVM2 nets. The native runtime calls 'bend run-c' with the pinned hvm binary on PATH. Bend 2.x is a different language and is rejected."
+    },
+    {
+      "name": "hvm",
+      "version": "2.0.22",
+      "source": "https://crates.io/crates/hvm/2.0.22",
+      "build": "cargo install hvm --version 2.0.22 --features c --locked",
+      "license": "Apache-2.0",
+      "binary": "vendor/linux-x86_64/bin/hvm",
+      "binary_sha256": "e36a01430400e18d2fa0f876611449c830bb402853df38c1317bd0bafc0cd4cf",
+      "binary_bytes": 2890472,
+      "notes": "HVM2 evaluator. 'bend' resolves it by name, so ncel-native puts the pinned pair's directory on PATH for the child process."
+    },
+    {
+      "name": "mesa-gl-runtime",
+      "version": "25.2.8-0ubuntu0.24.04.2 (Mesa 4.5 core profile)",
+      "source": "system package libegl1 / libgl1 / mesa-libgallium (Ubuntu 24.04)",
+      "license": "MIT",
+      "provides": ["libEGL.so.1", "llvmpipe software rasteriser"],
+      "notes": "The host dlopen()s libEGL.so.1 and creates a surfaceless EGL (EGL_PLATFORM_SURFACELESS_MESA) OpenGL core context. GLSL 4.30 is compiled by this driver; llvmpipe renders on the CPU. No GPU or vendor driver is required."
+    },
+    {
+      "name": "glsl-shaders",
+      "version": "draw430 / draw410 (this tree)",
+      "source": "shaders/draw430.glsl, shaders/draw410.glsl",
+      "license": "Proprietary (North Noir)",
+      "sha256": {
+        "draw430": "14829a3cbb6cd868b876ed6afd3567338073c1c64fc0e98e13a7221511ec5b41",
+        "draw410": "fe4d0c4fe4e07d05a77ff6a5a5bb0eb5889587aa6f5be841da1acbe6a039ad45"
+      }
+    },
+    {
+      "name": "stb_image_write",
+      "version": "1.16",
+      "source": "https://github.com/nothings/stb/blob/5736b15f7ea0ffb08dd38af21067c314d6a3aae9/stb_image_write.h",
+      "sha256": "cbd5f0ad7a9cf4468affb36354a1d2338034f2c12473cf1a8e32053cb6914a05",
+      "license": "Public domain / MIT (dual)",
+      "install_path": "src/gl/stb_image_write.h",
+      "notes": "Vendored single-header PNG writer. Deterministic deflate for a fixed version."
+    },
+    {
+      "name": "c-compiler",
+      "version": "gcc 13.3.0 (Ubuntu 24.04)",
+      "source": "system package build-essential / gcc-13",
+      "license": "GPL-3.0-or-later with GCC runtime exception",
+      "notes": "Required at build time by the MoonBit native backend and by the two C hosts. Not shipped in the artifact (the binaries are prebuilt)."
+    },
+    {
+      "name": "ffmpeg",
+      "version": "system (optional)",
+      "source": "system package ffmpeg",
+      "license": "LGPL/GPL depending on build",
+      "notes": "Only used by 'ncel-native film --mp4'; frame-sequence output works without it."
+    }
+  ],
+  "system_packages": [
+    "libegl1 (>= 1.5)",
+    "libgl1",
+    "mesa-libgallium (llvmpipe)",
+    "build-essential (or gcc + libc headers) for building only",
+    "ffmpeg (optional, MP4 muxing)"
+  ],
+  "macos_limits": {
+    "open_gl": "macOS caps OpenGL at 4.1, so shaders/draw430.glsl (GLSL 4.30) cannot compile there. shaders/draw410.glsl is the 4.10-compatible variant and compiles/links on this VM's 4.50 llvmpipe context, but has NOT been run on macOS.",
+    "required_path": "Vulkan + MoltenVK (or a GL 4.1 shader variant on the approachable OpenGL path). No macOS artifact is produced or claimed by this phase."
+  }
+}
