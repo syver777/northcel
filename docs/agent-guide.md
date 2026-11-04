@@ -2,6 +2,61 @@
 
 This guide instructs AI coding agents (Claude Code, OpenCode, Codex, Cursor, Gemini CLI) how to author, verify, and surgically edit AI-drawn images and videos in **NorthCel (`.ncel`)**.
 
+## The first ten minutes
+
+1. **Read three pages, in this order:** [getting started](guide/01-getting-started.md),
+   [the scene model](guide/02-the-scene-model.md) and
+   [films and frame overrides](guide/08-films-and-frame-overrides.md). They cover
+   the root, paint order and the one construct that most edits use.
+2. **Run the gates on the file you were given before editing it:**
+   `northcel check file.ncel --json` then `northcel render file.ncel -o before.png`.
+   Never start from a file you have not rendered.
+3. **Copy a structure, not a drawing.** The
+   [patterns cookbook](patterns/README.md) has ten complete programs; pick the
+   one whose *motion* matches the request (head turn, blink, jump, colour beat,
+   drift, assembly, walk, boil, crowd, two-shot).
+4. **Edit one named block.** Find it with `northcel info file.ncel`; change only
+   that block; render the edited frame and both neighbours.
+5. **Only then run the full film.** `northcel film file.ncel -o frames/` and look
+   at the first, middle, last and transition frames.
+
+If a request is about a still, use `scene`; if it is about timing, use `film`.
+If you are unsure, read the diagnostic — it gives an exact `line:column`.
+
+## Verify a frame, not just the exit code
+
+```console
+$ northcel check file.ncel --json          # exit 0 = this validator found no error
+$ northcel render file.ncel -o f3.png --frame 3
+$ northcel film file.ncel -o frames/ --frames 0..5
+```
+
+Open the PNG with an image-reading tool and check, in this order: is the subject
+present and where it should be; are the silhouettes closed; do holes read as
+holes; is the ink attached to the fill; does the motion between sampled frames
+read as the requested beat. A passing check proves none of that.
+
+For determinism, render the same frame twice and compare the decoded RGB (the
+reference and native encoders may differ in PNG bytes). A changed picture between
+two renders of the same frame is a bug in your edit, not "randomness".
+
+## Traps that still compile
+
+| Trap | What you will see | What to do |
+| --- | --- | --- |
+| **Inherited strokes** | A `frame k` override that adds a `stroke` leaves the base stroke visible too, because strokes append rather than replace | Use a new name only when you want both; otherwise replace the geometry (a `cel`) or add the stroke to the base with a time expression |
+| **Frame overrides are one frame** | The change disappears on frame `k+1` | Declare the override for each frame, or move the change into the base timeline |
+| **A replacement loses `translate:`** | The replaced layer jumps to its raw coordinates | Repeat the position/translate expression in the override |
+| **Palette scope** | `Undefined palette color '$x'` | Declare the palette before the first `$x`, including before a `def` that uses it; frame-local palettes are local |
+| **Attributes are parse-time** | A `def` parameter in `taper:`, `width:` or `color:` raises `Undefined parameter or variable` | Parameters work in point coordinates and `translate:` only; widths/colours are constants |
+| **`agents:` is a declaration** | A swarm with `agents: 8` and one ring draws one ring | Put one ring per agent in the payload and declare the same count |
+| **Two-shot layers with one name** | The second replaces the first | Name each shot's layers distinctly |
+| **`frames:` in the body** | `Unknown scene/film statement 'frames'` | It is a header attribute |
+
+More: [common errors](errors.md) is generated from the source and every entry is
+reproduced by CI. The [architecture page](architecture.md) explains why the
+reference and native renderers can differ by a handful of edge pixels.
+
 <!-- npm-guide:start -->
 # NorthCel quick agent guide — tools 0.3.1, spec 0.2.0-draft
 

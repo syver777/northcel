@@ -130,7 +130,7 @@ python/northcel-native/ the `northcel-native` platform wheel (native bundle carr
 js/northcel/            the `northcel` npm package: launcher, JS pre-check, guide
 js/northcel-linux-x64/  the platform bundle npm package
 native/                 MoonBit AST stage, GL host, shaders, pinned toolchain
-docs/                   specification, reference, tutorial, guide, decisions
+docs/                   writing guide, patterns, gallery, errors, architecture, spec
 editors/vscode/         TextMate grammar + VS Code language configuration
 packaging/              install.sh, Homebrew formula, build and verify scripts
 python/tests/           reference test suite        js/northcel/tests/  JS tests
@@ -139,12 +139,24 @@ tests/                  cross-implementation conformance runner
 
 ## Documentation
 
-- [Documentation index](docs/README.md) — how the docs are organised
-- [Tutorial: your first `.ncel` film](docs/tutorial.md)
-- [Format & tooling reference](docs/reference.md)
-- [AI-agent guide](docs/agent-guide.md) — how a coding agent authors and self-checks `.ncel`
-- [Examples and measured results](docs/examples.md)
-- [Specification](docs/spec/SPEC-0.2.0-draft.md) · [changelog](CHANGELOG.md) · [decision log](docs/DECISIONS.md) · [official checklist](docs/official-checklist.md)
+- **[The writing guide](docs/guide/README.md)** — start here: install, first file,
+  then every construct with a rendered example and its real diagnostic.
+- **[Patterns cookbook](docs/patterns/README.md)** — ten complete animated
+  programs with contact sheets, sizes and pitfalls.
+- **[Gallery](docs/gallery.md)** — the shower frames, the lantern film, the fitted
+  Test Video 7 recreation and the pattern examples.
+- **[Common errors](docs/errors.md)** — every diagnostic, generated from the
+  source and reproduced in CI.
+- **[Architecture](docs/architecture.md)** — what MoonBit, Bend and GLSL own, the
+  pipeline order, determinism and the platform matrix.
+- **[AI-agent guide](docs/agent-guide.md)** — the first ten minutes, the
+  look-and-fix loop, and the traps that still compile.
+- **[Documentation index](docs/README.md)** — the full map, including the
+  specification, measured examples, decision log and readiness checklist.
+- [Format & tooling reference](docs/reference.md) — the CLI and the validation
+  contract (the grammar itself lives in the guide and the spec).
+- [Specification](docs/spec/SPEC-0.2.0-draft.md) · [changelog](CHANGELOG.md) ·
+  [decision log](docs/DECISIONS.md) · [official checklist](docs/official-checklist.md)
 
 ## Development
 

@@ -19,3 +19,4 @@
 | 15 | **Interactive Browser Playground** | **Later** | Planned for Phase B using the JS validator + WebGL2/Canvas2D preview on `/northcel`. |
 | 16 | **Trademark Check** | **Needs Owner** | Not performed; owner should verify `NorthCel` trademark availability if registering a mark. |
 | 17 | **Dedicated Domain** | **Not Needed** | Hosted officially on `https://northnoir.com/northcel`, PyPI, npm, and GitHub per owner decision. |
+| 18 | **Writing documentation (`docs/guide/`, `docs/patterns/`, `docs/errors.md`)** | **Done** | A 14-page numbered guide with a complete file, a rendered image and a reproduced diagnostic on every construct page; ten complete patterns (19,819 B / 9,616 cl100k tokens) with contact sheets; a gallery; a generated error catalogue (40 reproduced cases); and `docs/scripts/check_docs.py` in CI, which renders every snippet and pattern, compares pixels, reproduces every diagnostic and verifies every relative link. |

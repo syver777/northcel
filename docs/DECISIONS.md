@@ -2,6 +2,39 @@
 
 This document records the key architectural, experimental, and naming decisions behind **NorthCel** (`.ncel`), including the evidence and rejected alternatives.
 
+## Decision 8 · 2026-11-04: The documentation is part of the product, and CI renders it
+
+- **Context:** The language shipped with a 66-line tutorial, a 35-line reference
+  and a 38-line examples page. The owner's words were that it "should maybe have
+  more documentation on how to write with `.ncel`". A language whose docs cannot
+  teach it is not usable, however good the renderer is; and a docs page that
+  drifts from the parser is worse than a thin one.
+- **Decision:** The docs are a numbered writing guide (14 pages) with, on every
+  construct page, the syntax, a complete `.ncel`, a rendered image of that file, a
+  deliberate mistake with the **real** diagnostic and the exact command; a
+  patterns cookbook of ten complete animations with contact sheets and sizes; a
+  gallery; an error page generated from the source; and a truthful architecture
+  page. `docs/scripts/check_docs.py` extracts and renders every snippet, renders
+  every pattern and contact sheet, reproduces every diagnostic, and checks every
+  relative link. CI runs it.
+- **Why the reference renderer for the committed hashes:** the native GLSL pixels
+  depend on the host Mesa version. The reference is the normative oracle and is
+  pure NumPy, so its pixels are reproducible on any runner. The committed images
+  are therefore reference renders, labelled as such; native agreement is measured
+  separately (52 differing pixels over 296 frames) and disclosed on the
+  architecture page rather than claimed away.
+- **Why the error page is generated:** the only way to keep "every diagnostic"
+  true is to run the parser and embed what it printed. A hand-written error list
+  is a promise to drift.
+- **Rejected:** mocked screenshots or hand-drawn "output" (the docs would become
+  marketing); native hashes in CI (a Mesa upgrade would fail unrelated builds);
+  rendering every snippet on every page load (the website is separate, and the
+  repo should stay light); keeping `tutorial.md` and `reference.md` as parallel
+  sources (two copies drift — the tutorial is now a redirect and the reference
+  keeps only the CLI/contract).
+
+---
+
 ## Decision 7 · 2026-11-04: One install name (`northcel`), its own repository, dual licence
 
 - **Context:** NorthCel lived inside the NorthNoir monorepo as `packages/northcel`,
