@@ -11,8 +11,8 @@ set of artifacts at one version, in a fixed order, plus optional deprecated alia
 | PyPI | `northcel-native` | **0.3.1** | the Linux x86_64 platform wheel `northcel` depends on |
 | PyPI | `ncel` | 0.3.1 (deprecated) | alias that depends on `northcel` |
 | PyPI | `ncel-native` | 0.3.1 (deprecated) | alias that depends on `northcel-native` |
-| npm | `northcel` | 0.3.0 (0.3.1 tarballs prepared) | the launcher + partial pre-check |
-| npm | `northcel-linux-x64` | 0.3.0 (0.3.1 tarballs prepared) | the native bundle |
+| npm | `northcel` | **0.3.1** | the launcher + partial pre-check |
+| npm | `northcel-linux-x64` | **0.3.1** | the native bundle |
 | npm | `@ncel/linux-x64` | 0.2.1 (deprecated) | alias for the bundle |
 
 `0.3.1` was chosen because npm `0.3.0` already exists and cannot be replaced.
@@ -36,8 +36,7 @@ checksums, GL 4.5 Mesa 25.2.8 at homegrown homebrew paths), `ncel verify` 5/5
 sha256 equals the pinned conformance hash. `pip install ncel==0.3.1` pulls
 `northcel` + `northcel-native` and runs the same launcher.
 
-npm 0.3.1 was **prepared, not published** (no npm token on that VM): tarballs and
-checksums are recorded in that session's hand-off; the npm commands are below.
+npm 0.3.1 is **published** (2026-11-04): `northcel` and `northcel-linux-x64` both resolve to 0.3.1, installed from the public registry and verified by a global install.
 
 ## Build and prove
 

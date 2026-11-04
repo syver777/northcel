@@ -139,13 +139,12 @@ tests/                  cross-implementation conformance runner
 
 ## Documentation
 
-- [Documentation index](docs/README.md) — spec, tutorial, reference, FAQ
+- [Documentation index](docs/README.md) — how the docs are organised
 - [Tutorial: your first `.ncel` film](docs/tutorial.md)
 - [Format & tooling reference](docs/reference.md)
 - [AI-agent guide](docs/agent-guide.md) — how a coding agent authors and self-checks `.ncel`
-- [Examples & measured benchmarks](docs/examples.md)
-- [Decision log](docs/DECISIONS.md) · [Changelog](CHANGELOG.md)
-- [Official readiness checklist](docs/official-checklist.md)
+- [Examples and measured results](docs/examples.md)
+- [Specification](docs/spec/SPEC-0.2.0-draft.md) · [changelog](CHANGELOG.md) · [decision log](docs/DECISIONS.md) · [official checklist](docs/official-checklist.md)
 
 ## Development
 

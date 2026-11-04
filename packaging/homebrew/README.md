@@ -137,5 +137,4 @@ build, whose bytes can differ.
 
 The formula and this tap are MIT. The installed packages are dual licensed
 `MIT OR Apache-2.0`; the formula declares `license any_of: ["MIT",
-"Apache-2.0"]`. The 0.2.1 PyPI metadata still says `License: Proprietary` because
-it predates the relicensing; 0.3.1 carries the dual licence.
+"Apache-2.0"]`. Every published 0.3.1 package carries the dual licence.

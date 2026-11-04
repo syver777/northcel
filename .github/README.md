@@ -28,12 +28,3 @@ Repeat a single job locally instead when you only changed the Python or the JS s
 make test        # Python reference suite + JS tests + conformance
 make lint        # ruff, node --check, generated-asset check, licence copies
 ```
-
-## Why the workflow is not at `.github/ci.yml`
-
-It used to be. The credential that extracted this repository had `repo` scope only,
-GitHub refuses to push into `.github/workflows/` without the `workflow` scope, so the
-definition sat one directory up and CI did not run. The scope was granted, the file
-was moved to `.github/workflows/ci.yml` in `8fe5d8c`, and CI has run on every push
-since. That history is kept here because the leftover draft caused a stale "CI is not
-active" note in several places; nothing else depends on it.
