@@ -12,7 +12,7 @@ Verify the installation:
 
 ```sh
 northcel --version
-# -> northcel 0.2.1 (spec 0.2.0-draft)
+# -> northcel 0.3.1 (native runtime 0.2.0, spec 0.2.0-draft, native)
 ```
 
 ---

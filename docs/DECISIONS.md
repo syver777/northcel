@@ -2,6 +2,41 @@
 
 This document records the key architectural, experimental, and naming decisions behind **NorthCel** (`.ncel`), including the evidence and rejected alternatives.
 
+## Decision 7 · 2026-11-04: One install name (`northcel`), its own repository, dual licence
+
+- **Context:** NorthCel lived inside the NorthNoir monorepo as `packages/northcel`,
+  `docs/northcel`, `native/ncel` and `packaging/`, with two PyPI names (`ncel`,
+  `northcel`), three npm names (one published, one never published, one scope that
+  needs an org) and a proprietary licence. Users and agents had to learn which of
+  several names to install, and a display of "which package is the real one" was
+  impossible to answer.
+- **Decision:** NorthCel becomes its own public repository
+  (<https://github.com/syver777/northcel>), dual licensed **MIT OR Apache-2.0**, and
+  **every install is called `northcel`**: one Python distribution containing the
+  reference implementation *and* the launcher (console scripts `northcel` and
+  `ncel`), depending on the platform wheel `northcel-native`; one npm package
+  `northcel` depending on `northcel-linux-x64`. `ncel` survives only as a short
+  command alias. The old `ncel`, `ncel-native` (PyPI) and `@ncel/linux-x64` (npm)
+  remain as deprecated alias packages that depend on the real ones. `@ncel/cli`
+  was never published and is dropped.
+- **Why `ncel` is not a package name:** npm rejected the bare name as too similar
+  to existing packages, and a scoped `@ncel/...` or a `...-cli` suffix would make
+  users learn a second name for no benefit.
+- **Why one distribution:** two distributions that both install an `ncel` script
+  fight over it (pip install order decides which one wins, and an upgrade of the
+  other silently changes behaviour). One distribution owns both entry points and
+  imports the reference in-package.
+- **Licence:** MIT OR Apache-2.0 is the conventional choice for a language (Rust,
+  Swift): permissive for tooling adoption, patent-granting for implementers. The
+  owner may still choose a single licence; NorthNoir itself is not relicensed.
+- **History:** the four trees were extracted with their real commit history (8
+  commits, preserved author/date/message, then a restructure commit that keeps
+  `git log --follow` working) rather than a squashed import.
+- **Rejected:** keeping the monorepo copy as the canonical source (two copies
+  drift), publishing a `ncel` npm alias (name rejected), and a `-cli` suffix.
+
+---
+
 ## Decision 6 · 2026-11-04: Honest partial JS checks; full means Python
 
 - **Evidence:** On macOS, npm 0.2.0 without Python called `film B { frames: 2 }`

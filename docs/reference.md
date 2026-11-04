@@ -32,10 +32,11 @@
 
 ### Validation contract
 
-**Tools 0.2.1, unchanged spec 0.2.0-draft.** PyPI `northcel` is the reference
-parser, semantic validator, formatter and CPU renderer. npm `northcel` is a
-zero-dependency structural JS pre-check, embedded guide and Python CLI bridge;
-it has no JS formatter or renderer. Both install `northcel` and `ncel`.
+**Tools 0.3.1, unchanged spec 0.2.0-draft.** The `northcel` distribution is the
+reference parser, semantic validator, formatter and CPU renderer *and* the launcher
+that runs the native runtime. The npm `northcel` package runs the same launcher and
+adds a zero-dependency structural JS pre-check, the embedded guide and a Python CLI
+bridge; it has no JS formatter or renderer. Both install `northcel` and `ncel`.
 
 The npm wrapper probes `python3`, then `python`, on PATH for `northcel.cli`, then
 looks for a Python-shebang `northcel`/`ncel` entrypoint on PATH (including pipx
@@ -44,12 +45,13 @@ Once a probe succeeds it delegates, preserving stdout, stderr and the exit code;
 it never retries a failing Python check in JS. A terminated/unlaunchable Python
 process is nonzero. `--require-full` is consumed by the bridge for compatibility
 with older full Python CLIs. `guide` is always the npm-bundled guide. `--version`
-still reports Python's version when delegated, otherwise the npm version with
-`js-validator`. npm 0.2.1 does not require Python for guide/check/version/help.
+reports the launcher version and the native-runtime state. The npm package does
+not require Python for guide/doctor/version/help, and `check` falls back to the
+partial pre-check when neither the native bundle nor Python is available.
 
 | Path/result | Text / JSON | Exit |
 |---|---|---:|
-| Python valid | `OK (NorthCel <spec>)`; `ok: true, partial: false, validator: "python"` in Python 0.2.1 | 0 |
+| Python valid | `OK (NorthCel <spec>)`; `ok: true, partial: false, validator: "python"` | 0 |
 | Python invalid | Exact parser/semantic diagnostics; `ok: false` | 1 |
 | JS clean | `PARTIAL (JS pre-check only; no pre-check errors found — install \`pipx install northcel\` for full validation)` | 0 |
 | JS detected error or unreadable file | `PARTIAL ... errors found` plus line:column diagnostics | 1 |
@@ -74,7 +76,7 @@ Python executable. Always render/inspect before claiming the film looks correct.
 
 ### JS pre-check coverage (not full grammar/conformance)
 
-| Case | JS 0.2.1 | Python/reference or render still needed |
+| Case | JS pre-check (0.2.1+) | Python/reference or render still needed |
 |---|---|---|
 | Root, version, trailing tokens; balanced braces/quotes/parentheses; comments | Error on detected structural mistakes, multiline and single-line supported | Does not evaluate the document |
 | Unknown statements in scene/film/frame/def | Error; allowed sets generated from reference parser methods | Reference parser remains authority |
