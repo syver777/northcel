@@ -3,7 +3,11 @@
 #
 # Public one-liner:
 #
-#   curl -fsSL https://raw.githubusercontent.com/syver777/northcel/main/packaging/install.sh | bash
+#   curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh | bash
+#
+# That URL is a release asset of the latest published release, so it stays put when
+# `main` moves. The raw URL (raw.githubusercontent.com/syver777/northcel/main/
+# packaging/install.sh) tracks `main` and may change between releases.
 #
 # From a checkout:   bash packaging/install.sh
 #

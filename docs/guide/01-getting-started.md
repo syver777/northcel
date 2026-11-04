@@ -17,7 +17,7 @@ same binary.
 | Python 3.10–3.13 | `pip install northcel` (or `pipx install northcel`) | Yes on Linux x86_64; the labelled reference renderer elsewhere |
 | Node 20+ | `npm install -g northcel` | Yes on Linux x86_64; an honest error elsewhere |
 | Homebrew on Linux | `brew tap syver777/northcel && brew install northcel` | Yes |
-| A shell + curl | `curl -fsSL https://raw.githubusercontent.com/syver777/northcel/main/packaging/install.sh \| bash` | Yes on Linux x86_64 |
+| A shell + curl | `curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh \| bash` | Yes on Linux x86_64 |
 
 Tools version **0.3.1**, specification **0.2.0-draft**. `0.1.0-draft` files still
 load.

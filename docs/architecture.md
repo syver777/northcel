@@ -126,6 +126,94 @@ The `draw410.glsl` shader is the 4.1-compatible variant. It compiles, links and
 produces byte-identical output under Mesa 4.50 here, but it has **not** been run
 on macOS. That is why macOS is unsupported rather than "probably fine".
 
+## Verify this yourself
+
+Every claim above is reproducible on Linux x86_64 with a Mesa/EGL runtime. These are
+the commands with the output from one machine (0.3.1 installed by the release
+one-liner, Mesa 25.2.8 llvmpipe, no GPU). `…` marks a trimmed path.
+
+```console
+$ northcel doctor
+northcel 0.3.1  (NorthCel spec 0.2.0-draft)
+platform      linux-x86_64 glibc 2.39
+supported     yes
+native        0.2.0  (bundle checksums 13 verified, stage MoonBit+Bend+GLSL)
+  MoonBit       stage present: yes  binary ncel-ast  compiled with MoonBit 0.1.20261102 (ea07287 2026-11-02)  compiler installed: NO
+  Bend          bend-lang 0.2.38  …/northcel_native_bundle/bin/bend
+  HVM2          hvm 2.0.22  …/northcel_native_bundle/bin/hvm
+  GL runtime    4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.2  llvmpipe (LLVM 20.1.2, 256 bits)  GLSL 4.50
+  GLSL          draw430 14829a3cbb6c… compiles  draw410 fe4d0c4fe4e0… compiles
+  ffmpeg        present (optional, --mp4)
+  reference     northcel 0.3.1 — fallback only — non-native reference renderer
+```
+
+`northcel doctor --json` carries the same facts as fields:
+`stages.moonbit.compiled_with`, `stages.bend.version`, `stages.hvm.version`,
+`stages.gl.version` / `.renderer` / `.glsl`, and the sha256 of each shader under
+`stages.glsl_shaders`.
+
+Presence is not use. The stages are proved to run by tracing the process tree and by
+removing each one:
+
+```console
+$ ncel verify
+  [PASS] starter-render / shower-f0001-conformance / family-film-6-frames /
+         determinism / film-frames-differ      → result: all checks passed
+
+$ strace -f -e trace=execve ncel render examples/patterns/09-crowd-swarm.ncel \
+      -o /tmp/swarm.png --frame 1 --json 2>&1 | grep -o 'bin/[a-z-]*' | sort -u
+bin/bend
+bin/hvm
+bin/ncel-ast
+bin/ncel-gl
+bin/ncel-native
+```
+
+A `bend_swarm` document reports what Bend actually evaluated:
+
+```console
+$ ncel render examples/patterns/09-crowd-swarm.ncel -o /tmp/swarm.png --frame 1 --json
+{"ok":true,…,"geometry":{"layers":4,"rings":38,"vertices":260},
+ "swarm":{"tasks":2,"agents":36,"points":252,"stage":"Bend/HVM2"},
+ "stage":"MoonBit+Bend+GLSL",
+ "timings":{"bend_s":0.0881,"ir_s":0.0046,"gl_s":0.3559,"total_s":0.4486},…}
+```
+
+The document declares two swarms of 18 agents, so 36 agents / 36 swarm rings + 2
+background rings = 38 rings; a zero agent count would mean the stage was skipped.
+`ncel film` on the same file renders six distinct frames and reports the same
+`"stage"`, but a **film** receipt lists per-frame SHA-256 values and does not repeat
+the swarm block — use `render` (one frame) when you want the agent counts.
+
+The bundle is byte-identical to the tree it was built from, so "MoonBit" and
+"`draw430.glsl`" are not labels:
+
+```console
+$ sha256sum …/northcel_native_bundle/bin/ncel-ast \
+            native/artifacts/ncel-native-0.2.0-linux-x86_64/bin/ncel-ast
+f6dc365ea7edf6ef2d17807ae8aea6a4502e0c272e5900ddda6d2f34f4f40614  (both)
+$ sha256sum …/northcel_native_bundle/share/ncel/draw430.glsl \
+            …/share/ncel/draw410.glsl native/shaders/draw430.glsl native/shaders/draw410.glsl
+14829a3cbb6cd868b876ed6afd3567338073c1c64fc0e98e13a7221511ec5b41  (draw430, both)
+fe4d0c4fe4e07d05a77ff6a5a5bb0eb5889587aa6f5be841da1acbe6a039ad45  (draw410, both)
+```
+
+`ncel-ast` is an ELF executable whose symbol table is MoonBit's
+(`moonbitlang/core/builtin`, `__moonbit_internal_argv`, …) and which mentions no
+Python module at all; the Python parser is not inside it. Two negative controls on a
+copy of the bundle — rename `bin/bend`, then rename `main` in `draw430.glsl` — fail
+the render with `ncel-native: missing stage ( bend)` and `ncel-gl: program link
+failed: error: fragment shader lacks 'main'`. A stage that could be skipped would not
+produce those errors.
+
+**What a receipt does and does not name.** The labelled fallback prints
+`"renderer": "python-reference", "native": false`. A native `render`/`film` receipt
+carries no `renderer` key; it identifies itself by `"stage": "MoonBit+Bend+GLSL"`
+(and, on a single frame, `"swarm": {…, "stage": "Bend/HVM2"}`). `ncel verify --json`
+reports `"runtime": "native"`. So: absence of `python-reference` means the native
+path ran, and the `stage` field is the explicit marker. On the swarm frame above the
+native and reference renders differ in **0 pixels**.
+
 ## Why these three stages
 
 The design came from measuring five stacks on the *Man in the Shower*

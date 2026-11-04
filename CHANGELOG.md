@@ -44,6 +44,23 @@ move for packaging-only releases.
   frame, and the traps that still compile (inherited strokes, one-frame overrides,
   parse-time attributes, palette scope, `agents:` as a declaration).
 
+### Changed — install URL and a machine-checked runtime claim
+- **Every install one-liner now uses the release asset**, not `main`:
+  `curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh | bash`
+  (`README.md`, `packaging/README.md`, `packaging/DESIGN.md`,
+  `docs/guide/01-getting-started.md` and the installer's own header). The raw URL
+  stays only as a clearly labelled "tracks `main`, may change" alternative in
+  `packaging/README.md`.
+- **`docs/architecture.md` gained "Verify this yourself"**: the exact `doctor`,
+  `verify`, `bend_swarm` receipt, shader/binary hash and negative-control commands
+  with real 0.3.1 output, including what a native receipt does and does not name
+  (there is no `renderer` key on the native path; it says
+  `"stage": "MoonBit+Bend+GLSL"`, while the fallback says
+  `"renderer": "python-reference"`).
+- The README's Documentation section leads with the writing guide, patterns,
+  common errors and architecture; the Homebrew README/formula now state the
+  native stack (MoonBit + Bend/HVM2 + GLSL), Linux x86_64 only, and the Python
+  reference as oracle and labelled fallback.
 
 ## [0.3.1] — One package name, one repository (2026-11-04)
 

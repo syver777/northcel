@@ -149,11 +149,15 @@ The tap repository itself (`syver777/homebrew-northcel`) lives outside this repo
 
 ### 2.5 `curl … | bash` Linux installer
 
-`packaging/install.sh`. Public form (works now that this repository is public):
+`packaging/install.sh`. Public form — the file is attached to the release, so the URL
+always serves the latest published version:
 
 ```
-curl -fsSL https://raw.githubusercontent.com/syver777/northcel/main/packaging/install.sh | bash
+curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh | bash
 ```
+
+(`raw.githubusercontent.com/…/main/packaging/install.sh` tracks `main` and may change
+between releases; it is not the documented URL.)
 
 Behaviour: detect OS/arch/glibc, verify the GL runtime, create
 `~/.local/share/ncel/venv` with the system `python3`, `pip install

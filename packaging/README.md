@@ -11,7 +11,7 @@ Mesa/EGL (llvmpipe) context. One command should be enough.
 | PyPI (primary) | `pip install northcel` | **0.3.1 published** — one distribution with the reference implementation and the launcher, depending on `northcel-native` 0.3.1 |
 | npm | `npm install -g northcel` | **0.3.1 published** — same launcher and native bundle as pip |
 | Homebrew tap | `brew tap syver777/northcel && brew install northcel` | formula in `packaging/homebrew/`; the tap repository is `syver777/homebrew-northcel` |
-| One-line curl | `curl -fsSL …/packaging/install.sh \| bash` | tested here; works publicly now that this repository is public |
+| One-line curl | `curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh \| bash` | tested here; the URL is a release asset of the latest published release |
 
 `brew install northcel` on its own is **not** available: homebrew-core does not
 accept brand-new formulae without maintainer review. The honest command is the tap
@@ -74,10 +74,14 @@ with 6 distinct frames, determinism, and distinct frames.
 ## The one-line installer
 
 ```
-curl -fsSL https://raw.githubusercontent.com/syver777/northcel/main/packaging/install.sh | bash
+curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh | bash
 ```
 
-That URL works now that the repository is public. From a checkout you can also run
+That URL is the `install.sh` asset of the latest published release (`v0.3.1` today,
+12,193 bytes, sha256 `0f8875e9…`), so it keeps working when `main` moves. The raw URL
+`raw.githubusercontent.com/syver777/northcel/main/packaging/install.sh` tracks `main`
+and may change between releases; use it only if you deliberately want the development
+copy. From a checkout you can also run
 `bash packaging/install.sh` (add `--dry-run` to see every action first).
 
 The script checks arch/glibc, checks the Mesa/EGL runtime, creates

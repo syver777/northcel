@@ -70,7 +70,7 @@ same binary — it is never a separate package.
 | pipx | `pipx install northcel` | same as pip |
 | npm | `npm install -g northcel` | yes on Linux x86_64 (installs `northcel-linux-x64`); honest error elsewhere |
 | Homebrew | `brew tap syver777/northcel && brew install northcel` | yes on Linux; the formula refuses macOS |
-| curl | `curl -fsSL https://raw.githubusercontent.com/syver777/northcel/main/packaging/install.sh \| bash` | yes on Linux x86_64 |
+| curl | `curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh \| bash` | yes on Linux x86_64 |
 
 ```console
 $ northcel doctor     # every stage, version, shader hash and the platform verdict
@@ -143,12 +143,12 @@ tests/                  cross-implementation conformance runner
   then every construct with a rendered example and its real diagnostic.
 - **[Patterns cookbook](docs/patterns/README.md)** — ten complete animated
   programs with contact sheets, sizes and pitfalls.
-- **[Gallery](docs/gallery.md)** — the shower frames, the lantern film, the fitted
-  Test Video 7 recreation and the pattern examples.
 - **[Common errors](docs/errors.md)** — every diagnostic, generated from the
   source and reproduced in CI.
 - **[Architecture](docs/architecture.md)** — what MoonBit, Bend and GLSL own, the
   pipeline order, determinism and the platform matrix.
+- **[Gallery](docs/gallery.md)** — the shower frames, the lantern film, the fitted
+  Test Video 7 recreation and the pattern examples.
 - **[AI-agent guide](docs/agent-guide.md)** — the first ten minutes, the
   look-and-fix loop, and the traps that still compile.
 - **[Documentation index](docs/README.md)** — the full map, including the

@@ -8,6 +8,18 @@ NorthCel itself lives at **https://github.com/syver777/northcel** (source, docs,
 releases; also the formula's `homepage`), with the product page at
 https://northnoir.com/northcel.
 
+## What the install gives you
+
+| Piece | What it is | Where it runs |
+| --- | --- | --- |
+| **Native runtime** (the default) | MoonBit `ncel-ast` parses and builds the IR and the Bend program; **Bend 0.2.38 / HVM 2.0.22** evaluate every `bend_swarm` agent; **GLSL 4.30** on a Mesa/EGL **llvmpipe** context rasterises the frame | **Linux x86_64 only**, glibc ≥ 2.39 |
+| **Python reference** (in the same package) | the normative **oracle** for the language and rasterisation, the only formatter (`northcel fmt`), and the **labelled fallback** (`--no-native`) — every receipt it produces says `"renderer": "python-reference"` | anywhere Python 3.10+ runs |
+
+The formula is deliberately Linux/x86_64-only: on macOS and Windows it refuses to
+install instead of shipping a launcher that could only ever use the reference path.
+`northcel doctor` prints each stage with its exact version and exits `3` with the
+reason when the native runtime is not usable.
+
 ## Install (tested)
 
 ```sh
@@ -67,7 +79,7 @@ The tap deliberately fails on macOS rather than installing a launcher that could
 only ever render through the labelled Python reference. `pip install northcel`
 still works on macOS for that fallback.
 
-## Tested reality (2026-11-04)
+## Tested reality (2026-11-04, re-verified with this text)
 
 Executed on a VM (Ubuntu 24.04 x86_64, glibc 2.39, Homebrew 7.0.12 at
 `/home/linuxbrew/.linuxbrew`, no sudo):
@@ -75,8 +87,10 @@ Executed on a VM (Ubuntu 24.04 x86_64, glibc 2.39, Homebrew 7.0.12 at
 | Step | Result |
 | --- | --- |
 | `brew tap` + `brew install northcel` | pass (0.2.1 and 0.3.1) |
+| `brew reinstall northcel` with the formula as published here | pass — 1,508 files, 88.6 MB, 18 s |
 | `northcel version` / `ncel version` | `northcel 0.3.1 (native runtime 0.2.0, spec 0.2.0-draft, native)` |
 | `northcel doctor` | exit 0 — every stage present, 13/13 bundle checksums |
+| `northcel doctor --json` | `"ok": true`; MoonBit `ncel-ast` compiled with `0.1.20261102 (ea07287 2026-11-02)`; **Bend 0.2.38**, **HVM 2.0.22**; GL `4.6 (Core Profile) Mesa 26.2.6`, llvmpipe, GLSL 4.60; shaders `draw430 14829a3c…`, `draw410 fe4d0c4f…` |
 | `northcel verify` | **5/5 PASS**, conformance sha256 `be0eb036…` = pinned |
 | `northcel render …starter.ncel -o /tmp/brew.png` | pass, 320×180, sha256 `b0bf8a78…` |
 | `brew reinstall` / `brew uninstall` + fresh install | pass; uninstall leaves nothing in `$HOME` |

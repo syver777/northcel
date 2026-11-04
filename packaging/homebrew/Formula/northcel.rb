@@ -1,8 +1,15 @@
 # typed: false
 # frozen_string_literal: true
 
-# Homebrew formula for NorthCel — the `.ncel` drawing language CLI with the
-# native MoonBit + Bend/HVM2 + GLSL runtime.
+# Homebrew formula for NorthCel — the `.ncel` drawing language CLI.
+#
+# What "native" means in this formula: MoonBit (`ncel-ast`) for parsing, typed AST,
+# ring decoding and Bend codegen; Bend 0.2.38 / HVM 2.0.22 for `bend_swarm` agents;
+# GLSL 4.30 compiled by a Mesa/EGL (llvmpipe) context for the pixels. Linux x86_64
+# only, glibc >= 2.39 — the formula refuses macOS, Windows and other architectures
+# instead of installing a runtime that cannot render natively. The Python
+# implementation in the same package is the normative reference *oracle* and the
+# labelled fallback renderer (`--no-native`, `fmt`); it is never called native.
 #
 # This formula lives in the public tap:
 #
@@ -20,7 +27,7 @@
 class Northcel < Formula
   include Language::Python::Virtualenv
 
-  desc "Drawing language for AI-drawn video with a native MoonBit + Bend + GLSL runtime"
+  desc "Drawing language for AI-drawn video; native MoonBit + Bend/HVM2 + GLSL"
   homepage "https://github.com/syver777/northcel"
   url "https://files.pythonhosted.org/packages/0f/c5/6642d40caa9df78d2addbafc42faa1a96722fd17d79833d1b86de2d56a0e/northcel-0.3.1.tar.gz"
   sha256 "57a90003b005864bdf033d686a89b33a3577a81be623a8ca4b6388c9566aeca5"
