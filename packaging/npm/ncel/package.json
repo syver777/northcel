@@ -1,0 +1,44 @@
+{
+  "name": "ncel",
+  "version": "0.2.1",
+  "description": "NorthCel (.ncel) CLI: runs the native MoonBit + Bend/HVM2 + GLSL runtime on Linux x86_64, and says plainly when a platform cannot run it.",
+  "license": "Proprietary",
+  "author": "North Noir",
+  "homepage": "https://northnoir.com/northcel",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/syver777/NorthNoir.git",
+    "directory": "packaging/npm/ncel"
+  },
+  "bin": {
+    "ncel": "bin/ncel.js"
+  },
+  "main": "lib/locate.js",
+  "files": [
+    "bin/ncel.js",
+    "lib/locate.js",
+    "data/AGENT-GUIDE.md",
+    "data/pins.json",
+    "data/starter.ncel",
+    "data/lantern_film.ncel",
+    "data/shower_f0001.ncel",
+    "README.md",
+    "LICENSE"
+  ],
+  "optionalDependencies": {
+    "@ncel/linux-x64": "0.2.1"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "keywords": [
+    "ncel",
+    "northcel",
+    "ai-drawn-video",
+    "animation",
+    "moonbit",
+    "bend",
+    "hvm2",
+    "glsl"
+  ]
+}

@@ -1,0 +1,23 @@
+# Generated at build time — never committed.
+#
+# The native bundle is staged from native/ncel (binaries + shaders + manifest);
+# the fixtures are copied from packages/northcel/northcel so there is exactly one
+# copy of the language examples in the repository.
+python/ncel-native/ncel_native_bundle/bin/
+python/ncel-native/ncel_native_bundle/share/
+python/ncel-native/ncel_native_bundle/licenses/
+python/ncel-native/ncel_native_bundle/*.md
+python/ncel-native/ncel_native_bundle/toolchain.lock
+python/ncel-native/ncel_native_bundle/bundle-manifest.json
+
+python/ncel/ncel/data/*.ncel
+python/ncel/ncel/data/pins.json
+python/ncel/ncel/data/AGENT-GUIDE.md
+
+npm/ncel-linux-x64/bundle/
+npm/ncel/data/
+npm/ncel/LICENSE
+
+build/
+__pycache__/
+*.egg-info/

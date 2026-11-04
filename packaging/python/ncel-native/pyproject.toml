@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ncel-native"
+version = "0.2.1"
+description = "Native NorthCel (.ncel) runtime bundle for Linux x86_64: MoonBit typed AST stage, Bend 0.2.38 / HVM 2.0.22 swarm evaluator and the GLSL 4.30 rasteriser for a Mesa/EGL context."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "Proprietary" }
+authors = [{ name = "North Noir" }]
+keywords = ["ncel", "northcel", "moonbit", "bend", "hvm2", "glsl", "animation"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Other",
+  "Topic :: Multimedia :: Graphics",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://northnoir.com/northcel"
+Repository = "https://github.com/syver777/NorthNoir/tree/main/packaging"
+
+[tool.setuptools]
+packages = ["ncel_native_bundle"]
+
+[tool.setuptools.package-data]
+ncel_native_bundle = [
+  "bin/*",
+  "share/ncel/*",
+  "licenses/*",
+  "*.md",
+  "toolchain.lock",
+  "bundle-manifest.json",
+]

@@ -1,0 +1,20 @@
+{
+  "name": "@ncel/linux-x64",
+  "version": "0.2.1",
+  "description": "Native NorthCel runtime bundle for Linux x86_64 (ncel platform package).",
+  "license": "Proprietary",
+  "author": "North Noir",
+  "homepage": "https://northnoir.com/northcel",
+  "os": ["linux"],
+  "cpu": ["x64"],
+  "libc": ["glibc"],
+  "files": [
+    "bundle/bin/*",
+    "bundle/share/ncel/*",
+    "bundle/licenses/*",
+    "bundle/*.md",
+    "bundle/toolchain.lock",
+    "bundle/bundle-manifest.json",
+    "README.md"
+  ]
+}
