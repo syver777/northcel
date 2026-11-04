@@ -39,7 +39,12 @@ class TestToolContract(unittest.TestCase):
         docs += sorted((REPO_ROOT / "js").glob("*/README.md"))
         docs += [ROOT / "README.md"]
         for path in docs:
-            for snippet in re.findall(r"```ncel\n(.*?)```", path.read_text(), re.S):
+            text = path.read_text()
+            # `docs/errors.md` deliberately contains broken files: each one is a
+            # reproduced diagnostic, marked `<!-- case-source -->`, and is checked
+            # by `docs/scripts/check_docs.py` instead of being required to pass.
+            text = re.sub(r"<!-- case-source -->\n```ncel\n.*?```", "", text, flags=re.S)
+            for snippet in re.findall(r"```ncel\n(.*?)```", text, re.S):
                 doc = parse_ncel(snippet)
                 self.assertEqual([d for d in validate_document(doc) if d.level == "error"], [], str(path))
 

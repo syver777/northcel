@@ -1,0 +1,744 @@
+{
+  "gallery": {
+    "assets/gallery/lantern_film_sheet.png": {
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "dee37b348f90222f30b378a437bcbc0fedd96f5796a29c495bcc766838b0d525"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "df79c94e02b5b5f6e98f4ae5d890f692a942a8e9a9696f87b6b279b3d11cf95a"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "09b245c56f74924b329401717e2c4077656499340b5e137b41ee498b009d1f36"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "41fce774b1bd6051f3d5d34240713f01cf6cb049c54de6fd131e75c5b1136056"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "cffbd36aa609a4c6aff1503561aa840991edeefb3341854d2a41b36854e91da3"
+        },
+        {
+          "index": 5,
+          "pixel_sha256": "938254593d034a1ef8074680a2bdecc8132a04eef00a345e71cdd845ab708fc4"
+        }
+      ],
+      "height": 1042,
+      "pixel_sha256": "ada1c9ba288605ca207a979f931571cafcb829263fb2a195a193a046112a2594",
+      "sheet": true,
+      "source": "python/northcel/examples/lantern_film.ncel",
+      "width": 1560
+    },
+    "assets/gallery/shower_f0001.png": {
+      "frame": 0,
+      "height": 1024,
+      "pixel_sha256": "e35999261cf666cfb980a65d0d242b9d129f4fd14870e50d7a6fc78ce23600a0",
+      "source": "python/northcel/examples/shower_f0001.ncel",
+      "width": 1024
+    },
+    "assets/gallery/shower_f0001_compact.png": {
+      "frame": 0,
+      "height": 1024,
+      "pixel_sha256": "74b59c63b50e450b2306d9f85c983fa02159761757d159209c7b545766e6446f",
+      "source": "python/northcel/examples/shower_f0001_compact.ncel",
+      "width": 1024
+    },
+    "assets/gallery/shower_f0002.png": {
+      "frame": 0,
+      "height": 1024,
+      "pixel_sha256": "dac44b1fd0ab4e3fcb9e1bd32dcfeeb330164aa800c18a6562008bff54a07d24",
+      "source": "python/northcel/examples/shower_f0002.ncel",
+      "width": 1024
+    }
+  },
+  "generated_by": "docs/scripts/build_docs_assets.py",
+  "guide": {
+    "assets/guide/01-first-light.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "c24c546031faf478d64233634400820d85bc474d3450cdb1d45d1e1ea4c82735"
+        }
+      ],
+      "height": 360,
+      "page": "docs/guide/01-getting-started.md",
+      "pixel_sha256": "c24c546031faf478d64233634400820d85bc474d3450cdb1d45d1e1ea4c82735",
+      "width": 640
+    },
+    "assets/guide/02-depth-order.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "0b3a44b7ca31d998189de5d3a6dc984f608e69cfc6ae49c4306107fb22383eb7"
+        }
+      ],
+      "height": 270,
+      "page": "docs/guide/02-the-scene-model.md",
+      "pixel_sha256": "0b3a44b7ca31d998189de5d3a6dc984f608e69cfc6ae49c4306107fb22383eb7",
+      "width": 480
+    },
+    "assets/guide/03-paper-study.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "77b040d9ddd78385a42a3b244ea460a9250df6a5dfa0c40d54ccab11fe92501e"
+        }
+      ],
+      "height": 300,
+      "page": "docs/guide/03-paper-and-canvas.md",
+      "pixel_sha256": "77b040d9ddd78385a42a3b244ea460a9250df6a5dfa0c40d54ccab11fe92501e",
+      "width": 520
+    },
+    "assets/guide/04-palette-chart.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "f4f3102e589c62f4deb59868f3c337ddb05607f2e7cbe519387b301f9472b573"
+        }
+      ],
+      "height": 240,
+      "page": "docs/guide/04-palette-and-colour.md",
+      "pixel_sha256": "f4f3102e589c62f4deb59868f3c337ddb05607f2e7cbe519387b301f9472b573",
+      "width": 400
+    },
+    "assets/guide/05-cel-hole.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "43f7b8ee65c0428c11fc1528f5adeb688daabd302ccd13b0ba5b96fca9ca010b"
+        }
+      ],
+      "height": 260,
+      "page": "docs/guide/05-cels-layers-and-outlines.md",
+      "pixel_sha256": "43f7b8ee65c0428c11fc1528f5adeb688daabd302ccd13b0ba5b96fca9ca010b",
+      "width": 360
+    },
+    "assets/guide/06-ink-card.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "7967d395bc5591d9b5fe437d30bdaa2e9f1950e6fc75d4e2aa5d98f6b1254d4b"
+        }
+      ],
+      "height": 260,
+      "page": "docs/guide/06-strokes-and-ribbons.md",
+      "pixel_sha256": "7967d395bc5591d9b5fe437d30bdaa2e9f1950e6fc75d4e2aa5d98f6b1254d4b",
+      "width": 480
+    },
+    "assets/guide/07-def-use.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "5e406799cc136a8b6815c28548ba79331c3c17b26fdb8ecd35ea877ab048a2f5"
+        }
+      ],
+      "height": 260,
+      "page": "docs/guide/07-def-use-and-parameters.md",
+      "pixel_sha256": "5e406799cc136a8b6815c28548ba79331c3c17b26fdb8ecd35ea877ab048a2f5",
+      "width": 480
+    },
+    "assets/guide/08-two-beats.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "1d9baee8ebd96b885d0d502b057765fb5fd2407e753eb4ff8376e5f5706a49ed"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "4defeddd199eebdb5409538713156ed6662d1d89c205a89bb337d48a848f7340"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "d6a1a41157e004c7368f1f933bcf0329113afc3456a392794502602cf2b25964"
+        },
+        {
+          "index": 5,
+          "pixel_sha256": "da8b5253cbc140ed5f242a51386f3d575aa80dd7567ca34bcb4e2a90438fbcf7"
+        }
+      ],
+      "height": 272,
+      "page": "docs/guide/08-films-and-frame-overrides.md",
+      "pixel_sha256": "d57ad0ec196f7119aa82b23c5fe682d3f17abc76945f40600e4c3ff6795160b8",
+      "width": 1950
+    },
+    "assets/guide/09-boil-study.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "969d5cfe72bcebac08a5de224a425bd54a4b81b991b5292c9ac52c0fc4cb8413"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "ea11a96e57e9bfe23dc52887ca0ae15b1a45a901b46725d762280019a940d5d9"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "45ec002931abf6cc65bcbcc8430d5b83b19cd19d0d86c6c83e341840de893585"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "c8b839967a1e06211d22aaa60488c8000341b7f186185b87a1fcba5aec82768d"
+        }
+      ],
+      "height": 222,
+      "page": "docs/guide/09-boil-and-seeded-variation.md",
+      "pixel_sha256": "263f53b539bae90891ee4f5e9dcff4470087adf30f5079dead12eece4a302d14",
+      "width": 1470
+    },
+    "assets/guide/10-base63.png": {
+      "block": 1,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "4f5de39e5b216eff2f5cec6bfa379470e898ef04ba3a0774060f708a53d1a9e6"
+        }
+      ],
+      "height": 220,
+      "page": "docs/guide/10-contour-encodings.md",
+      "pixel_sha256": "4f5de39e5b216eff2f5cec6bfa379470e898ef04ba3a0774060f708a53d1a9e6",
+      "width": 360
+    },
+    "assets/guide/10-quarter-text.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "4f5de39e5b216eff2f5cec6bfa379470e898ef04ba3a0774060f708a53d1a9e6"
+        }
+      ],
+      "height": 220,
+      "page": "docs/guide/10-contour-encodings.md",
+      "pixel_sha256": "4f5de39e5b216eff2f5cec6bfa379470e898ef04ba3a0774060f708a53d1a9e6",
+      "width": 360
+    },
+    "assets/guide/11-rain-and-grass.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "72252bab03c6a59b68b2eed0aa02fb18944743eb376d62b78165053dd61875ed"
+        }
+      ],
+      "height": 260,
+      "page": "docs/guide/11-bend-swarm.md",
+      "pixel_sha256": "72252bab03c6a59b68b2eed0aa02fb18944743eb376d62b78165053dd61875ed",
+      "width": 480
+    },
+    "assets/guide/12-diagnostic-fixed.png": {
+      "block": 1,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "d05d49521fba2cac3edd3dbcdbf6527c3bf74c08d1e27a09e606d74029930358"
+        }
+      ],
+      "height": 210,
+      "page": "docs/guide/12-diagnostics-and-errors.md",
+      "pixel_sha256": "d05d49521fba2cac3edd3dbcdbf6527c3bf74c08d1e27a09e606d74029930358",
+      "width": 360
+    },
+    "assets/guide/13-star-field.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "2506e9740e8c9d7449901b363d1fdb4fd40660fd8b335ef2693c7b0216c90dbf"
+        }
+      ],
+      "height": 360,
+      "page": "docs/guide/13-performance-and-limits.md",
+      "pixel_sha256": "2506e9740e8c9d7449901b363d1fdb4fd40660fd8b335ef2693c7b0216c90dbf",
+      "width": 640
+    },
+    "assets/guide/14-one-beat.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 2,
+          "pixel_sha256": "d7d0c544c4bf970da37f585ce97ee4c1b6ffc82dab9bb67fed7398fb6f99c3e0"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "7f01442898efecdbaf36ece7bb00b04bc7393dbf7c27b26e2b6856f1f298c1ea"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "5ab59d16382bb2541e82f48c82e60ba03208e2cfb26f2ff31fd07ffc0883532e"
+        }
+      ],
+      "height": 252,
+      "page": "docs/guide/14-editing-one-frame.md",
+      "pixel_sha256": "9b810594737efa997092f90a31480775206545a3840e31318d7c01165eb12f97",
+      "width": 1284
+    }
+  },
+  "patterns": {
+    "01-head-turn-6fps": {
+      "bytes": 2339,
+      "file": "examples/patterns/01-head-turn-6fps.ncel",
+      "fps": 6,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "d7e4b6b9e1bc75d72789f90b43edfbc15b0360feddf98d0f25bcbeaf4d39dc0c"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "d7e4b6b9e1bc75d72789f90b43edfbc15b0360feddf98d0f25bcbeaf4d39dc0c"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "0818d6b10ac4c672d6e62699e789efc6b3aa8153c98bfb259d664a429cf663c8"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "0818d6b10ac4c672d6e62699e789efc6b3aa8153c98bfb259d664a429cf663c8"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "5cc514efd27fda2f159fef6d8bf7b61707184cbeb63091d9ccd7ee4cc4f697ba"
+        },
+        {
+          "index": 5,
+          "pixel_sha256": "d7e4b6b9e1bc75d72789f90b43edfbc15b0360feddf98d0f25bcbeaf4d39dc0c"
+        }
+      ],
+      "height": 200,
+      "kind": "film",
+      "sheet": "docs/assets/patterns/01-head-turn-6fps.png",
+      "sheet_height": 418,
+      "sheet_pixel_sha256": "3fb09286cbb58dd2f5dabeef2620b679de4da4a16cf4c644fa481a6f86952f5d",
+      "sheet_width": 1470,
+      "width": 360
+    },
+    "02-blink": {
+      "bytes": 1818,
+      "file": "examples/patterns/02-blink.ncel",
+      "fps": 12,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "3d5cd58b90cc4386b215310f266c49383d29e28cc5396a134a3bb7bfd4cc67da"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "3d5cd58b90cc4386b215310f266c49383d29e28cc5396a134a3bb7bfd4cc67da"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "3d5cd58b90cc4386b215310f266c49383d29e28cc5396a134a3bb7bfd4cc67da"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "66b630812039f30e9961aea2fe4bf7287fcd936962596aaa8a80345b2f6b7c42"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "66b630812039f30e9961aea2fe4bf7287fcd936962596aaa8a80345b2f6b7c42"
+        },
+        {
+          "index": 5,
+          "pixel_sha256": "3d5cd58b90cc4386b215310f266c49383d29e28cc5396a134a3bb7bfd4cc67da"
+        },
+        {
+          "index": 6,
+          "pixel_sha256": "3d5cd58b90cc4386b215310f266c49383d29e28cc5396a134a3bb7bfd4cc67da"
+        },
+        {
+          "index": 7,
+          "pixel_sha256": "3d5cd58b90cc4386b215310f266c49383d29e28cc5396a134a3bb7bfd4cc67da"
+        }
+      ],
+      "height": 200,
+      "kind": "film",
+      "sheet": "docs/assets/patterns/02-blink.png",
+      "sheet_height": 418,
+      "sheet_pixel_sha256": "e493297c9b811f2d0c4ba97224aaee855918a11163e13afa15e604d5e380d829",
+      "sheet_width": 1310,
+      "width": 320
+    },
+    "03-jump-anticipation-squash": {
+      "bytes": 3301,
+      "file": "examples/patterns/03-jump-anticipation-squash.ncel",
+      "fps": 8,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "9a249848fa6714e10a8368ad16342d95ddf04ab0517d63466537c961ab21ae5d"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "9a249848fa6714e10a8368ad16342d95ddf04ab0517d63466537c961ab21ae5d"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "88f8a05a3713a549438ec062dc8379017fcb7c8c396fa3dbbdd8c166daf990c9"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "0e0bac6c86b73c430013a03d43a9373a798c187e4d5e06cfea0352ba77f48471"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "ed0d17c7a1d40ed273828fefc4d22cfa86ea7b88e661e07abf4520dfc27daa96"
+        },
+        {
+          "index": 5,
+          "pixel_sha256": "54fa8c374d303140c598710a3a79da4e55c3a3b215ad5e5930bb5a3f4996c5ce"
+        },
+        {
+          "index": 6,
+          "pixel_sha256": "88f8a05a3713a549438ec062dc8379017fcb7c8c396fa3dbbdd8c166daf990c9"
+        },
+        {
+          "index": 7,
+          "pixel_sha256": "88f8a05a3713a549438ec062dc8379017fcb7c8c396fa3dbbdd8c166daf990c9"
+        }
+      ],
+      "height": 220,
+      "kind": "film",
+      "sheet": "docs/assets/patterns/03-jump-anticipation-squash.png",
+      "sheet_height": 458,
+      "sheet_pixel_sha256": "870e45142321757dd4206c1bda7fba4764d1c6b25ec94142c47f8b3fb18a2cd6",
+      "sheet_width": 1470,
+      "width": 360
+    },
+    "04-colour-beat": {
+      "bytes": 1907,
+      "file": "examples/patterns/04-colour-beat.ncel",
+      "fps": 8,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "31345d9c3e8362e973658144cd64a88af8548a89a2f249fde5f3bda1a523ce3d"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "31345d9c3e8362e973658144cd64a88af8548a89a2f249fde5f3bda1a523ce3d"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "31345d9c3e8362e973658144cd64a88af8548a89a2f249fde5f3bda1a523ce3d"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "31345d9c3e8362e973658144cd64a88af8548a89a2f249fde5f3bda1a523ce3d"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "a489eb286c9e33c6321a22c9ec72678a605539d41aaaa273db55a4924ee8e5a5"
+        },
+        {
+          "index": 5,
+          "pixel_sha256": "8dda97b049430f3cace3ef7dd1553e8f9291d05c2473247b5062d682c41d489c"
+        },
+        {
+          "index": 6,
+          "pixel_sha256": "785e92ee7d2a992c8032c82f312ca2fce080d90057c3d82b66e51fa93e0b4d58"
+        },
+        {
+          "index": 7,
+          "pixel_sha256": "785e92ee7d2a992c8032c82f312ca2fce080d90057c3d82b66e51fa93e0b4d58"
+        }
+      ],
+      "height": 180,
+      "kind": "film",
+      "sheet": "docs/assets/patterns/04-colour-beat.png",
+      "sheet_height": 378,
+      "sheet_pixel_sha256": "228882e9429a43922d2c812d5c39041fbef093a3cd60a4b7afda0574a8dc5946",
+      "sheet_width": 1310,
+      "width": 320
+    },
+    "05-cloud-drift": {
+      "bytes": 1540,
+      "file": "examples/patterns/05-cloud-drift.ncel",
+      "fps": 10,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "8ce7c8bd86667d5e49c41a26bda754f5a35b65704367010e4606fa4e423ea62c"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "52ed7ccf08bf6eb4a44fd98f643f536f8084c4409dab8f3437e939cde124de4c"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "350fc2ddf920e1076e78f6ce54c8b209c4d8f69f033e4617ed3952aeb8d5bcae"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "733975c95a78d5b8f351619c9995343555347ce90e8b036582866069d1c58b92"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "9311a7c9452a22ce7749f611be6835d2d5f2eabd6eaef005534f8b7e84049432"
+        },
+        {
+          "index": 5,
+          "pixel_sha256": "8a094d3eaded19e00651d04378d303050a867f1c009e609a6ed22bbd034a043d"
+        },
+        {
+          "index": 6,
+          "pixel_sha256": "90703f1aa14c472fd13cc52821e462764ae282a4d368aaa3a50a13f16b1835ee"
+        },
+        {
+          "index": 7,
+          "pixel_sha256": "53095695833dbdb9121107a4b036a2e9d8a4c3cb7c40df04bb353ec36c24ac5e"
+        },
+        {
+          "index": 8,
+          "pixel_sha256": "679e7ab12ec25e14ce3a26c1bf9c22a30c303a6b7879e58b10a4bc180bbf1fbf"
+        },
+        {
+          "index": 9,
+          "pixel_sha256": "c567c48a2f470819bf19b41e0341af6fd58fb8f7529986da8c285c79e3ec0c81"
+        }
+      ],
+      "height": 200,
+      "kind": "film",
+      "sheet": "docs/assets/patterns/05-cloud-drift.png",
+      "sheet_height": 624,
+      "sheet_pixel_sha256": "09e81e5dcbd043425f1f545428c1b1c0d02dad25b434eee460fcee4fa9bcf414",
+      "sheet_width": 1470,
+      "width": 360
+    },
+    "06-progressive-assembly": {
+      "bytes": 1714,
+      "file": "examples/patterns/06-progressive-assembly.ncel",
+      "fps": 6,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "9e346ec34ac5b82e69dee1cba3ca7a3989925072d214d3906d363cb25dd4d052"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "0ff21e350366b7d8e8c4b885ce8e4a4e22cc498dc7ffcde240cd15400e0c377c"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "d4845cf1e4d4389991aee7ba1b95d835b9f7dc6009df34f814d7558322f9211a"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "978cc6fc13fe750310f9a5f114be01906c9ee49e3d53073e4a03b95bf08cb389"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "412cbda13349fcb04e565e55583d5b61798bf8a43c1c458b80e26767befb80d5"
+        },
+        {
+          "index": 5,
+          "pixel_sha256": "c1464a9d74c3154cf590e2c4ee9e1f9f4d35e543aba844a28d9cff1b915236ac"
+        },
+        {
+          "index": 6,
+          "pixel_sha256": "b6df6f8f19a03276a6e5c94e975b43296ab76903325ce6125e2f8016b9f0c1cf"
+        },
+        {
+          "index": 7,
+          "pixel_sha256": "b6df6f8f19a03276a6e5c94e975b43296ab76903325ce6125e2f8016b9f0c1cf"
+        }
+      ],
+      "height": 220,
+      "kind": "film",
+      "sheet": "docs/assets/patterns/06-progressive-assembly.png",
+      "sheet_height": 458,
+      "sheet_pixel_sha256": "00f9df6bfb45a22bdabb5f403f9ccdd35a7c7055a13c76b6534aa3f4c9d17343",
+      "sheet_width": 1310,
+      "width": 320
+    },
+    "07-duck-walk": {
+      "bytes": 1683,
+      "file": "examples/patterns/07-duck-walk.ncel",
+      "fps": 12,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "9e6a138c058de71bbca8e0af3c9adc3e74441deeda03a1612846e69b2d8ebd85"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "3bb7d496d137f122c735fb78eb0fd278b0b0e30e3506b0506f3e6211eab91d8e"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "01f7475c4a48d8896b9b9b5ad6d3b5560848f495ea7a365308e9fb954672a505"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "0675cfc9c7f94eea025fbdaa6809d850484515c5a6690ae739b61520640e906d"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "aff79e80370fadd4c16a7a6be3c41b401c2819a7829749b7e17281218ab754b6"
+        },
+        {
+          "index": 5,
+          "pixel_sha256": "d2aeb858afc3202b2d0168441c2760850709be8c8ac27c5175fe8da5c8e073b4"
+        },
+        {
+          "index": 6,
+          "pixel_sha256": "0908fde41b43968b0599259b13194a4bba40cf86c304e9ea3dd3c427e0143594"
+        },
+        {
+          "index": 7,
+          "pixel_sha256": "9290f1fc32bbf0a65f5d7c061f6c4e820da50a4d6235bb74057ee2532f45f2ed"
+        },
+        {
+          "index": 8,
+          "pixel_sha256": "37d20740fab5f92f792e32470f270ba2d7a42b20470a7a7ce29cfc7ecc2ca662"
+        },
+        {
+          "index": 9,
+          "pixel_sha256": "5a2d82cc45705bb7ca6ad3add2bf90dec50729d3d8e5c9af661f1c09c0c6b0f0"
+        },
+        {
+          "index": 10,
+          "pixel_sha256": "490dcf60b91bcc1e5f2bf2c85c9780ac8cf6d900364fce91b67f2d5fc46881c2"
+        },
+        {
+          "index": 11,
+          "pixel_sha256": "c7533f4193a9a0e2c0c737e0e0e2442b0364965e93f4a1648f79a8e15ad4574b"
+        }
+      ],
+      "height": 200,
+      "kind": "film",
+      "sheet": "docs/assets/patterns/07-duck-walk.png",
+      "sheet_height": 624,
+      "sheet_pixel_sha256": "1b2e599e291d498b298d01ca138b969bf1b30d4a16a2286f7302a6bcc7b0c6ff",
+      "sheet_width": 1470,
+      "width": 360
+    },
+    "08-line-boil": {
+      "bytes": 1020,
+      "file": "examples/patterns/08-line-boil.ncel",
+      "fps": 8,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "fd2be2f4f50b0d106cb036452166fd0c5815bd373f9c3b85c47b0bc5b7e51ef3"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "d82949e12035c97e3841a32dbb36cb00f2d651cf9346cc8e60f2a08b6e2c36d4"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "75aaacf0e942e2b5e35699bbd389962e8d9c7ddab0dc04d8d2b51bd9883cfd12"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "87689178f6e05700d0dfb6e95b9adc5d85ffa9fb72615710aa74a867aa89676c"
+        }
+      ],
+      "height": 220,
+      "kind": "film",
+      "sheet": "docs/assets/patterns/08-line-boil.png",
+      "sheet_height": 232,
+      "sheet_pixel_sha256": "1c8cf927da687010c93c4bfb7c71cfd00d7146a679ff4c2eeb0b4417fb6eabe2",
+      "sheet_width": 1470,
+      "width": 360
+    },
+    "09-crowd-swarm": {
+      "bytes": 2346,
+      "file": "examples/patterns/09-crowd-swarm.ncel",
+      "fps": 6,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "e3c26a4a29ce17500b34a974307e2b4d99740b17df8340a1e632821fe07bf46b"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "429108f284301450f066bf09f676cc4df068b697ae7f9db8d7c54d254c191da0"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "b3186edace5bf3460de4243c7dac0c487b1a45b18701ffcedf8b4d11b04aefbd"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "63539c3fca4c46e347b073901a97a72fbaccb3e8d9a56fb123f271c6ec36d9e9"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "3a686e384e7a3fe2e5a5fbe6f076ebaaf9b41508c7d34e3ca6822beda348a19c"
+        },
+        {
+          "index": 5,
+          "pixel_sha256": "cec2e438451a585b6108bc4948fdbf4c6048c9f5b3d88a10a3eef263db5079dc"
+        }
+      ],
+      "height": 200,
+      "kind": "film",
+      "sheet": "docs/assets/patterns/09-crowd-swarm.png",
+      "sheet_height": 418,
+      "sheet_pixel_sha256": "4eb364b2a1928e23e5bf8947b40ef3f87491b6abae2f97b5fac719d48ae9960b",
+      "sheet_width": 1470,
+      "width": 360
+    },
+    "10-two-shot": {
+      "bytes": 2151,
+      "file": "examples/patterns/10-two-shot.ncel",
+      "fps": 8,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "e031a9664301d26fb0a837385bec99c4878e3380f97792718329f3d5ce8a6933"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "e031a9664301d26fb0a837385bec99c4878e3380f97792718329f3d5ce8a6933"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "3ce3e58f07890a465869afd160b88ec02c0fe8178279c3464c4d491d1ff61052"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "e031a9664301d26fb0a837385bec99c4878e3380f97792718329f3d5ce8a6933"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "5fcf78a5186b2b2432bffffe9a6cc610d8cf6c3001a7194ef74a44d55a717bce"
+        },
+        {
+          "index": 5,
+          "pixel_sha256": "5fcf78a5186b2b2432bffffe9a6cc610d8cf6c3001a7194ef74a44d55a717bce"
+        },
+        {
+          "index": 6,
+          "pixel_sha256": "5fcf78a5186b2b2432bffffe9a6cc610d8cf6c3001a7194ef74a44d55a717bce"
+        },
+        {
+          "index": 7,
+          "pixel_sha256": "5fcf78a5186b2b2432bffffe9a6cc610d8cf6c3001a7194ef74a44d55a717bce"
+        }
+      ],
+      "height": 200,
+      "kind": "film",
+      "sheet": "docs/assets/patterns/10-two-shot.png",
+      "sheet_height": 418,
+      "sheet_pixel_sha256": "ad0b6f11e99aa4fa915bec9ee661cde89766582e53108e88eb4ff33a0070acbb",
+      "sheet_width": 1470,
+      "width": 360
+    }
+  },
+  "renderer": "python-reference",
+  "tool": "northcel 0.3.1"
+}
