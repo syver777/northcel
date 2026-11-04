@@ -177,7 +177,8 @@ and the JS pre-check without any of that.
 GitHub Actions runs on every push to `main` and every pull request:
 Python 3.10–3.13 (lint on 3.12), Node 20/22 (JS tests, `npm pack` and a packed-file
 assertion), a wheel build + clean-venv install smoke test, cross-implementation
-conformance, and a licence-copy check. The heavy native job —
+conformance, a licence-copy check, and a **docs** job that renders every guide
+snippet and pattern and reproduces every diagnostic. The heavy native job —
 MoonBit toolchain, C GL host, native suite and native-vs-reference conformance —
 is **manual** because it downloads a 101 MB toolchain and needs Mesa/EGL:
 

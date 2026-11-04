@@ -11,6 +11,7 @@ the top-level README points at it.
 | `wheel build + install smoke test` | ubuntu-latest | sdist + wheel build, `twine check`, install into a clean venv, and `northcel`/`ncel`/`check`/`info`/`render` behave; the render receipt says `python-reference` / `native: false` |
 | `conformance (both implementations)` | ubuntu-latest | reference probes and forward/reverse determinism; native agreement is reported as **SKIP**, never as a pass, because no native bundle ships in CI |
 | `licence copies in sync` | ubuntu-latest | every `LICENSE-MIT`/`LICENSE-APACHE` copy is byte-identical to the root texts |
+| `docs (snippets render, images match, errors reproduce)` | ubuntu-latest | every guide snippet checks and renders to the committed pixels, every `examples/patterns/*.ncel` renders and its contact sheet matches, every diagnostic in `docs/errors.md` is regenerated from the source, and every relative link/image resolves |
 | `native build + conformance (manual)` | ubuntu-24.04 | provisions the 101 MB MoonBit toolchain, builds the C GL host with Mesa/EGL, runs `native/tests/run-tests.sh` and compares native frames to the reference |
 
 ## Running the heavy native job
