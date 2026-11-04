@@ -80,27 +80,37 @@ jobs:
         run: npm --prefix js/northcel test
       - name: npm pack
         run: |
-          # `npm pack --pack-destination` does not create the directory (npm 10+),
-          # and `dist/` is git-ignored, so a fresh checkout has none: create it.
-          mkdir -p "$GITHUB_WORKSPACE/dist"
+          # One directory per package: `northcel-*.tgz` would also match
+          # `northcel-linux-x64-*.tgz`, and `tar tzf northcel-*.tgz` then treats the
+          # second file as a member name, silently producing an empty listing.
+          # `npm pack --pack-destination` does not create the directory (npm 10+) and
+          # `dist/` is git-ignored, so a fresh checkout has none: create them.
+          mkdir -p "$GITHUB_WORKSPACE/dist/main" "$GITHUB_WORKSPACE/dist/platform"
           cd js/northcel
-          npm pack --pack-destination "$GITHUB_WORKSPACE/dist"
+          npm pack --pack-destination "$GITHUB_WORKSPACE/dist/main"
           cd ../northcel-linux-x64
-          npm pack --pack-destination "$GITHUB_WORKSPACE/dist"
+          npm pack --pack-destination "$GITHUB_WORKSPACE/dist/platform"
       - name: Packed files are the expected ones
         run: |
           cd "$GITHUB_WORKSPACE/dist"
+          set -euo pipefail
+          main=$(ls main/*.tgz)
+          platform=$(ls platform/*.tgz)
+          # Exactly one tarball each: a second match silently breaks `tar`.
+          test "$(printf '%s\n' $main | wc -l)" -eq 1
+          test "$(printf '%s\n' $platform | wc -l)" -eq 1
           # The main tarball must carry both commands, the pre-check and the guide;
           # the platform tarball is only the bundle, so without a native build it is
           # expected to be small (the `native` job produces the real one).
-          tar tzf northcel-*.tgz | sort > main.txt
+          tar tzf "$main" | sort > main.txt
+          test -s main.txt
           for want in package/package.json package/bin/northcel.js package/lib/locate.js \
                       package/index.cjs package/rules.json package/northcel/AGENT-GUIDE.md \
                       package/data/pins.json package/data/shower_f0001.ncel \
                       package/README.md package/LICENSE-MIT package/LICENSE-APACHE; do
             grep -qx "$want" main.txt || { echo "missing $want"; exit 1; }
           done
-          tar tzf northcel-linux-x64-*.tgz | sort > platform.txt
+          tar tzf "$platform" | sort > platform.txt
           grep -qx "package/package.json" platform.txt
           grep -qx "package/README.md" platform.txt
           echo "tarball contents OK"
