@@ -1,6 +1,6 @@
 # NorthCel (`.ncel`) Examples & Measured Benchmarks
 
-All example `.ncel` files ship inside `packages/northcel/northcel/examples/` and are verified by the automated test suite.
+All example `.ncel` files ship inside `python/northcel/examples/` and are verified by the automated test suite.
 
 ---
 
@@ -32,7 +32,7 @@ The pure-Python + NumPy reference renderer (`northcel render`) reproduces the sa
 | `shower_f0001.ncel` | `0.999992` | `0.0115` | **`0.961733`** | **`3.3014`** | **`0.6945`** |
 | `shower_f0002.ncel` | `0.999993` | `0.0113` | **`0.971794`** | **`3.2989`** | **`0.6582`** |
 
-Visual comparison artifacts are banked in `docs/northcel/assets/`:
-- `docs/northcel/assets/side_by_side_all_variants.png`
-- `docs/northcel/assets/northcel_vs_v7_and_teacher.png`
-- `docs/northcel/assets/detail_face_f0001.png`
+Visual comparison artifacts are banked in `docs/assets/`:
+- `docs/assets/side_by_side_all_variants.png`
+- `docs/assets/northcel_vs_v7_and_teacher.png`
+- `docs/assets/detail_face_f0001.png`

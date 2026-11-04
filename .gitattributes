@@ -1,0 +1,17 @@
+# Normalise line endings on text; never touch the binaries we vendor or render.
+* text=auto eol=lf
+
+*.ncel text eol=lf
+*.mbt text eol=lf
+*.glsl text eol=lf
+*.py text eol=lf
+*.js text eol=lf
+*.cjs text eol=lf
+*.sh text eol=lf
+*.md text eol=lf
+
+native/vendor/linux-x86_64/bin/bend binary
+native/vendor/linux-x86_64/bin/hvm binary
+*.png binary
+*.jpg binary
+*.tgz binary

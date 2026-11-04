@@ -42,7 +42,7 @@ NorthCel deliberately combines the single strongest attribute of three layers we
    - *What it does not add:* An interaction-combinator tree does not make a bad contour look good; arbitrary tangent curl or spring physics hurt visual similarity when applied blindly.
 3. **From GLSL — Per-Pixel Continuous Coverage & 4×4 Subpixel Supersampling:**
    - *What it contributes:* Evaluating even-odd winding parity on an `N×N` subpixel grid (`antialias_grid: 4`, i.e., `0.25px` resolution) with 8-row spatial band acceleration and box integration gives crisp, antialiased ink edges, clean aperture cutouts (water droplets on tile/skin/hair), and deterministic paper grain.
-   - *Execution independence:* While NorthCel can compile to native MoonBit + Bend + OpenGL/EGL GLSL where those toolchains are installed, the **normative reference implementation (`packages/northcel`) is a pure-Python + NumPy renderer** that reproduces the GLSL reference renders within `0.0115` greyscale MAE (`0.99999+` SSIM) with zero external compiler dependencies.
+   - *Execution independence:* While NorthCel can compile to native MoonBit + Bend + OpenGL/EGL GLSL where those toolchains are installed, the **normative reference implementation (`python`) is a pure-Python + NumPy renderer** that reproduces the GLSL reference renders within `0.0115` greyscale MAE (`0.99999+` SSIM) with zero external compiler dependencies.
 
 ---
 
@@ -166,7 +166,7 @@ All lexical, syntactic, and semantic errors MUST report 1-based `line:column` co
 
 ## 9. Conformance Suite (Normative)
 
-The official conformance suite lives in `packages/northcel/northcel/conformance/` (`conformance_manifest.json` + `01_evenodd_aperture.ncel`, `02_color_stroke_ribbon.ncel`, `03_film_def_use_boil.ncel`). A third-party implementation conforms to NorthCel `0.1.0-draft` if it passes all syntax/validation checks, satisfies every pixel probe in `conformance_manifest.json`, and produces identical hashes across forward and reverse frame rendering orders.
+The official conformance suite lives in `python/northcel/conformance/` (`conformance_manifest.json` + `01_evenodd_aperture.ncel`, `02_color_stroke_ribbon.ncel`, `03_film_def_use_boil.ncel`). A third-party implementation conforms to NorthCel `0.1.0-draft` if it passes all syntax/validation checks, satisfies every pixel probe in `conformance_manifest.json`, and produces identical hashes across forward and reverse frame rendering orders.
 
 ---
 

@@ -1,7 +1,0 @@
-Copyright (c) 2026 North Noir (https://northnoir.com). All rights reserved.
-
-Proprietary License (matches packages/northnoir-cli).
-
-Permission is granted to install and use the `northcel` package, CLI (`northcel` / `ncel`),
-specification, examples, and editor grammar to author, validate, format, and render
-`.ncel` AI-drawn images and videos locally or with North Noir services.

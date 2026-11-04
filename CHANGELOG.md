@@ -1,6 +1,58 @@
-# Changelog — NorthCel (`northcel` / `.ncel`)
+# Changelog
 
-All notable changes to the **NorthCel** language specification, reference implementation, CLI, and editor tooling are documented in this file.
+All notable changes to the NorthCel language specification, the reference
+implementation, the native runtime, the CLI and the editor tooling.
+
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
+versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The language specification has its own draft number (`0.2.0-draft`), which does not
+move for packaging-only releases.
+
+---
+
+## [Unreleased]
+
+## [0.3.1] — One package name, one repository (2026-11-04)
+
+NorthCel is now its own open-source project: this repository, dual licensed under
+MIT OR Apache-2.0. Nothing in the language changed.
+
+### Changed
+- **One install name everywhere: `northcel`.** `pip install northcel` now installs
+  the reference implementation *and* the native launcher as a single distribution
+  with the console scripts `northcel` and `ncel`; it depends on the platform wheel
+  `northcel-native`. `npm install -g northcel` installs the launcher plus the
+  optional `northcel-linux-x64` bundle. `ncel` is the short command alias, never a
+  package name.
+- The npm `northcel` package now exposes a single merged CLI (`bin/northcel.js`)
+  that dispatches native → Python reference → PARTIAL JS pre-check, instead of two
+  separate scripts with two different behaviours.
+- Package metadata points at `github.com/syver777/northcel`; `homepage`, `bugs`,
+  `repository` and the documentation links moved with the code.
+- Repository layout: `python/` (reference + launcher), `python/northcel-native/`,
+  `js/northcel/`, `js/northcel-linux-x64/`, `native/`, `docs/`, `packaging/`,
+  `editors/`.
+
+### Licensed
+- Dual **MIT OR Apache-2.0** (was proprietary). NorthNoir itself is unchanged.
+
+### Added
+- GitHub Actions CI: Python 3.10–3.13, JS tests, `npm pack`, wheel build + install
+  smoke test, and a conformance job that renders the same frames with both
+  implementations.
+- `Makefile` with `make test`, `make lint`, `make dist`, `make verify`.
+- `CODE_OF_CONDUCT.md`, and a rewritten `CONTRIBUTING.md` and `SECURITY.md`.
+
+### Deprecated
+- PyPI `ncel` and `ncel-native`, and npm `@ncel/linux-x64`, are deprecated aliases
+  that now install/point at the `northcel` packages. Existing installs keep working.
+
+### Fixed
+- `starter.ncel`, the fixture `northcel verify` renders, was previously generated
+  into a git-ignored directory and therefore missing from a clean checkout. It is
+  now a tracked example like every other fixture.
+- The launcher no longer treats the Python reference as a separate distribution it
+  must find by name: it imports the reference from its own package.
 
 ---
 
@@ -56,4 +108,4 @@ All notable changes to the **NorthCel** language specification, reference implem
 ## [0.1.0] — Specification `0.1.0-draft` (2026-11-03)
 
 ### Added
-- Initial Language Specification (`docs/northcel/spec/SPEC-0.1.0-draft.md`), pure-Python + NumPy 4×4 subpixel reference renderer, CLI (`northcel` / `ncel`), conformance suite, VS Code TextMate grammar, and `0.1.0` PyPI release.
+- Initial Language Specification (`docs/spec/SPEC-0.1.0-draft.md`), pure-Python + NumPy 4×4 subpixel reference renderer, CLI (`northcel` / `ncel`), conformance suite, VS Code TextMate grammar, and `0.1.0` PyPI release.

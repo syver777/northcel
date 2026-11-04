@@ -1,0 +1,43 @@
+# --- Python -------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.tox/
+.venv/
+venv/
+
+# --- Node ---------------------------------------------------------------
+node_modules/
+npm-debug.log*
+*.tgz
+
+# --- Native build outputs (all reproducible, none committed) ------------
+native/build/
+native/moonbit/_build/
+native/moonbit/cmd/ncel_ast/pkg.generated.mbti
+native/test-out/
+native/artifacts/
+native/.toolchain/
+
+# --- Staged bundles and generated package data --------------------------
+# Produced by packaging/scripts/stage_bundle.py and build_npm.sh; the source of
+# truth is native/ plus python/northcel.
+python/northcel-native/northcel_native_bundle/bin/
+python/northcel-native/northcel_native_bundle/share/
+python/northcel-native/northcel_native_bundle/licenses/
+python/northcel-native/northcel_native_bundle/*.md
+python/northcel-native/northcel_native_bundle/toolchain.lock
+python/northcel-native/northcel_native_bundle/bundle-manifest.json
+js/northcel-linux-x64/bundle/
+js/northcel/data/*.ncel
+js/northcel/data/pins.json
+
+# --- Editors / OS -------------------------------------------------------
+.DS_Store
+*.swp
+.idea/

@@ -68,7 +68,7 @@ conformance() {
 
 examples() {
   require_build
-  local ex="$REPO/packages/northcel/northcel/examples"
+  local ex="$REPO/python/northcel/examples"
   [[ -d "$ex" ]] || { echo "examples dir not found, skipping"; return 0; }
   echo "== examples =="
   local dir="$OUT/examples"; rm -rf "$dir"; mkdir -p "$dir"
@@ -85,7 +85,7 @@ examples() {
 determinism() {
   require_build
   echo "== determinism (forward vs shuffled) =="
-  local film="$REPO/packages/northcel/northcel/examples/lantern_film.ncel"
+  local film="$REPO/python/northcel/examples/lantern_film.ncel"
   local dir="$OUT/determinism"; rm -rf "$dir"; mkdir -p "$dir/a" "$dir/b"
   "$CLI" film "$film" -o "$dir/a" --frames 0..5 --json >"$dir/a.json"
   # Shuffled order, one frame per invocation.
@@ -105,7 +105,7 @@ assert a == b, (a, b)
 print("determinism: identical hashes for", len(a), "frames")
 PY
   # Shower (Bend stage) rendered twice must also match byte for byte.
-  local sh="$REPO/packages/northcel/northcel/examples/shower_f0001.ncel"
+  local sh="$REPO/python/northcel/examples/shower_f0001.ncel"
   "$CLI" render "$sh" -o "$dir/sh-1.png" --json >"$dir/sh-1.json"
   "$CLI" render "$sh" -o "$dir/sh-2.png" --json >"$dir/sh-2.json"
   cmp "$dir/sh-1.png" "$dir/sh-2.png" || fail "shower frame not deterministic"
@@ -114,12 +114,12 @@ PY
 
 oracle() {
   require_build
-  local py="$REPO/packages/northcel"
+  local py="$REPO/python"
   [[ -d "$py/northcel" ]] || { echo "python reference not found, skipping"; return 0; }
   echo "== oracle: Python reference comparison =="
   local dir="$OUT/oracle"; rm -rf "$dir"; mkdir -p "$dir/native" "$dir/reference"
   for f in shower_f0001 shower_f0002 shower_f0001_compact; do
-    src="$REPO/packages/northcel/northcel/examples/$f.ncel"
+    src="$REPO/python/northcel/examples/$f.ncel"
     "$CLI" render "$src" -o "$dir/native/$f.png" --json >"$dir/$f.json"
     python3 "$ROOT/tests/render_reference.py" "$py" "$src" "$dir/reference/$f.png" 0
   done
@@ -141,7 +141,7 @@ grammar() {
   for fr in 0 1 2; do
     "$CLI" render "$src" --frame "$fr" -o "$dir/native/f$(printf '%04d' "$fr").png" --json >/dev/null
   done
-  local py="$REPO/packages/northcel"
+  local py="$REPO/python"
   if [[ -d "$py/northcel" ]]; then
     for fr in 0 1 2; do
       python3 "$ROOT/tests/render_reference.py" "$py" "$src" "$dir/reference/f$(printf '%04d' "$fr").png" "$fr"
@@ -162,8 +162,8 @@ PY
 perf() {
   require_build
   echo "== performance (native vs Python reference) =="
-  local py="$REPO/packages/northcel"
-  local src="$REPO/packages/northcel/northcel/examples/shower_f0001.ncel"
+  local py="$REPO/python"
+  local src="$REPO/python/northcel/examples/shower_f0001.ncel"
   local tv="$REPO/work/checks/northcel-b/fitted_v02/ncel/f0076.ncel"
   for target in "$src" "$tv"; do
     [[ -f "$target" ]] || continue

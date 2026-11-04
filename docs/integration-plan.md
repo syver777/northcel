@@ -37,7 +37,7 @@ When Phase B implements CLI integration, `northnoir` will gain native `.ncel` su
 To let Claude Desktop, Claude Code, Cursor, and OpenCode create and edit `.ncel` videos through the North Noir MCP server:
 
 1. **New MCP Tools (Phase B):**
-   - `validate_northcel`: Runs the zero-dependency JS validator (`packages/northcel/js/index.cjs`) inside Deno Deploy to return instant `line:column` syntax/ring-chain diagnostics before rendering.
+   - `validate_northcel`: Runs the zero-dependency JS validator (`js/northcel/index.cjs`) inside Deno Deploy to return instant `line:column` syntax/ring-chain diagnostics before rendering.
    - `render_northcel_frame` / `render_northcel_film`: Sends validated `.ncel` source to the rendering worker, stores each rendered frame in the section's frame strip (`RF3_frames` compatible), and returns a preview URL + contact sheet.
    - `adjust_northcel_layer`: Surgically replaces or updates a single named `layer`, `stroke`, `ribbon`, or `bend_swarm` block in an existing `.ncel` document and re-renders only affected frames.
 2. **Files in `denodeploy/` and `supabase/functions/` that would change in Phase B:**

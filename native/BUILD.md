@@ -4,7 +4,7 @@ This tree builds a real native renderer: **MoonBit** parses the typed scene/film
 AST and decodes contour chains, **Bend/HVM2** evaluates stateless agent swarms,
 and **GLSL** (compiled by a headless Mesa/EGL runtime) rasterises every pixel.
 
-Nothing here is Python. The Python reference renderer in `packages/northcel/` is
+Nothing here is Python. The Python reference renderer in `python/` is
 used only by the conformance tests as an oracle.
 
 ## 1. Prerequisites (Ubuntu 24.04 / Debian, x86_64)

@@ -89,14 +89,14 @@ The structural scanner is intentionally not advertised as a complete JS parser.
 An invalid file can pass the pre-check (e.g. `film F(fps: 0) { use Missing }`).
 Generated `js/rules.json` takes version constants, statement sets and the Base-63
 alphabet from Python. The compact packaged guide is extracted verbatim from
-marked text in `docs/northcel/agent-guide.md`; `scripts/sync-assets.py --check`
+marked text in `docs/agent-guide.md`; `scripts/sync-assets.py --check`
 and package tests prevent stale copies at release time. Run
-`python3 packages/northcel/scripts/sync-assets.py` after editing the source guide.
+`python3 js/northcel/scripts/sync-assets.py` after editing the source guide.
 
 ## 4. Editor Support, GitHub Linguist & Tree-Sitter Notes
 
-- **VS Code / TextMate:** A highlighting grammar (`source.northcel`, not a validator) and VS Code extension manifest live in `packages/northcel/editors/vscode/`.
+- **VS Code / TextMate:** A highlighting grammar (`source.northcel`, not a validator) and VS Code extension manifest live in `editors/vscode/`.
 - **GitHub Linguist requirements (when ready to submit a PR later):**
   1. Wide public usage across multiple repositories using `.ncel`.
   2. An entry in `languages.yml` mapping `.ncel` to `tm_scope: source.northcel`, `type: programming`, `color: "#8E24AA"`, and pointing to the TextMate grammar repository.
-- **Tree-sitter requirements:** A `grammar.js` mirroring the EBNF in `docs/northcel/spec/SPEC-0.1.0-draft.md` (specifically `scene`/`film`, `paper`, `def`/`use`, `layer`/`bend_swarm`/`stroke`/`ribbon`, and `Expr`).
+- **Tree-sitter requirements:** A `grammar.js` mirroring the EBNF in `docs/spec/SPEC-0.1.0-draft.md` (specifically `scene`/`film`, `paper`, `def`/`use`, `layer`/`bend_swarm`/`stroke`/`ribbon`, and `Expr`).

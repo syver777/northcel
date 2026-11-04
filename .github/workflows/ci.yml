@@ -1,0 +1,181 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+
+jobs:
+  python:
+    name: python ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install the reference implementation
+        # `--no-deps` on purpose: `northcel` depends on the platform wheel
+        # `northcel-native`, which needs a native build (see the `native` job) and
+        # is installed from PyPI once published. The reference library itself is
+        # pure Python.
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy Pillow pytest
+          python -m pip install --no-deps -e ./python
+      - name: Lint
+        if: matrix.python == '3.12'
+        run: |
+          python -m pip install ruff
+          python -m ruff check python tests packaging/scripts
+      - name: Reference test suite
+        run: python -m pytest python/tests -q
+
+  js:
+    name: node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["20", "22"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generated assets are in sync
+        run: |
+          python3 packaging/scripts/gen_pins.py
+          python3 js/northcel/scripts/sync-assets.py --check
+      - name: Stage fixtures for packing
+        run: bash packaging/scripts/stage_npm_data.sh
+      - name: JS tests
+        run: npm --prefix js/northcel test
+      - name: npm pack
+        run: |
+          cd js/northcel
+          npm pack --pack-destination "$GITHUB_WORKSPACE/dist"
+          cd ../northcel-linux-x64
+          npm pack --pack-destination "$GITHUB_WORKSPACE/dist"
+      - name: Packed files are the expected ones
+        run: |
+          cd "$GITHUB_WORKSPACE/dist"
+          # The main tarball must carry both commands, the pre-check and the guide;
+          # the platform tarball is only the bundle, so without a native build it is
+          # expected to be small (the `native` job produces the real one).
+          tar tzf northcel-*.tgz | sort > main.txt
+          for want in package/package.json package/bin/northcel.js package/lib/locate.js \
+                      package/index.cjs package/rules.json package/northcel/AGENT-GUIDE.md \
+                      package/data/pins.json package/data/shower_f0001.ncel \
+                      package/README.md package/LICENSE-MIT package/LICENSE-APACHE; do
+            grep -qx "$want" main.txt || { echo "missing $want"; exit 1; }
+          done
+          tar tzf northcel-linux-x64-*.tgz | sort > platform.txt
+          grep -qx "package/package.json" platform.txt
+          grep -qx "package/README.md" platform.txt
+          echo "tarball contents OK"
+
+  wheel:
+    name: wheel build + install smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build the sdist and wheel
+        run: |
+          python -m pip install --upgrade pip build twine
+          python3 packaging/scripts/gen_pins.py
+          cd python && python -m build --outdir ../dist/python
+          cd .. && python -m twine check dist/python/*
+      - name: Install the built wheel into a clean venv
+        run: |
+          python -m venv /tmp/smoke
+          /tmp/smoke/bin/pip install --quiet --no-deps dist/python/northcel-*.whl
+          /tmp/smoke/bin/pip install --quiet numpy Pillow
+          /tmp/smoke/bin/northcel --version
+          /tmp/smoke/bin/ncel --version
+          /tmp/smoke/bin/northcel check python/northcel/examples/starter.ncel
+          /tmp/smoke/bin/python -m northcel info python/northcel/examples/lantern_film.ncel --json > /dev/null
+          /tmp/smoke/bin/northcel render python/northcel/examples/starter.ncel -o /tmp/starter.png --json | tee /tmp/receipt.json
+          grep -q '"renderer": "python-reference"' /tmp/receipt.json
+          grep -q '"native": false' /tmp/receipt.json
+
+  conformance:
+    name: conformance (both implementations)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Reference probes, determinism and (if available) native agreement
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy Pillow
+          # No native bundle ships in CI: `--native` would be a skip, not a pass,
+          # and this job says so. The `native` job builds and runs the real one.
+          PYTHONPATH=python python tests/conformance.py --native --json | tee conformance.json
+          python - <<'PY'
+          import json
+          doc = json.load(open("conformance.json"))
+          assert doc["ok"] is True, doc
+          assert doc["reference_probes"]["ok"] is True, doc
+          assert doc["determinism"]["ok"] is True, doc
+          native = doc.get("native_agreement", {})
+          print("native agreement:", "skipped (no bundle in this job)" if native.get("ok") is None else native)
+          PY
+
+  licences:
+    name: licence copies in sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make check-licenses
+
+  native:
+    name: native build + conformance (manual)
+    # Heavy and deliberate: provisions the 101 MB MoonBit toolchain, builds the C
+    # GL host and needs Mesa/EGL. Run it from the Actions tab when the native tree
+    # or the shaders change. Documented in native/BUILD.md.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: System dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libegl1 libgl1 mesa-libgallium llvm
+      - name: Build the native runtime
+        run: |
+          cd native
+          bash scripts/provision-toolchain.sh
+          make
+          build/bin/ncel-native --version
+      - name: Native test suite + conformance against the reference
+        run: |
+          cd native
+          bash tests/run-tests.sh
+          cd ..
+          python -m pip install numpy Pillow
+          NCEL_NATIVE_BIN="$PWD/native/build/bin/ncel-native" \
+            PYTHONPATH=python python tests/conformance.py --native

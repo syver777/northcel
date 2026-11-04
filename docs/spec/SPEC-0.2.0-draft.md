@@ -40,7 +40,7 @@ NorthCel deliberately combines the single strongest attribute of three layers we
    - *What it contributes:* Modeling repetitive organic micro-elements (`bend_swarm` droplets, bristles, grass tufts, and stateless vertex `boil`) as independent parallel agents indexed by `(seed, frame_index, agent_id)` guarantees order-independence and parallel frame evaluation.
 3. **From GLSL — Per-Pixel Continuous Coverage & 4×4 Subpixel Supersampling:**
    - *What it contributes:* Evaluating even-odd winding parity on an `N×N` subpixel grid (`antialias_grid: 4`, i.e., `0.25px` resolution) with 8-row spatial band acceleration and box integration gives crisp antialiased ink edges, automatic aperture cutouts, and deterministic paper grain.
-   - *Execution independence:* The **normative reference implementation (`packages/northcel`) is a pure-Python + NumPy renderer** that reproduces the GLSL reference renders within `0.0115` greyscale MAE (`0.99999+` SSIM) with zero external compiler dependencies.
+   - *Execution independence:* The **normative reference implementation (`python`) is a pure-Python + NumPy renderer** that reproduces the GLSL reference renders within `0.0115` greyscale MAE (`0.99999+` SSIM) with zero external compiler dependencies.
 
 ---
 
@@ -136,4 +136,4 @@ StringLit      = '"' { Character } '"' ;
 
 ## 6. Rendering Semantics, Diagnostics, Versioning & Conformance (Normative)
 
- Sections 6–9 follow the exact `N×N` subpixel (`antialias_grid: 4`) even-odd winding rules, `line:column` diagnostic format, backward-compatible versioning policy (`0.1.0-draft` and `0.2.0-draft`), and conformance suite (`packages/northcel/northcel/conformance/`) established in `0.1.0-draft`.
+ Sections 6–9 follow the exact `N×N` subpixel (`antialias_grid: 4`) even-odd winding rules, `line:column` diagnostic format, backward-compatible versioning policy (`0.1.0-draft` and `0.2.0-draft`), and conformance suite (`python/northcel/conformance/`) established in `0.1.0-draft`.

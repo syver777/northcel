@@ -53,14 +53,14 @@ This document records the key architectural, experimental, and naming decisions 
 
 - **Context:** When we compressed traced contours to `1px` Base-63 (`v0`), source size dropped to `29,560 bytes / 19,123 tokens` (**20.4% smaller** than `v7` JS+SVG's `37,120 bytes / 23,617 tokens`) with `0.9366 / 0.9463` SSIM, but lost subpixel diagonal sharpness compared to full `0.25px` GLSL (`0.9619 / 0.9720` SSIM).
 - **Decision:** Support **both** `precision: 0.25px` (default quarter-pixel relative deltas, hitting `0.9617 / 0.9718` SSIM at `131,240 bytes` — 32% smaller than raw uncompressed tables, `3.5×` `v7` bytes) and `precision: 1px` (Base-63 compact mode, `29,560 bytes`), while adding native AI-authored primitives (`def`/`use`, `film`, `stroke`, `ribbon`, `boil`, `color`) that take only `~1 KB` (`458 tokens`) for a 6-frame animated shot (`lantern_film.ncel`).
-- **Evidence:** Documented in `docs/northcel/examples.md` with exact byte and `cl100k` token counts.
+- **Evidence:** Documented in `docs/examples.md` with exact byte and `cl100k` token counts.
 
 ---
 
 ## Decision 4 · 2026-11-03: Retire "Noir"/`.noir` Name Due to Aztec Noir Collision; Adopt `NorthCel` (`.ncel`)
 
 - **Context:** The initial prototype used the working name `NoirLang` and extension `.noir`. However, `.noir` collides directly with Aztec's zero-knowledge proof language **Noir** (`noir-lang.org`, `.nr`/`.noir`), creating ecosystem, syntax-highlighting, and search confusion.
-- **Decision:** Rename the language to **NorthCel**, file extension **`.ncel`**, CLI commands **`northcel`** and **`ncel`**, PyPI package **`northcel`**, npm package **`northcel`**, and public docs URL **`https://northnoir.com/northcel`**. Keep all naming constants in a single module (`packages/northcel/northcel/config.py`).
+- **Decision:** Rename the language to **NorthCel**, file extension **`.ncel`**, CLI commands **`northcel`** and **`ncel`**, PyPI package **`northcel`**, npm package **`northcel`**, and public docs URL **`https://northnoir.com/northcel`**. Keep all naming constants in a single module (`python/northcel/config.py`).
 - **Evidence:** Both `northcel` on PyPI and `northcel` on npm were verified unoccupied (`HTTP 404`) prior to release.
 
 ---

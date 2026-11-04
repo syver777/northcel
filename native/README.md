@@ -41,7 +41,7 @@ See `BUILD.md`. Quick start:
 bash scripts/provision-toolchain.sh
 make -j4
 build/bin/ncel-native doctor
-build/bin/ncel-native render packages/northcel/northcel/examples/shower_f0001.ncel -o f1.png --json
+build/bin/ncel-native render python/northcel/examples/shower_f0001.ncel -o f1.png --json
 ```
 
 ## CLI

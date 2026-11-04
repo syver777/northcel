@@ -1,0 +1,20 @@
+# Ruff configuration for the whole repository.
+#
+# Deliberately narrow: real defects only (syntax, undefined names, unused imports,
+# broken string formatting). The reference implementation is not being reformatted,
+# so `ruff format --check` is not part of CI.
+
+target-version = "py310"
+line-length = 100
+
+extend-exclude = [
+  "python/northcel-native/northcel_native_bundle",
+  "js/northcel/node_modules",
+  "native",
+]
+
+[lint]
+select = ["E4", "E7", "E9", "F"]
+
+[lint.isort]
+known-first-party = ["northcel"]
