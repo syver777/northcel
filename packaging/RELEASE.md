@@ -61,7 +61,7 @@ Expected artifacts (measured 2026-11-04, Linux x86_64):
 | `northcel-0.3.1.tar.gz` | 164,430 |
 | `northcel_native-0.3.1-py3-none-manylinux_2_39_x86_64.whl` | 2,815,158 |
 | `northcel-0.3.1.tgz` (npm, 13 files) | 45,973 |
-| `northcel-linux-x64-0.3.1.tgz` (npm, 16 files) | 2,849,183 |
+| `northcel-linux-x64-0.3.1.tgz` (npm, 18 files) | 2,849,183 |
 
 ## Publish, in this order
 
