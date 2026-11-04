@@ -80,6 +80,9 @@ jobs:
         run: npm --prefix js/northcel test
       - name: npm pack
         run: |
+          # `npm pack --pack-destination` does not create the directory (npm 10+),
+          # and `dist/` is git-ignored, so a fresh checkout has none: create it.
+          mkdir -p "$GITHUB_WORKSPACE/dist"
           cd js/northcel
           npm pack --pack-destination "$GITHUB_WORKSPACE/dist"
           cd ../northcel-linux-x64

@@ -119,7 +119,9 @@ class Northcel < Formula
     system bin/"northcel", "verify"
 
     # A real render from the bundled fixture, through the installed command only.
-    starter = libexec/"lib/python3.12/site-packages/northcel/data/starter.ncel"
+    # Since 0.3.1 the fixtures ship inside the `northcel` package (they were in the
+    # separate `ncel` distribution before), under `examples/`.
+    starter = libexec/"lib/python3.12/site-packages/northcel/examples/starter.ncel"
     assert_path_exists starter
     system bin/"northcel", "render", starter, "-o", testpath/"frame.png"
     assert_path_exists testpath/"frame.png"
