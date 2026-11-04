@@ -53,8 +53,8 @@ drawings at 1536×864, three fitted tiers (0.25px text, 0.25px-b63 + palette, 1p
 Base-63). The 90 frames are **not** committed here: that would add megabytes of
 raster to a language repository for a benchmark. The measured comparison lives in
 [examples](examples.md) and the existing contact sheet is
-[`assets/tv7_contact_sheet.png`](assets/tv7_contact_sheet.png) (click to open;
-90 frames in one image).
+[`assets/tv7_contact_sheet.png`](assets/tv7_contact_sheet.png) (click to open; a contact
+sheet of the benchmark frames, not the 90 separate images).
 
 The AI-authored single frame `tv7_f0076_ai_cel.ncel` (seated man + duck, 6,306
 bytes / 4,438 tokens) is also in
