@@ -1,0 +1,75 @@
+{
+  "generated_from": "northcel/config.py, parser.py, rings.py; scripts/sync-assets.py",
+  "config": {
+    "LANGUAGE_NAME": "NorthCel",
+    "FILE_EXTENSION": ".ncel",
+    "CLI_COMMAND": "northcel",
+    "CLI_SHORT_ALIAS": "ncel",
+    "PACKAGE_VERSION": "0.2.1",
+    "SPEC_VERSION": "0.2.0-draft",
+    "SUPPORTED_SPEC_VERSIONS": [
+      "0.1",
+      "0.1.0",
+      "0.1.0-draft",
+      "0.2",
+      "0.2.0",
+      "0.2.0-draft"
+    ],
+    "DOCS_URL": "https://northnoir.com/northcel"
+  },
+  "statements": {
+    "scene": [
+      "bend_swarm",
+      "cel",
+      "def",
+      "drop",
+      "layer",
+      "palette",
+      "paper",
+      "ribbon",
+      "stroke",
+      "swarm",
+      "use",
+      "wash"
+    ],
+    "film": [
+      "bend_swarm",
+      "cel",
+      "def",
+      "drop",
+      "frame",
+      "layer",
+      "palette",
+      "paper",
+      "ribbon",
+      "stroke",
+      "swarm",
+      "use",
+      "wash"
+    ],
+    "frame": [
+      "bend_swarm",
+      "cel",
+      "def",
+      "drop",
+      "layer",
+      "palette",
+      "paper",
+      "ribbon",
+      "stroke",
+      "swarm",
+      "use",
+      "wash"
+    ],
+    "def": [
+      "bend_swarm",
+      "cel",
+      "layer",
+      "ribbon",
+      "stroke",
+      "swarm",
+      "wash"
+    ]
+  },
+  "b63_alphabet": "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"
+}

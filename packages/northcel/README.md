@@ -10,6 +10,56 @@ It combines the best properties of three complementary execution models into a s
 
 The reference implementation in this package (`northcel`) is a **pure-Python + NumPy renderer** requiring no GPU or external language compilers at user install time. MoonBit, Bend, and OpenGL/EGL GLSL remain optional documented backends.
 
+**Tool version 0.2.1; language specification unchanged at 0.2.0-draft** (0.1 files
+remain supported). Two packages share the name, not the same capabilities:
+
+| Package | Includes | Does not include |
+|---|---|---|
+| PyPI `northcel` | Full reference parser/semantic validator, formatter, CPU renderer, guide | Native audio or a prompt-to-video model |
+| npm `northcel` | Zero-dependency **partial** JS structural pre-check, offline guide, Python CLI bridge | JS renderer/formatter or full validation without Python |
+
+## Node-only / npm quick start
+
+```sh
+npx northcel guide
+npx northcel check film.ncel --json
+npx northcel check film.ncel --require-full --json
+```
+
+Without Python, text output always says **PARTIAL (JS pre-check only)**, never
+OK. JSON has `partial: true`, `validator: "js"`, `reason` and `next`. `ok: true`
+means only that the pre-check found no error. Exit **0** = clean partial;
+**1** = detected error/unreadable file; **2** = clean partial with
+`--require-full` (or invalid check arguments). Thus the last command above
+**cannot succeed fully in a Node-only environment**. Never ship on `ok` alone.
+
+The JS pre-check catches missing roots/unbalanced delimiters, unknown
+scene/film statements (including `frames:` wrongly placed in the body), malformed
+headers/point structure, invalid ring integer/Base-63 payloads and unknown
+`$palette` references. Duplicate primitive names warn: legal layer/cel replacement
+is not banned. It does **not** evaluate numeric ranges, variable bindings,
+function names/arity, def resolution, render-time expressions or visual quality.
+It is not a full JS grammar implementation or a conformance validator.
+
+For certainty, install the Python package below and expose that environment's
+`python3` or `python` on PATH, or the Python `northcel` entrypoint installed by
+pipx. npm probes Python modules first, then Python-shebang CLI scripts on PATH,
+delegates all validation/rendering to the first available reference CLI, and
+passes through diagnostics and exit status (0 valid, 1 invalid). It never hides
+a failed Python check behind JS. A terminated Python child is nonzero.
+Python 0.2.1 JSON adds `partial: false, validator: "python"`; older Python JSON
+is passed through unchanged. The wrapper consumes `--require-full` for older
+Python compatibility. Run **`npx northcel check film.ncel --require-full --json`**
+and require exit 0 before claiming full validation, then render and inspect.
+Node-only `render`/`film` fail with exit 1 and install guidance.
+
+`npx northcel guide` prints the compact authoring skeleton, five language
+features, common mistakes and look-and-fix loop offline; it is generated verbatim
+from `docs/northcel/agent-guide.md` and shipped in the package. `--version`
+reports the Python version when delegated, otherwise npm's version marked
+`js-validator`. The full validation/coverage contract is in
+`docs/northcel/reference.md` in the repository.
+
 ## Install
 
 ```sh
@@ -23,7 +73,8 @@ Both `northcel` and the short alias `ncel` are installed on your `PATH`.
 ## CLI Commands
 
 ```sh
-northcel check scene.ncel [--json]          # Parse and validate with line:column diagnostics
+northcel guide                              # Compact offline authoring guide
+northcel check scene.ncel [--json] [--require-full] # Python full check / npm partial fallback
 northcel fmt scene.ncel [-w] [--check]      # Canonical formatter
 northcel info scene.ncel                    # JSON summary of layers, rings, vertices, and bytes
 northcel render scene.ncel -o frame0.png    # Render a single frame (--frame N, --seed S)
@@ -40,7 +91,7 @@ film LanternFilm(width: 512, height: 512, fps: 12, frames: 6, precision: 0.25px,
 
   def SeaWave(dx: 0, dy: 0) {
     stroke crest(color: #6CCFF6, taper: (4.5, 1.5), boil: 0.75px) {
-      (40 + dx, 410 + dy), (180 + dx, 398 + dy), (330 + dx, 412 + dy), (470 + dx, 402 + dy)
+      (40, 410), (180, 398), (330, 412), (470, 402)
     }
   }
 
@@ -60,8 +111,19 @@ film LanternFilm(width: 512, height: 512, fps: 12, frames: 6, precision: 0.25px,
 }
 ```
 
+`use` applies `dx`/`dy` once automatically. Keep those offsets out of the
+definition's coordinates, or it moves twice. Other named parameters can appear
+in expressions normally. The banked historical lantern fixture retains its
+original pixels; this corrected authoring example avoids that trap.
+
 ## Documentation
 
-Full language specification (`0.1.0-draft`), AI-agent guide, benchmarks, and tutorials live at:
+Full language specification (`0.2.0-draft`), AI-agent guide, benchmarks, and tutorials live at:
 - Website: https://northnoir.com/northcel
 - Repository docs: `docs/northcel/`
+
+An alternative local film workflow is `pip install "northnoir[ncel]"`, then
+`northnoir init ink --language ncel --duration 3 --fps 24`,
+`northnoir check ink/scene.ncel`, `northnoir render ink/scene.ncel -o ink/video.mp4`.
+North Noir CLI keeps `scene.html` as default; `.ncel` is explicit and optional.
+NorthCel output is silent; no hosted NorthCel Studio/API/MCP support is implied.

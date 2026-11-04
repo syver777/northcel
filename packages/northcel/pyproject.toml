@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "northcel"
-version = "0.2.0"
+version = "0.2.1"
 description = "NorthCel (.ncel) — the AI-drawn video programming language combining MoonBit typed ASTs, Bend parallel swarms, and GLSL 4x4 subpixel rendering."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -49,4 +49,4 @@ where = ["."]
 include = ["northcel*"]
 
 [tool.setuptools.package-data]
-northcel = ["examples/*.ncel", "conformance/*.ncel", "conformance/*.json"]
+northcel = ["examples/*.ncel", "conformance/*.ncel", "conformance/*.json", "AGENT-GUIDE.md"]

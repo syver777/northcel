@@ -1,7 +1,7 @@
 {
   "name": "northcel",
-  "version": "0.2.0",
-  "description": "NorthCel (.ncel) — AI-drawn video programming language parser, validator, formatter, and CLI bridge.",
+  "version": "0.2.1",
+  "description": "NorthCel (.ncel) — partial JS pre-check, embedded authoring guide, and bridge to the Python reference renderer.",
   "license": "Proprietary",
   "author": "North Noir",
   "homepage": "https://northnoir.com/northcel",
@@ -18,12 +18,18 @@
   "files": [
     "bin/northcel.js",
     "js/index.cjs",
+    "js/rules.json",
+    "northcel/AGENT-GUIDE.md",
     "editors/vscode/package.json",
     "editors/vscode/language-configuration.json",
     "editors/vscode/syntaxes/northcel.tmLanguage.json",
     "README.md",
     "LICENSE"
   ],
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "prepack": "python3 scripts/sync-assets.py --check"
+  },
   "keywords": [
     "northcel",
     "ncel",

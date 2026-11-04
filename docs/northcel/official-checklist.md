@@ -3,15 +3,15 @@
 | # | Item | Status | Evidence / Notes |
 | --- | --- | :---: | --- |
 | 1 | **Name & File Extension (`NorthCel`, `.ncel`, `northcel`, `ncel`)** | **Done** | Single config in `packages/northcel/northcel/config.py`; Aztec Noir collision resolved. |
-| 2 | **Versioned Language Specification (`0.1.0-draft`)** | **Done** | `docs/northcel/spec/SPEC-0.1.0-draft.md` (normative EBNF, encodings, rendering semantics, tolerances). |
+| 2 | **Versioned Language Specification (`0.2.0-draft`)** | **Done** | Unchanged in tools 0.2.1; `0.1.0-draft` backward compatibility retained. |
 | 3 | **Reference Implementation & CLI (`packages/northcel/`)** | **Done** | Pure-Python + NumPy 4×4 subpixel renderer, lexer/parser with `line:column` diagnostics, validator, formatter. |
-| 4 | **Conformance Suite & Automated Tests** | **Done** | `packages/northcel/northcel/conformance/` + 13 unit/golden/error/round-trip/determinism tests in `tests/test_northcel.py`. |
-| 5 | **PyPI Package (`northcel` `0.1.0`)** | **Done** | Built, verified in fresh venv, and published to PyPI via `NORTH_NOIR_PYPI_API`. |
-| 6 | **npm Package (`northcel` `0.1.0`)** | **Needs Owner Token** | Package built & tested (`packages/northcel/package.json`, `js/index.cjs`, `bin/northcel.js`), `npm pack` tarball ready; VPS has no `NPM_TOKEN` / `~/.npmrc` auth. |
+| 4 | **Conformance Suite & Automated Tests** | **Done** | 18 Python + 51 Node tests; 3 conformance cases/10 exact pixel probes, 2 real GLSL golden frames, out-of-order determinism, all 9 checked-in examples plus broken variants and generated-asset freshness. Two Node-only trials later fully validated/rendered. |
+| 5 | **PyPI Package (`northcel` `0.2.1`)** | **Published & verified** | 2026-11-04: one upload; registry and downloaded wheel/sdist hashes verified, fresh official-index install and both 36-frame trial renders verified. Receipt in `work/prompts/northcel-021-report.md`. |
+| 6 | **npm Package (`northcel` `0.2.1`)** | **Planner publishes with owner** | Verified tarball only; worker must not run npm publish. npm 0.2.0 is the prior published release. |
 | 7 | **Public Website Documentation (`https://northnoir.com/northcel`)** | **Done** | `src/pages/NorthCelDocs.tsx`, static crawler shell `dist/northcel/index.html`, `public/sitemap.xml`, deployed via guarded flow. |
 | 8 | **Editor Support (TextMate Grammar & VS Code Extension)** | **Done (Local) / Marketplace Later** | `packages/northcel/editors/vscode/` (`source.northcel` grammar tested against all samples; publishing to VS Code Marketplace needs a `VSCE_PAT` later). |
 | 9 | **Living Tracking Docs (`CHANGELOG.md` & `DECISIONS.md`)** | **Done** | `docs/northcel/CHANGELOG.md` and `docs/northcel/DECISIONS.md`. |
-| 10 | **AI-Agent Guide (`agent-guide.md`)** | **Done** | `docs/northcel/agent-guide.md`. |
+| 10 | **AI-Agent Guide (`agent-guide.md`)** | **Done** | Canonical compact section generates packaged offline `northcel guide`; partial/full contract and local Python/North Noir render paths included. |
 | 11 | **License (`LICENSE`)** | **Needs Owner Confirmation** | Currently matches `packages/northnoir-cli` (`Proprietary` with free local authoring/rendering rights); owner can switch to MIT/Apache-2.0 if desired for open-source ecosystem adoption. |
 | 12 | **Security Policy & Contributing Guide** | **Done** | `docs/northcel/SECURITY.md` and `docs/northcel/CONTRIBUTING.md`. |
 | 13 | **Repository Location (Monorepo vs. Standalone Repo)** | **Needs Owner Decision** | Currently lives cleanly at `packages/northcel/` + `docs/northcel/` in `syver777/NorthNoir`. A standalone public repo (`syver777/northcel`) is recommended later for GitHub Linguist & external stars. |

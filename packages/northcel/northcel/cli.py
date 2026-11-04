@@ -48,6 +48,8 @@ def cmd_check(args: argparse.Namespace) -> int:
             json.dumps(
                 {
                     "ok": ok,
+                    "partial": False,
+                    "validator": "python",
                     "file": str(path),
                     "spec_version": doc.spec_version if doc else None,
                     "errors": errors,
@@ -64,6 +66,11 @@ def cmd_check(args: argparse.Namespace) -> int:
         if ok:
             print(f"{path}: OK ({LANGUAGE_NAME} {doc.spec_version if doc else SPEC_VERSION})")
     return 0 if ok else 1
+
+
+def cmd_guide(args: argparse.Namespace) -> int:
+    sys.stdout.write(Path(__file__).with_name("AGENT-GUIDE.md").read_text(encoding="utf-8"))
+    return 0
 
 
 def cmd_fmt(args: argparse.Namespace) -> int:
@@ -250,7 +257,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_check = sub.add_parser("check", help="Parse and validate a .ncel file with line:column diagnostics.")
     p_check.add_argument("file", help="Path to .ncel file")
     p_check.add_argument("--json", action="store_true", help="Output structured JSON diagnostics")
+    p_check.add_argument("--require-full", action="store_true", help="Require full validation (always performed by this Python CLI)")
     p_check.set_defaults(func=cmd_check)
+
+    p_guide = sub.add_parser("guide", help="Print the compact authoring and verification guide.")
+    p_guide.set_defaults(func=cmd_guide)
 
     p_fmt = sub.add_parser("fmt", help="Format a .ncel file into canonical form.")
     p_fmt.add_argument("file", help="Path to .ncel file")

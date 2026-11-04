@@ -6,10 +6,38 @@
 - **File Extension:** `.ncel`
 - **CLI Commands:** `northcel` (short alias: `ncel`)
 - **Packages:** PyPI `northcel`, npm `northcel`
-- **Current Version:** `0.2.0` (Specification `0.2.0-draft`, backward compatible with `0.1.0-draft`)
+- **Current Version:** `0.2.1` (Specification unchanged: `0.2.0-draft`, backward compatible with `0.1.0-draft`)
 - **Public Documentation URL:** `https://northnoir.com/northcel`
 
 ---
+
+## Two packages, different capabilities
+
+- **PyPI `northcel`** (`pipx install northcel`): full reference parser/semantic
+  validator, formatter and local CPU renderer; ffmpeg supplies optional MP4 encoding.
+- **npm `northcel`** (`npx northcel guide`): offline compact guide, zero-dependency
+  **partial JS structural pre-check**, and a bridge to Python if `northcel.cli`
+  is importable by `python3` or `python` on PATH, or a pipx-style Python entrypoint
+  is on PATH. Node alone cannot render.
+
+`npx northcel check film.ncel --json` without Python always reports
+`partial: true, validator: "js"` with `reason`/`next`; text says **PARTIAL**, never
+OK. Exit 0 means only no JS pre-check errors; detected errors exit 1. Demand
+certainty with **`npx northcel check film.ncel --require-full --json`**: a clean
+partial exits **2**, not 0. With Python available, diagnostics/exit code pass
+through (0 valid, 1 invalid); Python 0.2.1 JSON has `partial: false`.
+
+JS checks roots/delimiters, statement and header structure, ring payload syntax,
+duplicate-name warnings and unknown `$palette` references. It does **not** check
+all grammar/semantics: ranges, expression evaluation, undefined defs and visual
+quality need Python and real renders. See the exact [validation contract and
+coverage table](reference.md#validation-contract). Full validation is not
+artistic approval. `npx northcel guide` explains the complete look-and-fix loop.
+
+North Noir CLI 1.4.0 also offers the optional local `northnoir[ncel]` path;
+`scene.html` remains its default. This release does not add hosted NorthCel
+Studio, API or MCP support. npm 0.2.1 publication is handled separately by the
+owner; until then use the verified release tarball, not an older npm version.
 
 ## Documentation Index
 

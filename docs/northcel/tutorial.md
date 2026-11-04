@@ -12,10 +12,19 @@ Verify the installation:
 
 ```sh
 northcel --version
-# -> northcel 0.1.0 (spec 0.1.0-draft)
+# -> northcel 0.2.1 (spec 0.2.0-draft)
 ```
 
 ---
+
+With only Node, run `npx northcel guide` first, then
+`npx northcel check first_lantern.ncel --require-full --json`. Without Python,
+this reports `partial: true, validator: "js"` and exits 2 when the JS pre-check
+finds no errors (1 on detected errors). Normal JS `check` without `--require-full`
+exits 0 on a clean **PARTIAL** result, not full validation. Install Python above,
+expose its environment's Python on PATH, repeat and require exit 0. Only Python
+provides full parsing/semantics and rendering; JS checks structural mistakes,
+rings and palette references, not ranges, defs or expression evaluation.
 
 ## 2. Author a Compact Animated `.ncel` Film
 
@@ -29,7 +38,7 @@ film FirstLantern(width: 512, height: 512, fps: 12, frames: 6, precision: 0.25px
 
   def SeaWave(dx: 0, dy: 0) {
     stroke crest(color: #6CCFF6, taper: (4.5, 1.5), boil: 0.75px) {
-      (40 + dx, 410 + dy), (180 + dx, 398 + dy), (330 + dx, 412 + dy), (470 + dx, 402 + dy)
+      (40, 410), (180, 398), (330, 412), (470, 402)
     }
   }
 
@@ -45,10 +54,14 @@ film FirstLantern(width: 512, height: 512, fps: 12, frames: 6, precision: 0.25px
 
 ---
 
+`use SeaWave(dx: ..., dy: ...)` auto-translates expanded geometry once. Do not
+also add `dx`/`dy` to its point coordinates. This is a corrected tutorial example;
+the historical packaged lantern fixture keeps its original pixels.
+
 ## 3. Validate, Format, and Inspect
 
 ```sh
-northcel check first_lantern.ncel
+northcel check first_lantern.ncel --require-full
 northcel fmt -w first_lantern.ncel
 northcel info first_lantern.ncel
 ```

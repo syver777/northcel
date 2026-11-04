@@ -2,6 +2,26 @@
 
 This document records the key architectural, experimental, and naming decisions behind **NorthCel** (`.ncel`), including the evidence and rejected alternatives.
 
+## Decision 6 · 2026-11-04: Honest partial JS checks; full means Python
+
+- **Evidence:** On macOS, npm 0.2.0 without Python called `film B { frames: 2 }`
+  `OK` (exit 0). The full parser correctly rejected unknown film statement `frames`.
+- **Decision:** Keep a small zero-dependency structural pre-check, never label it
+  full validation or bare OK. All JS results have `partial: true`, `validator: "js"`,
+  `reason` and `next`. A clean pre-check retains exit 0 for incremental editing;
+  actual detected errors exit 1. `--require-full` turns clean partial into exit 2.
+  `ok` describes that validator's checks only, not whether full validation ran.
+- **Full path:** Probe Python and delegate, preserving output/exit status. Never
+  fall back after a Python diagnostic, error or signal. Python 0.2.1 JSON marks
+  `partial: false`; bridge strips `--require-full` for old Python compatibility.
+  Full parse/semantic success still requires real renders/visual inspection.
+- **Scope:** Generate allowed statements/version/alphabet from reference sources;
+  generate the packaged guide from canonical agent-guide text and test freshness.
+  Duplicate names warn because replacing cels/layers is already legal. No grammar
+  tightening, normative spec edit or rendering change in tools release 0.2.1.
+- **Rejected:** Treating partial success as OK, failing every Node-only check by
+  default (unhelpful for editing), or claiming a rushed JS port is fully conformant.
+
 ---
 
 ## Decision 1 · 2026-11-03: Replace Scanline Strips & Thick Capsules with Connected Subpixel Iso-Contours
@@ -61,4 +81,3 @@ This document records the key architectural, experimental, and naming decisions 
 - **Measured Before vs. After Evidence:**
   - **90-Frame Fitted Film:** Source size dropped from **`6,704,285 B` (`4,249,852 tok`) to `914,478 B` (`684,528 tok` — `-86.4%` bytes / `7.33×` smaller)**, Global Windowed SSIM improved from **`0.9719` to `0.9756`** (Block SSIM `0.9728`), Exact Canny Edge IoU improved from **`0.4412` to `0.4959`**, and render speed improved from `1.037s/frame` to **`0.957s/frame`**.
   - **8 AI-Authored Frames:** Mean source size dropped from **`8,830 B` (`5,052 tok`) to `4,718 B` (`3,303 tok` — `-46.6%` bytes)** while improving Block SSIM (`0.7852 -> 0.7869`) and Edge IoU (`0.0303 -> 0.0317`).
-
