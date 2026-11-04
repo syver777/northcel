@@ -5,8 +5,8 @@
   "spec_version": "0.2.0-draft",
   "target": "linux-x86_64",
   "verified_on": "2026-11-04",
-  "download_total_bytes": 103828758,
-  "build_output_bytes_estimate": 12000000,
+  "download_total_bytes": 103803550,
+  "build_output_bytes_estimate": 900000,
   "tools": [
     {
       "name": "moonbit-cli",
