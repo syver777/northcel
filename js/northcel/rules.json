@@ -1,11 +1,11 @@
 {
-  "generated_from": "northcel/config.py, parser.py, rings.py; scripts/sync-assets.py",
+  "generated_from": "python/northcel/{config,parser,rings}.py; js/northcel/scripts/sync-assets.py",
   "config": {
     "LANGUAGE_NAME": "NorthCel",
     "FILE_EXTENSION": ".ncel",
     "CLI_COMMAND": "northcel",
     "CLI_SHORT_ALIAS": "ncel",
-    "PACKAGE_VERSION": "0.2.1",
+    "PACKAGE_VERSION": "0.3.1",
     "SPEC_VERSION": "0.2.0-draft",
     "SUPPORTED_SPEC_VERSIONS": [
       "0.1",

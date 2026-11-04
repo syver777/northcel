@@ -10,7 +10,6 @@ from .ast_nodes import (
     DefBlock,
     DocumentNode,
     DropNode,
-    FilmNode,
     LayerNode,
     PaperSpec,
     RibbonNode,

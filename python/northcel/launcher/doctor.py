@@ -1,17 +1,15 @@
-"""`ncel doctor` — exact stage availability and versions, and the honest verdict."""
+"""`northcel doctor` — exact stage availability and versions, and the honest verdict."""
 
 from __future__ import annotations
 
 import json
-import sys
-from pathlib import Path
 
-from . import EXIT_NO_NATIVE, NATIVE_RUNTIME_VERSION, SPEC_VERSION, __version__, bundle, native
+from . import EXIT_NO_NATIVE, NATIVE_RUNTIME_VERSION, SPEC_VERSION, __version__, bundle, native, paths
 from . import platform_info as plat_mod
 
 
 def pins() -> dict:
-    path = Path(__file__).with_name("data") / "pins.json"
+    path = paths.pins_path()
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except Exception:
@@ -39,7 +37,7 @@ def collect() -> dict:
         errors.extend(plat.reasons)
     if bundle.binary() is None:
         errors.append(
-            "native runtime bundle not installed (pip install ncel-native on Linux x86_64)"
+            "native runtime bundle not installed (pip install northcel-native on Linux x86_64)"
         )
     if checks.get("failed"):
         errors.append(
@@ -156,7 +154,7 @@ def print_human(doc: dict) -> None:
     native_info = doc["native"]
     stages = doc["stages"]
 
-    print(f"ncel {doc['ncel_version']}  (NorthCel spec {native_info['spec_version']})")
+    print(f"northcel {doc['ncel_version']}  (NorthCel spec {native_info['spec_version']})")
     glibc = f" glibc {plat['glibc']}" if plat.get("glibc") else ""
     print(f"platform      {plat['os']}-{plat['arch']}{glibc}")
     print(f"supported     {_yes(plat['supported'])}")

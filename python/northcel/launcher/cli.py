@@ -1,22 +1,32 @@
-"""`ncel` command-line entry point.
+"""`northcel` command-line entry point (also installed as `ncel`).
 
 Dispatch rule (this is the whole product promise): if the native runtime can run
 here, run it. If it cannot, say why, use the Python reference and label the result.
+
+There is one install (`pip install northcel`); `northcel` is the command, `ncel` is
+the short alias, and both reach this module.
 """
 
 from __future__ import annotations
 
 import sys
-from pathlib import Path
 
-from . import EXIT_NO_NATIVE, NATIVE_RUNTIME_VERSION, SPEC_VERSION, __version__, fallback, native
+from . import (
+    EXIT_NO_NATIVE,
+    NATIVE_RUNTIME_VERSION,
+    SPEC_VERSION,
+    __version__,
+    fallback,
+    native,
+    paths,
+)
 from . import doctor as doctor_mod
 from . import toolchain as toolchain_mod
 from . import verify as verify_mod
 
-USAGE = """ncel — NorthCel (.ncel) command line
+USAGE = """northcel — NorthCel (.ncel) command line
 
-usage: ncel <command> [options]
+usage: northcel <command> [options]        (short alias: ncel)
 
   doctor  [--json]                     stage availability, exact versions, platform verdict
   verify  [--json] [--keep DIR]        render the bundled fixtures with the native runtime
@@ -27,11 +37,12 @@ usage: ncel <command> [options]
   fmt     FILE [-w|--write] [--check]  canonical formatting (Python reference)
   guide                                offline authoring guide
   toolchain <status|install> [--json] [--dry-run]
-  version, --version                   versions (launcher, native runtime, spec)
+  version, --version                   versions (native runtime + spec)
 
 Global: --no-native  force the labelled Python reference path (never called "native")
 Platform: Linux x86_64, glibc >= 2.39, Mesa EGL/llvmpipe. macOS/Windows are not
-supported in this release; `ncel doctor` explains exactly what is missing.
+supported natively in this release; `northcel doctor` explains exactly what is
+missing and every render there is labelled `python-reference`.
 """
 
 
@@ -43,7 +54,7 @@ def _version_line() -> str:
         if doc.get("version"):
             native_version = doc["version"]
     state = "native" if usable else "python-reference only"
-    return f"ncel {__version__} (native runtime {native_version}, spec {SPEC_VERSION}, {state})"
+    return f"northcel {__version__} (native runtime {native_version}, spec {SPEC_VERSION}, {state})"
 
 
 def _pop_flag(args: list[str], *names: str) -> bool:
@@ -96,13 +107,13 @@ def _cmd_render(args: list[str]) -> int:
     seed_raw = _pop_option(args, "--seed")
     files = [a for a in args if not a.startswith("-")]
     if not files:
-        print("usage: ncel render FILE [-o OUT.png] [--frame N] [--seed N]", file=sys.stderr)
+        print("usage: northcel render FILE [-o OUT.png] [--frame N] [--seed N]", file=sys.stderr)
         return 2
     try:
         frame = int(frame_raw)
         seed = int(seed_raw) if seed_raw is not None else None
     except ValueError:
-        print("ncel: --frame/--seed must be integers", file=sys.stderr)
+        print("northcel: --frame/--seed must be integers", file=sys.stderr)
         return 2
     return fallback.render(files[0], out, frame, seed, as_json)
 
@@ -118,15 +129,14 @@ def _cmd_film(args: list[str]) -> int:
     mp4 = _pop_option(args, "--mp4")
     files = [a for a in args if not a.startswith("-")]
     if not files or not out_dir:
-        print("usage: ncel film FILE -o OUTDIR [--frames 0..5] [--mp4 OUT.mp4]", file=sys.stderr)
+        print("usage: northcel film FILE -o OUTDIR [--frames 0..5] [--mp4 OUT.mp4]", file=sys.stderr)
         return 2
     return fallback.film(files[0], out_dir, frames, mp4, as_json)
 
 
 def _cmd_guide(args: list[str]) -> int:
-    path = Path(__file__).with_name("data") / "AGENT-GUIDE.md"
-    if path.is_file():
-        sys.stdout.write(path.read_text(encoding="utf-8"))
+    if paths.GUIDE.is_file():
+        sys.stdout.write(paths.GUIDE.read_text(encoding="utf-8"))
         return 0
     return fallback.delegate(["guide", *args])
 
@@ -181,7 +191,7 @@ def main(argv: list[str] | None = None) -> int:
     if command in {"--json-doctor"}:
         return doctor_mod.cmd_doctor(True)
 
-    print(f"ncel: unknown command {command!r}\n", file=sys.stderr)
+    print(f"northcel: unknown command {command!r}\n", file=sys.stderr)
     print(USAGE, end="", file=sys.stderr)
     return 2
 

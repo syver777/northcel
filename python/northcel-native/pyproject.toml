@@ -1,20 +1,23 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ncel-native"
-version = "0.2.1"
+name = "northcel-native"
+version = "0.3.1"
 description = "Native NorthCel (.ncel) runtime bundle for Linux x86_64: MoonBit typed AST stage, Bend 0.2.38 / HVM 2.0.22 swarm evaluator and the GLSL 4.30 rasteriser for a Mesa/EGL context."
 readme = "README.md"
 requires-python = ">=3.8"
-license = { text = "Proprietary" }
-authors = [{ name = "North Noir" }]
-keywords = ["ncel", "northcel", "moonbit", "bend", "hvm2", "glsl", "animation"]
+license = "MIT OR Apache-2.0"
+license-files = ["LICENSE-MIT", "LICENSE-APACHE"]
+authors = [{ name = "NorthCel contributors" }]
+keywords = ["northcel", "ncel", "moonbit", "bend", "hvm2", "glsl", "animation"]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
   "Environment :: Console",
   "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "License :: OSI Approved :: Apache Software License",
   "Operating System :: POSIX :: Linux",
   "Programming Language :: Other",
   "Topic :: Multimedia :: Graphics",
@@ -22,14 +25,15 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://northnoir.com/northcel"
-Repository = "https://github.com/syver777/NorthNoir/tree/main/packaging"
+Homepage = "https://github.com/syver777/northcel"
+Repository = "https://github.com/syver777/northcel"
+Issues = "https://github.com/syver777/northcel/issues"
 
 [tool.setuptools]
-packages = ["ncel_native_bundle"]
+packages = ["northcel_native_bundle"]
 
 [tool.setuptools.package-data]
-ncel_native_bundle = [
+northcel_native_bundle = [
   "bin/*",
   "share/ncel/*",
   "licenses/*",

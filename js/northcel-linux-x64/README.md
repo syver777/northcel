@@ -1,7 +1,8 @@
-# @ncel/linux-x64
+# northcel-linux-x64
 
 Native NorthCel runtime bundle for **Linux x86_64** — the platform package for
-[`ncel`](https://www.npmjs.com/package/ncel). Install `ncel`, not this package.
+[`northcel`](https://www.npmjs.com/package/northcel). Install `northcel`, not this
+package.
 
 ```
 bundle/bin/ncel-native   orchestration CLI (doctor/check/info/render/film)
@@ -13,9 +14,12 @@ bundle/share/ncel/       draw430.glsl, draw410.glsl
 bundle/bundle-manifest.json  sha256 + version of every bundled file
 ```
 
-Requires Linux x86_64, glibc >= 2.39 and a Mesa/EGL GL runtime. Taken unchanged
-from `native/ncel/` (commit `3ad5f7e`); every hash is checked against
-`native/ncel/toolchain.lock` at build time and by `ncel doctor`.
+Requires Linux x86_64, glibc ≥ 2.39 and a Mesa/EGL GL runtime. Taken unchanged
+from `native/` (commit `3ad5f7e`); every hash is checked against
+`native/toolchain.lock` at build time and again by `northcel doctor`.
 
-Licence: Proprietary, North Noir. Bundled third-party licences are in
-`bundle/licenses/`.
+The `ncel-*` executable names are internal to the native bundle and unchanged; the
+package and its launcher are called `northcel`.
+
+Licence: MIT OR Apache-2.0. Bundled third-party licences (Bend, HVM, MoonBit core,
+stb) are in `bundle/licenses/` and in `native/LICENSE-NOTES.md`.

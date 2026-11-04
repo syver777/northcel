@@ -12,7 +12,6 @@ from .ast_nodes import (
     LayerNode,
     RibbonNode,
     SceneItem,
-    SceneNode,
     StrokeNode,
     SwarmNode,
     UseNode,

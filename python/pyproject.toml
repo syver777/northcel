@@ -1,52 +1,81 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "northcel"
-version = "0.2.1"
-description = "NorthCel (.ncel) — the AI-drawn video programming language combining MoonBit typed ASTs, Bend parallel swarms, and GLSL 4x4 subpixel rendering."
+version = "0.3.1"
+description = "NorthCel (.ncel) — the open drawing language for AI-drawn video: reference parser, validator, formatter and CPU renderer, plus the one-command CLI that runs the native MoonBit + Bend/HVM2 + GLSL runtime when the platform supports it."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "Proprietary" }
-authors = [{ name = "North Noir" }]
+license = "MIT OR Apache-2.0"
+license-files = ["LICENSE-MIT", "LICENSE-APACHE"]
+authors = [{ name = "NorthCel contributors" }]
 keywords = [
   "northcel",
   "ncel",
   "ai-drawn-video",
   "animation",
   "hand-drawn",
+  "moonbit",
+  "bend",
+  "glsl",
   "dsl",
-  "northnoir",
 ]
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 4 - Beta",
   "Environment :: Console",
   "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Multimedia :: Graphics",
   "Topic :: Multimedia :: Video",
 ]
 dependencies = [
   "numpy>=1.24",
   "Pillow>=10.0",
+  "northcel-native==0.3.1; sys_platform == 'linux' and platform_machine == 'x86_64'",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest>=7", "build>=1.0", "twine>=5"]
+
 [project.urls]
-Homepage = "https://northnoir.com/northcel"
-Documentation = "https://northnoir.com/northcel"
-Repository = "https://github.com/syver777/NorthNoir/tree/main/packages/northcel"
+Homepage = "https://github.com/syver777/northcel"
+Documentation = "https://github.com/syver777/northcel/tree/main/docs"
+Repository = "https://github.com/syver777/northcel"
+Changelog = "https://github.com/syver777/northcel/blob/main/CHANGELOG.md"
+Issues = "https://github.com/syver777/northcel/issues"
+"Language specification" = "https://github.com/syver777/northcel/blob/main/docs/spec/SPEC-0.2.0-draft.md"
 
 [project.scripts]
-northcel = "northcel.cli:main"
-ncel = "northcel.cli:main"
+# One install, one implementation switch. Both names reach the launcher, which
+# runs the native runtime when it can and the labelled Python reference when it
+# cannot. `ncel` is only a short alias for `northcel`.
+northcel = "northcel.launcher.cli:main"
+ncel = "northcel.launcher.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["northcel*"]
 
 [tool.setuptools.package-data]
-northcel = ["examples/*.ncel", "conformance/*.ncel", "conformance/*.json", "AGENT-GUIDE.md"]
+northcel = [
+  "AGENT-GUIDE.md",
+  "examples/*.ncel",
+  "conformance/*.ncel",
+  "conformance/*.json",
+  "data/*.json",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+

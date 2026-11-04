@@ -1,4 +1,4 @@
-"""Locate and verify the bundled native runtime (`ncel-native` wheel)."""
+"""Locate and verify the bundled native runtime (`northcel-native` wheel)."""
 
 from __future__ import annotations
 
@@ -9,11 +9,18 @@ from pathlib import Path
 
 def bundle_dir() -> Path | None:
     """Directory of the installed native bundle, or None when it is not installed."""
-    try:
-        import ncel_native_bundle  # noqa: PLC0415 - optional platform dependency
-    except Exception:
+    module = None
+    for name in ("northcel_native_bundle", "ncel_native_bundle"):
+        # `ncel_native_bundle` is the 0.2.1 predecessor's module name; still honoured
+        # so an environment that upgraded the launcher keeps its installed bundle.
+        try:
+            module = __import__(name, fromlist=["__file__"])  # noqa: PLC0415
+            break
+        except Exception:
+            continue
+    if module is None:
         return None
-    path = Path(ncel_native_bundle.__file__).resolve().parent
+    path = Path(module.__file__).resolve().parent
     return path if (path / "bundle-manifest.json").is_file() else path
 
 

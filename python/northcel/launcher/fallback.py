@@ -1,4 +1,4 @@
-"""The labelled, non-native path: the Python reference (`northcel`).
+"""The labelled, non-native path: the Python reference implementation.
 
 This module is used ONLY when the native stages cannot run on this platform
 (macOS, Windows, non-x86_64 Linux, no EGL, or an explicit `--no-native`). Every
@@ -15,8 +15,8 @@ import time
 from pathlib import Path
 
 NOTICE = (
-    "ncel: native runtime unavailable — {reason}\n"
-    "ncel: using the non-native Python reference renderer (northcel {version}). "
+    "northcel: native runtime unavailable — {reason}\n"
+    "northcel: using the non-native Python reference renderer (northcel {version}). "
     "Results are the reference implementation, not the MoonBit+Bend+GLSL runtime."
 )
 
@@ -27,7 +27,9 @@ def _northcel_version() -> str:
 
         return version("northcel")
     except Exception:
-        return "?"
+        from ..config import PACKAGE_VERSION
+
+        return PACKAGE_VERSION
 
 
 def notify(reason: str | None) -> None:
@@ -40,11 +42,11 @@ def notify(reason: str | None) -> None:
 
 def require() -> bool:
     try:
-        import northcel.cli  # noqa: F401
+        from .. import cli  # noqa: F401
     except Exception:
         print(
-            "ncel: the Python reference renderer (`northcel`) is not importable. "
-            "Install it with `pip install northcel==0.2.1`.",
+            "northcel: the Python reference renderer is not importable from this "
+            "installation. Reinstall with `pip install northcel`.",
             file=sys.stderr,
         )
         return False
@@ -55,19 +57,19 @@ def delegate(argv: list[str]) -> int:
     """Run a northcel CLI command verbatim (check/info/fmt/guide)."""
     if not require():
         return 1
-    from northcel.cli import main as northcel_main
+    from ..cli import main as northcel_main
 
     return int(northcel_main(argv))
 
 
 def _load(path: Path):
-    from northcel.cli import _load_and_validate
+    from ..cli import _load_and_validate
 
     return _load_and_validate(path)
 
 
 def render(file: str, out: str | None, frame: int, seed: int | None, as_json: bool) -> int:
-    from northcel.renderer import render_document_frame
+    from ..renderer import render_document_frame
 
     path = Path(file)
     _, doc, diags = _load(path)
@@ -125,7 +127,7 @@ def film(
     mp4: str | None,
     as_json: bool,
 ) -> int:
-    from northcel.renderer import render_film_frames
+    from ..renderer import render_film_frames
 
     path = Path(file)
     _, doc, diags = _load(path)
@@ -165,9 +167,8 @@ def film(
 
 def fmt_requires_reference() -> int:
     print(
-        "ncel: `fmt` is provided by the Python reference (`northcel`), which is "
-        "installed with ncel — run `python -m northcel fmt FILE` or "
-        "`pip install northcel==0.2.1` in the same environment.",
+        "northcel: `fmt` is provided by the Python reference implementation that "
+        "ships in this same package — run `python -m northcel fmt FILE`.",
         file=sys.stderr,
     )
     return 1

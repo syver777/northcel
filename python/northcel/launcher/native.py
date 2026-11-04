@@ -18,8 +18,9 @@ def available() -> tuple[bool, str | None]:
     if bundle.binary() is None:
         return (
             False,
-            "the native runtime bundle (`ncel-native` package) is not installed for "
-            "this platform; install it with `pip install ncel-native` on Linux x86_64.",
+            "the native runtime bundle (`northcel-native` package) is not installed "
+            "for this platform; install it with `pip install northcel-native` on Linux "
+            "x86_64.",
         )
     return True, None
 

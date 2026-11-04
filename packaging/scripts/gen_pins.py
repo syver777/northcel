@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Generate `packaging/python/ncel/ncel/data/pins.json` from `native/ncel/toolchain.lock`.
+"""Generate `python/northcel/data/pins.json` from `native/toolchain.lock`.
 
 One source of truth: the native tree's lock file. Run by `build_python.sh` before
-building the launcher wheel, and checked in so a source checkout needs no build.
+building the wheels, and checked in so a source checkout needs no build.
 
     python3 packaging/scripts/gen_pins.py
 
 The shower `f0001` oracle hash is not in toolchain.lock (it is a render result).
 It is pinned here because it is the value the native phase proved identical to the
-Python reference (`work/checks/ncel-native/results/oracle_metrics.json`, MAE 0.0,
-0 differing pixels) and `ncel verify` re-checks it on every install.
+Python reference (MAE 0.0, 0 differing pixels) and `northcel verify` re-checks it on
+every install.
 """
 
 from __future__ import annotations
@@ -19,17 +19,16 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-LOCK = ROOT / "native" / "ncel" / "toolchain.lock"
-OUT = ROOT / "packaging" / "python" / "ncel" / "ncel" / "data" / "pins.json"
+LOCK = ROOT / "native" / "toolchain.lock"
+OUT = ROOT / "python" / "northcel" / "data" / "pins.json"
 
 SHOWER_ORACLE = {
     "sha256": "be0eb036775458d009a2568f5407c973777fe85caa1dac5244f03bb56582d718",
     "width": 1024,
     "height": 1024,
-    "source": "packages/northcel/northcel/examples/shower_f0001.ncel",
+    "source": "python/northcel/examples/shower_f0001.ncel",
     "note": (
-        "native render == Python reference render (MAE 0.0, 0 differing pixels); "
-        "evidence work/checks/ncel-native/results/oracle_metrics.json"
+        "native render == Python reference render (MAE 0.0, 0 differing pixels)"
     ),
 }
 
@@ -41,9 +40,9 @@ def main() -> int:
     moon = tools["moonbit-cli"]
     core = tools["moonbit-core"]
     pins = {
-        "schema": "ncel-pins/1",
-        "generated_from": "native/ncel/toolchain.lock",
-        "ncel_version": "0.2.1",
+        "schema": "northcel-pins/1",
+        "generated_from": "native/toolchain.lock",
+        "northcel_version": lock.get("package_version", "0.2.2"),
         "native_runtime_version": lock["product_version"],
         "spec_version": lock["spec_version"],
         "target": lock["target"],

@@ -11,7 +11,7 @@ from typing import Sequence
 
 from PIL import Image
 
-from .ast_nodes import FilmNode, LayerNode, RibbonNode, SceneNode, StrokeNode, SwarmNode
+from .ast_nodes import FilmNode, LayerNode, RibbonNode, StrokeNode, SwarmNode
 from .config import CLI_COMMAND, FILE_EXTENSION, LANGUAGE_NAME, PACKAGE_VERSION, SPEC_VERSION
 from .formatter import format_document
 from .parser import NorthCelSyntaxError, parse_ncel

@@ -1,6 +1,7 @@
 """Generate npm metadata/structural rules and compact guide from authoritative sources.
 
 Run with Python 3 (no installed NorthCel dependencies needed). --check is a CI gate.
+The output is `rules.json` (consumed by index.cjs) and the compact guide shipped to npm.
 This does not generate a full JS parser or change the language grammar.
 """
 from __future__ import annotations
@@ -11,13 +12,14 @@ from pathlib import Path
 import runpy
 import sys
 
-ROOT = Path(__file__).resolve().parents[1]
-REPO = ROOT.parents[1]
+ROOT = Path(__file__).resolve().parents[1]   # js/northcel
+REPO = ROOT.parents[1]                       # repository root
+PY = REPO / "python" / "northcel"            # the reference implementation
 
 
 def generated_assets() -> dict[Path, str]:
-    config = runpy.run_path(str(ROOT / "northcel/config.py"))
-    tree = ast.parse((ROOT / "northcel/parser.py").read_text())
+    config = runpy.run_path(str(PY / "config.py"))
+    tree = ast.parse((PY / "parser.py").read_text())
     methods = {
         n.name: n for n in ast.walk(tree)
         if isinstance(n, ast.FunctionDef)
@@ -38,7 +40,7 @@ def generated_assets() -> dict[Path, str]:
         return sorted(names)
 
     rules = {
-        "generated_from": "northcel/config.py, parser.py, rings.py; scripts/sync-assets.py",
+        "generated_from": "python/northcel/{config,parser,rings}.py; js/northcel/scripts/sync-assets.py",
         "config": {k: config[k] for k in (
             "LANGUAGE_NAME", "FILE_EXTENSION", "CLI_COMMAND", "CLI_SHORT_ALIAS",
             "PACKAGE_VERSION", "SPEC_VERSION", "SUPPORTED_SPEC_VERSIONS", "DOCS_URL",
@@ -47,12 +49,12 @@ def generated_assets() -> dict[Path, str]:
             ("scene", "parse_scene"), ("film", "parse_film"),
             ("frame", "parse_frame_override"), ("def", "parse_def"),
         )},
-        "b63_alphabet": runpy.run_path(str(ROOT / "northcel/rings.py"))["B63_ALPHABET"],
+        "b63_alphabet": runpy.run_path(str(PY / "rings.py"))["B63_ALPHABET"],
     }
-    guide = (REPO / "docs/northcel/agent-guide.md").read_text()
+    guide = (REPO / "docs" / "agent-guide.md").read_text()
     compact = guide.split("<!-- npm-guide:start -->\n", 1)[1].split("<!-- npm-guide:end -->", 1)[0]
     return {
-        ROOT / "js/rules.json": json.dumps(rules, indent=2) + "\n",
+        ROOT / "rules.json": json.dumps(rules, indent=2) + "\n",
         ROOT / "northcel/AGENT-GUIDE.md": compact,
     }
 

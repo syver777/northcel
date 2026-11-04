@@ -2,12 +2,17 @@
 'use strict';
 
 /**
- * `ncel` — npm launcher for the native NorthCel runtime.
+ * `northcel` — the npm launcher for the native NorthCel runtime (alias: `ncel`).
  *
  * There is no JavaScript renderer here and none is claimed. On a platform where
  * the native bundle exists this spawns it and passes argv/stdout/stderr/exit code
  * through unchanged. Where it does not exist, the launcher prints the exact
- * platform verdict (which is also what a macOS/Windows user sees) and exits 3.
+ * platform verdict (which is also what a macOS/Windows user sees) and exits 3 —
+ * except for `check`, where a zero-dependency PARTIAL structural pre-check can
+ * still answer, clearly labelled as partial.
+ *
+ * Everything the user installs is called `northcel`: `pip install northcel`,
+ * `npm install -g northcel` and `brew install syver777/northcel/northcel`.
  */
 
 const crypto = require('crypto');
@@ -19,24 +24,28 @@ const { spawn, spawnSync } = require('child_process');
 const locate = require('../lib/locate');
 
 const DATA = path.join(__dirname, '..', 'data');
+const GUIDE = path.join(__dirname, '..', 'northcel', 'AGENT-GUIDE.md');
 
-const USAGE = `ncel — NorthCel (.ncel) command line (npm launcher)
+const USAGE = `northcel — NorthCel (.ncel) command line (npm launcher, short alias: ncel)
 
-usage: ncel <command> [options]
+usage: northcel <command> [options]
 
   doctor  [--json]                     stage availability, exact versions, platform verdict
   verify  [--json] [--keep DIR]        render the bundled fixtures with the native runtime
-  check   FILE [--json]                parse + validate
+  check   FILE [--json] [--require-full]
+                                       validate (native when available; otherwise a
+                                       PARTIAL zero-dependency JS pre-check)
   info    FILE [--json]                scene/film metadata
   render  FILE [-o OUT.png] [--frame N] [--seed N] [--json]
   film    FILE -o OUTDIR [--frames 0..5] [--mp4 OUT.mp4] [--json]
   guide                                offline authoring guide
   version, --version                   versions (launcher, native runtime, spec)
 
-Not available from npm (use pip/pipx for these): fmt — formatting is the Python
-reference renderer (\`pip install northcel\`).
-Platform: Linux x86_64, glibc >= 2.39, Mesa EGL/llvmpipe. macOS/Windows are not
-supported in this release; \`ncel doctor\` explains exactly what is missing.
+Not available from npm (use pip for these): fmt — formatting is the Python
+reference implementation (\`pip install northcel\`).
+Platform: the native runtime is Linux x86_64 only, glibc >= 2.39, Mesa EGL/llvmpipe.
+macOS and Windows are not supported natively in this release; \`northcel doctor\`
+explains exactly what is missing.
 `;
 
 function fail(message, code) {
@@ -49,18 +58,19 @@ function requireNative() {
   const binary = locate.nativeBinary();
   if (!verdict.supported) {
     fail(
-      'ncel: native runtime unavailable on this platform.\n' +
-        verdict.reasons.map((r) => 'ncel: ' + r).join('\n') +
-        '\nncel: this release ships Linux x86_64 only. `pip install ncel` on macOS/Windows ' +
-        'installs the labelled Python reference renderer; this npm package never pretends to render.',
+      'northcel: native runtime unavailable on this platform.\n' +
+        verdict.reasons.map((r) => 'northcel: ' + r).join('\n') +
+        '\nnorthcel: this release ships Linux x86_64 only. `pip install northcel` on ' +
+        'macOS/Windows installs the labelled Python reference renderer; this npm ' +
+        'package never pretends to render.',
       locate.EXIT_NO_NATIVE
     );
   }
   if (!binary) {
     fail(
-      'ncel: the native bundle package (@ncel/linux-x64) is not installed.\n' +
-        'ncel: install with `npm install ncel` (it is an optionalDependency), or set ' +
-        'NCEL_NATIVE_BUNDLE to a native/ncel build tree.',
+      'northcel: the native bundle package (northcel-linux-x64) is not installed.\n' +
+        'northcel: install with `npm install northcel` (it is an optionalDependency), ' +
+        'or set NCEL_NATIVE_BUNDLE to a native/ build tree.',
       locate.EXIT_NO_NATIVE
     );
   }
@@ -74,7 +84,7 @@ function passthrough(command, args) {
     if (signal) process.kill(process.pid, signal);
     process.exit(code === null ? 1 : code);
   });
-  child.on('error', (err) => fail('ncel: failed to run the native runtime: ' + err.message, 1));
+  child.on('error', (err) => fail('northcel: failed to run the native runtime: ' + err.message, 1));
 }
 
 function sha256(file) {
@@ -100,7 +110,7 @@ function doctor(jsonOut) {
   const checks = locate.verifyBundle();
   const errors = [];
   if (!verdict.supported) errors.push(...verdict.reasons);
-  if (!binary) errors.push('native bundle (@ncel/linux-x64) is not installed');
+  if (!binary) errors.push('native bundle (northcel-linux-x64) is not installed');
   if (checks.failed.length) errors.push('bundle checksum mismatch: ' + checks.failed.map((f) => f.path).join(', '));
   if (checks.missing.length) errors.push('bundle is missing files: ' + checks.missing.join(', '));
   if (binary && !native) errors.push('`ncel-native doctor` did not return a usable report');
@@ -111,7 +121,7 @@ function doctor(jsonOut) {
 
   const doc = {
     ok: verdict.supported && !!binary && !checks.failed.length && !checks.missing.length && !!native && !!native.ok,
-    launcher: { name: 'ncel', version: locate.PACKAGE_VERSION, kind: 'npm' },
+    launcher: { name: 'northcel', version: locate.PACKAGE_VERSION, kind: 'npm' },
     platform: verdict,
     native: {
       available: !!native && !!native.ok,
@@ -148,7 +158,7 @@ function doctor(jsonOut) {
     process.stdout.write(JSON.stringify(doc, null, 2) + '\n');
   } else {
     const out = [];
-    out.push(`ncel ${doc.launcher.version}  (npm launcher, NorthCel spec ${doc.native.spec_version})`);
+    out.push(`northcel ${doc.launcher.version}  (npm launcher, NorthCel spec ${doc.native.spec_version})`);
     out.push(`platform      ${doc.platform.platform}-${doc.platform.arch}${doc.platform.glibc ? ' glibc ' + doc.platform.glibc : ''}`);
     out.push(`supported     ${doc.platform.supported ? 'yes' : 'NO'}`);
     for (const r of doc.platform.reasons) out.push(`              - ${r}`);
@@ -167,7 +177,7 @@ function doctor(jsonOut) {
     );
     if (shaders.length) out.push(`  GLSL          ${shaders.join('  ')}`);
     out.push(`  ffmpeg        ${s.ffmpeg.present ? 'present (optional, --mp4)' : 'absent (optional)'}`);
-    out.push('  reference     not bundled — `pip install ncel` for the Python reference renderer');
+    out.push('  reference     not bundled — `pip install northcel` for the Python reference renderer');
     if (errors.length) {
       out.push('errors:');
       errors.forEach((e) => out.push('  - ' + e));
@@ -201,7 +211,7 @@ function verify(args) {
   const jsonOut = args.includes('--json');
   const keepIndex = args.indexOf('--keep');
   const keep = keepIndex >= 0 ? args[keepIndex + 1] : null;
-  const workdir = keep || fs.mkdtempSync(path.join(os.tmpdir(), 'ncel-verify-'));
+  const workdir = keep || fs.mkdtempSync(path.join(os.tmpdir(), 'northcel-verify-'));
 
   let pins = {};
   try {
@@ -257,7 +267,7 @@ function verify(args) {
   if (jsonOut) {
     process.stdout.write(JSON.stringify(result, null, 2) + '\n');
   } else {
-    const lines = ['ncel verify — native runtime self-test (npm launcher)'];
+    const lines = ['northcel verify — native runtime self-test (npm launcher)'];
     checks.forEach((c) => lines.push(`  [${c.ok ? 'PASS' : 'FAIL'}] ${c.name}: ${c.detail}`));
     lines.push(`  artifacts: ${workdir}`);
     lines.push(`result: ${ok ? 'all checks passed' : 'FAILED'}`);
@@ -266,12 +276,110 @@ function verify(args) {
   process.exit(ok ? 0 : 1);
 }
 
+/**
+ * Bridge to the Python reference implementation when it is installed.
+ *
+ * Rendering and full validation are the Python reference's job. The npm package
+ * uses it whenever it can reach a `python3`/`python` that can import
+ * `northcel.cli`, or a pipx-style `northcel`/`ncel` entrypoint on PATH. Only when
+ * neither exists does `check` fall back to the PARTIAL JS pre-check.
+ */
+function findPythonBridge(args) {
+  const forwarded = args[0] === 'check' ? args.filter((a) => a !== '--require-full') : args;
+  for (const py of ['python3', 'python']) {
+    const probe = spawnSync(py, ['-c', 'import northcel.cli'], { stdio: 'ignore' });
+    if (probe.status === 0) {
+      const run = spawnSync(py, ['-m', 'northcel.cli', ...forwarded], { stdio: 'inherit' });
+      if (run.error || run.signal) {
+        fail(`northcel: the Python reference did not finish: ${run.error ? run.error.message : run.signal}`, 1);
+      }
+      return run.status === null ? 1 : run.status;
+    }
+  }
+  for (const directory of (process.env.PATH || '').split(path.delimiter)) {
+    for (const name of ['northcel', 'ncel']) {
+      const candidate = path.resolve(directory || '.', name);
+      try {
+        if (fs.realpathSync(candidate) === fs.realpathSync(__filename)) continue;
+        fs.accessSync(candidate, fs.constants.X_OK);
+        const fd = fs.openSync(candidate, 'r');
+        const header = Buffer.alloc(256);
+        let count;
+        try {
+          count = fs.readSync(fd, header, 0, header.length, 0);
+        } finally {
+          fs.closeSync(fd);
+        }
+        const firstLine = header.toString('utf8', 0, count).split('\n', 1)[0];
+        if (/^#![^\n]*\bpython[\d.]*(?:\s|$)/.test(firstLine)) {
+          const run = spawnSync(candidate, forwarded, { stdio: 'inherit' });
+          if (run.error || run.signal) {
+            fail(`northcel: the Python reference did not finish: ${run.error ? run.error.message : run.signal}`, 1);
+          }
+          return run.status === null ? 1 : run.status;
+        }
+      } catch (err) {
+        /* not a Python entrypoint; keep looking */
+      }
+    }
+  }
+  return null;
+}
+
+/**
+ * `check` without a native runtime: the zero-dependency PARTIAL pre-check.
+ * It never claims a document is valid — only that the structural pre-check found
+ * no errors and that full validation was not performed.
+ */
+function precheck(args) {
+  const { checkNcelSource } = require('../index.cjs');
+  const flags = new Set(['--json', '--require-full']);
+  const files = args.filter((a) => !flags.has(a));
+  if (files.length !== 1 || files[0].startsWith('-')) {
+    fail('usage: northcel check FILE [--json] [--require-full]', 2);
+  }
+  const file = path.resolve(files[0]);
+  let res;
+  try {
+    res = checkNcelSource(fs.readFileSync(file, 'utf8'));
+  } catch (err) {
+    res = { ...checkNcelSource(''), ok: false, errors: [`1:1: error: Cannot read file (${err.code || err.name})`] };
+  }
+  const exitCode = !res.ok ? 1 : args.includes('--require-full') ? 2 : 0;
+  if (args.includes('--json')) {
+    const { specVersion, ...rest } = res;
+    process.stdout.write(
+      JSON.stringify({
+        ...rest,
+        file,
+        spec_version: specVersion,
+        validator: 'js',
+        partial: true,
+        exit_code: exitCode,
+        reason: 'the native runtime and the Python reference are not available here; this is a structural pre-check only',
+        next: 'pip install northcel (or run on Linux x86_64) for full validation',
+      }, null, 2) + '\n'
+    );
+  } else {
+    process.stdout.write(
+      `${file}: PARTIAL (JS pre-check only; ${res.ok ? 'no pre-check errors found' : 'errors found'} — ` +
+        'install `pip install northcel` for full validation)\n'
+    );
+    for (const warning of res.warnings) process.stderr.write(`${file}:${warning}\n`);
+    for (const err of res.errors) process.stderr.write(`${file}:${err}\n`);
+    if (exitCode === 2) {
+      process.stderr.write('Full validation required but unavailable. Run on Linux x86_64 or `pip install northcel`.\n');
+    }
+  }
+  process.exit(exitCode);
+}
+
 function main() {
   const argv = process.argv.slice(2);
   const command = argv[0];
   const rest = argv.slice(1);
 
-  if (!command || command === '-h' || command === '--help' || command === 'help') {
+  if (!command || command === '-h' || command === '--help' || command === 'help' || argv.includes('--help') || argv.includes('-h')) {
     process.stdout.write(USAGE);
     return;
   }
@@ -279,8 +387,8 @@ function main() {
     const native = locate.nativeBinary() ? nativeDoctor() : null;
     const state = native && native.ok ? 'native' : 'native unavailable';
     process.stdout.write(
-      `ncel ${locate.PACKAGE_VERSION} (npm launcher, native runtime ${(native && native.version) || locate.NATIVE_RUNTIME_VERSION}, ` +
-        `spec ${locate.SPEC_VERSION}, ${state})\n`
+      `northcel ${locate.PACKAGE_VERSION} (npm launcher, short alias ncel, native runtime ` +
+        `${(native && native.version) || locate.NATIVE_RUNTIME_VERSION}, spec ${locate.SPEC_VERSION}, ${state})\n`
     );
     return;
   }
@@ -288,22 +396,35 @@ function main() {
   if (command === 'verify') return verify(rest);
 
   if (command === 'guide') {
-    process.stdout.write(fs.readFileSync(path.join(DATA, 'AGENT-GUIDE.md'), 'utf8'));
+    if (rest.length) fail('usage: northcel guide', 2);
+    process.stdout.write(fs.readFileSync(GUIDE, 'utf8'));
     return;
   }
   if (command === 'fmt') {
     fail(
-      'ncel: `fmt` is provided by the Python reference (`northcel`); the native runtime has no\n' +
-        'ncel: formatter and the npm package does not ship one. Install it with\n' +
-        'ncel:   pip install northcel==0.2.1 && python -m northcel fmt FILE',
+      'northcel: `fmt` is provided by the Python reference implementation; the native\n' +
+        'northcel: runtime has no formatter and the npm package does not ship one. Install it:\n' +
+        'northcel:   pip install northcel && python -m northcel fmt FILE',
       1
     );
   }
-  if (['check', 'info', 'render', 'film'].includes(command)) {
-    return passthrough(command, rest.filter((a) => a !== '--no-native'));
+  if (command === 'check') {
+    const verdict = locate.platformVerdict();
+    const binary = locate.nativeBinary();
+    const stripped = rest.filter((a) => a !== '--no-native');
+    if (verdict.supported && binary) return passthrough('check', stripped);
+    const viaPython = findPythonBridge(['check', ...stripped]);
+    if (viaPython !== null) process.exit(viaPython);
+    return precheck(rest);
+  }
+  if (['info', 'render', 'film'].includes(command)) {
+    const stripped = rest.filter((a) => a !== '--no-native');
+    const viaPython = findPythonBridge([command, ...stripped]);
+    if (viaPython !== null) process.exit(viaPython);
+    return passthrough(command, stripped);
   }
 
-  fail(`ncel: unknown command ${JSON.stringify(command)}\n\n` + USAGE, 2);
+  fail(`northcel: unknown command ${JSON.stringify(command)}\n\n` + USAGE, 2);
 }
 
 main();

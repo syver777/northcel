@@ -5,9 +5,10 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
-const { checkNcelSource, decodeRingQ25, decodeRingB63, decodeRingsPayload, CONFIG } = require("../js/index.cjs");
+const { checkNcelSource, decodeRingQ25, decodeRingB63, decodeRingsPayload, CONFIG } = require("../index.cjs");
 const root = path.resolve(__dirname, "..");
 const repo = path.resolve(root, "../..");
+const pythonPkg = path.join(repo, "python");
 const cli = path.join(root, "bin/northcel.js");
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "northcel-js-"));
 const valid = path.join(temp, "valid.ncel");
@@ -53,9 +54,13 @@ test("Node-only invalid arguments, I/O errors and missing renderer never pass", 
     const r = run(["check", file, "--json"]);
     assert.equal(r.status, 1); assert.equal(JSON.parse(r.stdout).partial, true);
   }
-  for (const command of ["render", "film", "fmt"]) assert.equal(run([command, valid]).status, 1);
+  // render/film use the native runtime's exit code 3 ("this platform cannot run it")
+  // when neither the bundle nor a Python reference is reachable; fmt always exits 1
+  // with the "install the Python reference" instruction.
+  for (const command of ["render", "film"]) assert.equal(run([command, valid]).status, 3);
+  assert.equal(run(["fmt", valid]).status, 1);
   assert.equal(run(["--version"]).status, 0);
-  assert.match(run(["--version"]).stdout, /0\.2\.1.*js-validator/);
+  assert.match(run(["--version"]).stdout, /^northcel 0\.3\.1 \(npm launcher/);
   assert.equal(run(["check", "--help"]).status, 0);
 });
 
@@ -83,7 +88,7 @@ test("actual Python reference check delegates, not JS fallback", () => {
   const pythonPath = spawnSync("python3", ["-c", "import os,sys;print(os.path.dirname(sys.executable))"], { encoding: "utf8" });
   assert.equal(pythonPath.status, 0);
   for (const [file, code] of [[valid, 0], [invalid, 1]]) {
-    const r = run(["check", file, "--require-full", "--json"], { PATH: pythonPath.stdout.trim(), PYTHONPATH: root });
+    const r = run(["check", file, "--require-full", "--json"], { PATH: pythonPath.stdout.trim(), PYTHONPATH: pythonPkg });
     assert.equal(r.status, code, r.stderr);
     const data = JSON.parse(r.stdout);
     assert.equal(data.partial, false); assert.equal(data.validator, "python");
@@ -94,7 +99,7 @@ test("pipx-style Python entrypoint on PATH delegates without a Python executable
   const scripts = path.join(temp, "pipx-bin");
   fs.mkdirSync(scripts);
   const py = spawnSync("python3", ["-c", "import sys;print(sys.executable)"], { encoding: "utf8" }).stdout.trim();
-  fs.writeFileSync(path.join(scripts, "northcel"), `#!${py}\nimport sys\nsys.path.insert(0, ${JSON.stringify(root)})\nfrom northcel.cli import main\nraise SystemExit(main())\n`, { mode: 0o755 });
+  fs.writeFileSync(path.join(scripts, "northcel"), `#!${py}\nimport sys\nsys.path.insert(0, ${JSON.stringify(pythonPkg)})\nfrom northcel.cli import main\nraise SystemExit(main())\n`, { mode: 0o755 });
   const r = run(["check", valid, "--require-full", "--json"], { PATH: scripts });
   assert.equal(r.status, 0, r.stderr);
   assert.equal(JSON.parse(r.stdout).validator, "python");

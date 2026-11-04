@@ -1,37 +1,32 @@
 #!/usr/bin/env bash
-# ncel one-line installer for Linux x86_64.
+# northcel one-line installer for Linux x86_64.
 #
-# Public one-liner (needs the script at a public URL; the repository is private
-# today, so use the local or authenticated form until it is public or a release
-# asset is published):
+# Public one-liner:
 #
-#   curl -fsSL https://raw.githubusercontent.com/syver777/NorthNoir/main/packaging/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/syver777/northcel/main/packaging/install.sh | bash
 #
-# Forms that work today:
+# From a checkout:   bash packaging/install.sh
 #
-#   bash packaging/install.sh                       # from a checkout
-#   gh api repos/syver777/NorthNoir/contents/packaging/install.sh \
-#     -H "Accept: application/vnd.github.raw" | bash        # authenticated
-#
-# Installs the `ncel` CLI (native NorthCel runtime: MoonBit + Bend/HVM2 + GLSL via
-# Mesa/EGL) into user space, verifies every bundled checksum, and proves the
-# installation with real renders. No root unless you ask for Mesa to be installed.
+# Installs the `northcel` CLI (short alias `ncel`) with the native NorthCel runtime
+# (MoonBit + Bend/HVM2 + GLSL via Mesa/EGL) into user space, verifies every bundled
+# checksum, and proves the installation with real renders. No root unless you ask
+# for Mesa to be installed.
 #
 #   --dry-run        print every action, change nothing
 #   --uninstall      remove what this installer created
 #   --no-verify      skip the render/conformance self-test
 #   --with-moonbit   also provision the pinned MoonBit compiler (101 MB, source builds only)
 #   --install-mesa   allow the one privileged step: install Mesa/EGL with sudo
-#   --version X.Y.Z  install a specific ncel version (default 0.2.1)
+#   --version X.Y.Z  install a specific northcel version (default 0.3.1)
 #   --prefix DIR     install root (default $HOME/.local/share/ncel)
-#   --bin-dir DIR    where the `ncel` symlink goes (default $HOME/.local/bin)
+#   --bin-dir DIR    where the `northcel` symlink goes (default $HOME/.local/bin)
 #   -h, --help       this text
 #
 # Linux x86_64 only, glibc >= 2.39, Mesa EGL/llvmpipe. macOS and Windows are not
 # supported in this release and this script says so instead of pretending.
 set -euo pipefail
 
-NCEL_VERSION="0.2.1"
+NCEL_VERSION="0.3.1"
 NCEL_HOME="${NCEL_HOME:-$HOME/.local/share/ncel}"
 BIN_DIR="${NCEL_BIN_DIR:-$HOME/.local/bin}"
 INDEX_URL="${NCEL_INDEX_URL:-https://pypi.org/simple}"
@@ -42,8 +37,8 @@ WITH_MOONBIT=0
 INSTALL_MESA=0
 
 say() { printf '%s\n' "$*"; }
-warn() { printf 'ncel: %s\n' "$*" >&2; }
-die() { printf 'ncel: %s\n' "$1" >&2; exit "${2:-1}"; }
+warn() { printf 'northcel: %s\n' "$*" >&2; }
+die() { printf 'northcel: %s\n' "$1" >&2; exit "${2:-1}"; }
 run() {
   if [ "$DRY_RUN" -eq 1 ]; then
     printf '  [dry-run] %s\n' "$*"
@@ -54,17 +49,18 @@ run() {
 
 usage() {
   cat <<'EOF'
-ncel installer for Linux x86_64 — installs the `ncel` CLI and the native
-NorthCel runtime (MoonBit + Bend/HVM2 + GLSL via Mesa/EGL) into user space.
+northcel installer for Linux x86_64 — installs the `northcel` CLI (alias `ncel`)
+and the native NorthCel runtime (MoonBit + Bend/HVM2 + GLSL via Mesa/EGL) into
+user space.
 
   --dry-run        print every action, change nothing
   --uninstall      remove what this installer created
   --no-verify      skip the render/conformance self-test
   --with-moonbit   also provision the pinned MoonBit compiler (101 MB, source builds only)
   --install-mesa   allow the one privileged step: install Mesa/EGL with sudo
-  --version X.Y.Z  install a specific ncel version (default 0.2.1)
+  --version X.Y.Z  install a specific northcel version (default 0.3.1)
   --prefix DIR     install root (default $HOME/.local/share/ncel)
-  --bin-dir DIR    where the `ncel` symlink goes (default $HOME/.local/bin)
+  --bin-dir DIR    where the `northcel` symlink goes (default $HOME/.local/bin)
   -h, --help       this text
 EOF
 }
@@ -89,7 +85,7 @@ while [ $# -gt 0 ]; do
 done
 
 VENV="$NCEL_HOME/venv"
-MARKER="$NCEL_HOME/.ncel-install"
+MARKER="$NCEL_HOME/.northcel-install"
 
 # ---------------------------------------------------------------- platform gate
 
@@ -98,9 +94,9 @@ detect_platform() {
   ARCH="$(uname -m)"
   if [ "$OS" != "Linux" ]; then
     die "the native runtime is built and conformance-verified on Linux x86_64 only,
-ncel: this is $OS/$ARCH. macOS needs Vulkan/MoltenVK or a tested GL 4.1 path and
-ncel: Windows is untouched (see native/ncel/BUILD.md section 7). Nothing was changed.
-ncel: For a labelled non-native renderer use: pip install ncel" 3
+northcel: this is $OS/$ARCH. macOS needs Vulkan/MoltenVK or a tested GL 4.1 path and
+northcel: Windows is untouched (see native/BUILD.md section 7). Nothing was changed.
+northcel: For a labelled non-native renderer use: pip install northcel" 3
   fi
   case "$ARCH" in
     x86_64|amd64) ;;
@@ -116,8 +112,8 @@ ncel: For a labelled non-native renderer use: pip install ncel" 3
     GLIBC_MINOR="${GLIBC_REST%%.*}"
     if [ "${GLIBC_MAJOR:-0}" -lt 2 ] || { [ "${GLIBC_MAJOR:-0}" -eq 2 ] && [ "${GLIBC_MINOR:-0}" -lt 39 ]; }; then
       die "glibc $GLIBC is older than the required 2.39 (the pinned Bend/HVM binaries
-ncel: need GLIBC_2.39). Ubuntu 24.04+, Debian 13, Fedora 40+ and RHEL 10 satisfy it.
-ncel: Nothing was changed." 3
+northcel: need GLIBC_2.39). Ubuntu 24.04+, Debian 13, Fedora 40+ and RHEL 10 satisfy it.
+northcel: Nothing was changed." 3
     fi
   fi
   say "platform: linux-$ARCH, glibc ${GLIBC:-unknown}"
@@ -184,15 +180,18 @@ ensure_gl_runtime() {
 # ------------------------------------------------------------------- uninstall
 
 do_uninstall() {
-  say "ncel uninstall"
-  if [ -L "$BIN_DIR/ncel" ]; then
-    target="$(readlink -f "$BIN_DIR/ncel" 2>/dev/null || true)"
-    case "$target" in
-      "$NCEL_HOME"/*) run rm -f "$BIN_DIR/ncel"; say "  removed symlink $BIN_DIR/ncel" ;;
-      *) warn "leaving $BIN_DIR/ncel alone (it does not point into $NCEL_HOME)" ;;
-    esac
-  fi
-  if [ -f "$MARKER" ]; then
+  say "northcel uninstall"
+  for link in northcel ncel; do
+    if [ -L "$BIN_DIR/$link" ]; then
+      target="$(readlink -f "$BIN_DIR/$link" 2>/dev/null || true)"
+      case "$target" in
+        "$NCEL_HOME"/*) run rm -f "$BIN_DIR/$link"; say "  removed symlink $BIN_DIR/$link" ;;
+        *) warn "leaving $BIN_DIR/$link alone (it does not point into $NCEL_HOME)" ;;
+      esac
+    fi
+  done
+  # `.ncel-install` is the marker written by the 0.2.1 installer; keep removing it.
+  if [ -f "$MARKER" ] || [ -f "$NCEL_HOME/.ncel-install" ]; then
     run rm -rf "$NCEL_HOME"
     say "  removed $NCEL_HOME"
   elif [ -d "$NCEL_HOME" ]; then
@@ -231,9 +230,9 @@ make_venv() {
     return 0
   fi
   die "cannot create a virtual environment. Install python3-venv
-ncel:   sudo apt-get install -y python3-venv      # Debian/Ubuntu
-ncel:   sudo dnf install -y python3-virtualenv    # Fedora
-ncel: or: pip install --user virtualenv" 4
+northcel:   sudo apt-get install -y python3-venv      # Debian/Ubuntu
+northcel:   sudo dnf install -y python3-virtualenv    # Fedora
+northcel: or: pip install --user virtualenv" 4
 }
 
 verify_bundle() {
@@ -241,7 +240,7 @@ verify_bundle() {
 import json, sys
 from pathlib import Path
 try:
-    import ncel_native_bundle
+    import northcel_native_bundle as ncel_native_bundle
 except Exception:
     print("no native bundle installed for this platform")
     sys.exit(0)
@@ -267,7 +266,7 @@ PY
 }
 
 do_install() {
-  say "ncel installer — version $NCEL_VERSION"
+  say "northcel installer — version $NCEL_VERSION"
   detect_platform
   ensure_gl_runtime
 
@@ -277,11 +276,11 @@ do_install() {
 
   if [ "$DRY_RUN" -eq 1 ]; then
     say "  [dry-run] create venv at $VENV"
-    say "  [dry-run] pip install --only-binary=:all: --no-cache-dir --index-url $INDEX_URL ncel==$NCEL_VERSION"
+    say "  [dry-run] pip install --only-binary=:all: --no-cache-dir --index-url $INDEX_URL northcel==$NCEL_VERSION"
     say "  [dry-run] verify bundled sha256 manifest"
-    say "  [dry-run] link $BIN_DIR/ncel -> $VENV/bin/ncel"
-    [ "$NO_VERIFY" -eq 0 ] && say "  [dry-run] ncel verify (real renders + determinism)"
-    [ "$WITH_MOONBIT" -eq 1 ] && say "  [dry-run] ncel toolchain install --moonbit (101 MB)"
+    say "  [dry-run] link $BIN_DIR/northcel -> $VENV/bin/northcel (and ncel)"
+    [ "$NO_VERIFY" -eq 0 ] && say "  [dry-run] northcel verify (real renders + determinism)"
+    [ "$WITH_MOONBIT" -eq 1 ] && say "  [dry-run] northcel toolchain install --moonbit (101 MB)"
     say "dry run complete; nothing was changed."
     return 0
   fi
@@ -294,39 +293,40 @@ do_install() {
     say "virtual environment: reusing $VENV"
   fi
 
-  say "installing ncel==$NCEL_VERSION from $INDEX_URL ..."
+  say "installing northcel==$NCEL_VERSION from $INDEX_URL ..."
   run "$VENV/bin/python" -m pip install --quiet --upgrade pip >/dev/null 2>&1 || true
   run "$VENV/bin/python" -m pip install --quiet --no-cache-dir --only-binary=:all: \
-      --index-url "$INDEX_URL" "ncel==$NCEL_VERSION"
+      --index-url "$INDEX_URL" "northcel==$NCEL_VERSION"
 
   say "verifying installed bundle ..."
   run verify_bundle
 
-  printf '%s\n' "installed_by=ncel-install.sh" "version=$NCEL_VERSION" "at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$MARKER"
-  run ln -sfn "$VENV/bin/ncel" "$BIN_DIR/ncel"
-  say "linked: $BIN_DIR/ncel -> $VENV/bin/ncel"
+  printf '%s\n' "installed_by=northcel-install.sh" "version=$NCEL_VERSION" "at=$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$MARKER"
+  run ln -sfn "$VENV/bin/northcel" "$BIN_DIR/northcel"
+  run ln -sfn "$VENV/bin/northcel" "$BIN_DIR/ncel"
+  say "linked: $BIN_DIR/northcel -> $VENV/bin/northcel (alias: $BIN_DIR/ncel)"
 
   if [ "$WITH_MOONBIT" -eq 1 ]; then
     say "provisioning the pinned MoonBit compiler (source builds only) ..."
-    run "$VENV/bin/ncel" toolchain install
+    run "$VENV/bin/northcel" toolchain install
   fi
 
   say ""
-  run "$VENV/bin/ncel" doctor || true
+  run "$VENV/bin/northcel" doctor || true
 
   if [ "$NO_VERIFY" -eq 0 ]; then
     say ""
     say "running the conformance self-test (real renders, determinism) ..."
-    if ! run "$VENV/bin/ncel" verify; then
-      die "the installed runtime failed its self-test; run '$VENV/bin/ncel doctor --json'" 5
+    if ! run "$VENV/bin/northcel" verify; then
+      die "the installed runtime failed its self-test; run '$VENV/bin/northcel doctor --json'" 5
     fi
   fi
 
   say ""
-  say "ncel is installed."
+  say "northcel is installed."
   case ":$PATH:" in
-    *":$BIN_DIR:"*) say "run: ncel doctor" ;;
-    *) say "add $BIN_DIR to PATH, then run: ncel doctor"
+    *":$BIN_DIR:"*) say "run: northcel doctor" ;;
+    *) say "add $BIN_DIR to PATH, then run: northcel doctor"
        say "  export PATH=\"$BIN_DIR:\$PATH\"" ;;
   esac
   say "uninstall: $0 --uninstall   (or re-run this script with --uninstall)"

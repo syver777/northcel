@@ -1,7 +1,7 @@
 """Pinned-toolchain provisioning (explicit, sha256-verified, user space only).
 
 A *runtime* needs no downloads: the MoonBit-compiled stage, Bend and HVM2 all ship
-inside the `ncel-native` bundle. This module exists for the other case — rebuilding
+inside the `northcel-native` bundle. This module exists for the other case — rebuilding
 the native tree from source — and for reporting exactly what is installed.
 """
 
@@ -17,7 +17,7 @@ import tarfile
 import urllib.request
 from pathlib import Path
 
-from . import bundle
+from . import bundle, paths
 
 
 def home() -> Path:
@@ -41,7 +41,7 @@ def moonbit_compiler() -> Path | None:
 
 
 def _moonbit_info() -> dict:
-    path = Path(__file__).with_name("data") / "pins.json"
+    path = paths.pins_path()
     try:
         return json.loads(path.read_text(encoding="utf-8")).get("moonbit", {})
     except Exception:
@@ -98,7 +98,7 @@ def status() -> dict:
         "hvm": manifest.get("toolchain", {}).get("hvm"),
         "note": (
             "the runtime needs no download: the MoonBit-compiled stage, Bend and HVM2 "
-            "are bundled in ncel-native. This directory is only used to rebuild from source."
+            "are bundled in northcel-native. This directory is only used to rebuild from source."
         ),
     }
 
@@ -110,12 +110,12 @@ def install_moonbit(dry_run: bool = False) -> int:
     core_url = info.get("core_url")
     core_sha = info.get("core_sha256")
     if not (url and sha and core_url and core_sha):
-        print("ncel: pins.json is missing the MoonBit toolchain pins", file=sys.stderr)
+        print("northcel: pins.json is missing the MoonBit toolchain pins", file=sys.stderr)
         return 1
 
     target = toolchain_dir() / "moon"
     downloads = toolchain_dir() / "downloads"
-    print(f"ncel toolchain: MoonBit {info.get('version')} -> {target}")
+    print(f"northcel toolchain: MoonBit {info.get('version')} -> {target}")
     if dry_run:
         print("  (dry run: nothing will be downloaded or written)")
 
@@ -182,7 +182,7 @@ def cmd_toolchain(action: str, as_json: bool, dry_run: bool) -> int:
             print(json.dumps(info, indent=2))
         else:
             moon = info["moonbit"]
-            print(f"ncel toolchain home: {info['toolchain_dir']}")
+            print(f"northcel toolchain home: {info['toolchain_dir']}")
             print(
                 f"  MoonBit compiler: {'installed at ' + moon['compiler'] if moon['compiler_installed'] else 'not installed (not needed to run)'}"
                 f"  pin {moon['pinned_version']}"

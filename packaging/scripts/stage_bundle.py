@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Stage the native runtime bundle for packaging (wheel + npm platform package).
 
-Source of truth: `native/ncel/artifacts/ncel-native-<ver>-linux-x86_64/`, then
-`native/ncel/toolchain.lock` for every pin. If the artifact directory is missing,
-the artifact tarball is extracted; if that is missing too, the native tree is built
-(`scripts/provision-toolchain.sh` + `make`) — that is the only slow path.
+Source of truth: `native/artifacts/ncel-native-<ver>-linux-x86_64/`, then
+`native/toolchain.lock` for every pin. If the artifact directory is missing, the
+artifact tarball is extracted; if that is missing too, the native tree is built
+(`native/scripts/provision-toolchain.sh` + `make`) — that is the only slow path.
 
-    python3 packaging/scripts/stage_bundle.py --out packaging/python/ncel-native/ncel_native_bundle
+    python3 packaging/scripts/stage_bundle.py --out python/northcel-native/northcel_native_bundle
 
 Writes `<out>/bundle-manifest.json` with the sha256 of every bundled file and fails
 loudly if a bundled Bend/HVM/shader hash disagrees with `toolchain.lock`.
@@ -24,11 +24,11 @@ import tarfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-NATIVE = ROOT / "native" / "ncel"
+NATIVE = ROOT / "native"
 LOCK = NATIVE / "toolchain.lock"
 ARTIFACTS = NATIVE / "artifacts"
 
-PACKAGE_VERSION = "0.2.1"
+PACKAGE_VERSION = "0.3.1"
 
 BINARIES = ("ncel-native", "ncel-ast", "ncel-gl", "bend", "hvm")
 SHADERS = ("draw430.glsl", "draw410.glsl")
@@ -147,7 +147,7 @@ def main() -> int:
 
     manifest = {
         "schema": "ncel-bundle-manifest/1",
-        "product": "ncel-native",
+        "product": "northcel-native",
         "package_version": PACKAGE_VERSION,
         "runtime_version": version,
         "spec_version": lock["spec_version"],

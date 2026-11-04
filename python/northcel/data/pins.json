@@ -1,0 +1,52 @@
+{
+  "schema": "northcel-pins/1",
+  "generated_from": "native/toolchain.lock",
+  "northcel_version": "0.3.1",
+  "native_runtime_version": "0.2.0",
+  "spec_version": "0.2.0-draft",
+  "target": "linux-x86_64",
+  "moonbit": {
+    "version": "0.1.20261102 (ea07287 2026-11-02)",
+    "archive_url": "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-x86_64.tar.gz",
+    "archive_sha256": "dd1d6d793c9675405ef32b39bce66d40041e2052a9c3f2f403e0a9da98bd94fd",
+    "archive_bytes": 101006330,
+    "core_url": "https://cli.moonbitlang.com/cores/core-latest.tar.gz",
+    "core_sha256": "b5b33afc759b8ae332346f357f42235d4c8d54afd91bb891b22ead3d746fa74f",
+    "core_bytes": 2797220
+  },
+  "bend": {
+    "version": "0.2.38",
+    "sha256": "fa13b42684fdb3625c769cf22b94228745c4f17383699dff744846b2181c47bb",
+    "bytes": 3606752,
+    "binary": "vendor/linux-x86_64/bin/bend"
+  },
+  "hvm": {
+    "version": "2.0.22",
+    "sha256": "e36a01430400e18d2fa0f876611449c830bb402853df38c1317bd0bafc0cd4cf",
+    "bytes": 2890472,
+    "binary": "vendor/linux-x86_64/bin/hvm"
+  },
+  "shaders": {
+    "draw430": "14829a3cbb6cd868b876ed6afd3567338073c1c64fc0e98e13a7221511ec5b41",
+    "draw410": "fe4d0c4fe4e07d05a77ff6a5a5bb0eb5889587aa6f5be841da1acbe6a039ad45"
+  },
+  "gl_runtime": {
+    "version": "25.2.8-0ubuntu0.24.04.2 (Mesa 4.5 core profile)",
+    "system_packages": [
+      "libegl1 (>= 1.5)",
+      "libgl1",
+      "mesa-libgallium (llvmpipe)",
+      "build-essential (or gcc + libc headers) for building only",
+      "ffmpeg (optional, MP4 muxing)"
+    ]
+  },
+  "oracle": {
+    "shower_f0001": {
+      "sha256": "be0eb036775458d009a2568f5407c973777fe85caa1dac5244f03bb56582d718",
+      "width": 1024,
+      "height": 1024,
+      "source": "python/northcel/examples/shower_f0001.ncel",
+      "note": "native render == Python reference render (MAE 0.0, 0 differing pixels)"
+    }
+  }
+}

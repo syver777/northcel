@@ -1,11 +1,12 @@
 'use strict';
 
 /**
- * Locate the native bundle for the `ncel` npm launcher.
+ * Locate the native bundle for the `northcel` npm launcher.
  *
  * Resolution order:
  *   1. NCEL_NATIVE_BUNDLE (explicit override, e.g. a checkout or a CI cache);
- *   2. the `@ncel/linux-x64` optional dependency (normal installation);
+ *   2. the `northcel-linux-x64` optional dependency (normal installation);
+ *      0.2.1's `@ncel/linux-x64` is still honoured if it is what is installed;
  *   3. nothing -> an honest platform verdict, never a pretend renderer.
  */
 
@@ -13,7 +14,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
-const PACKAGE_VERSION = '0.2.1';
+const PACKAGE_VERSION = '0.3.1';
 const NATIVE_RUNTIME_VERSION = '0.2.0';
 const SPEC_VERSION = '0.2.0-draft';
 const EXIT_NO_NATIVE = 3;
@@ -39,7 +40,7 @@ function platformVerdict() {
     reasons.push(
       `the native runtime is built and conformance-verified on Linux x86_64 only; this is ` +
         `${platform}/${arch}. macOS needs Vulkan/MoltenVK or a tested GL 4.1 path ` +
-        `(see native/ncel/BUILD.md section 7) and Windows is untouched.`
+        `(see native/BUILD.md section 7) and Windows is untouched.`
     );
   } else if (arch !== 'x64') {
     reasons.push(`the native runtime is x86_64 only; this machine is ${arch}.`);
@@ -85,13 +86,24 @@ function hasEgl() {
   return candidates.some((p) => fs.existsSync(p));
 }
 
+function firstResolvable(names) {
+  for (const name of names) {
+    try {
+      return require.resolve(name);
+    } catch (err) {
+      /* try the next name */
+    }
+  }
+  throw new Error('none of ' + names.join(', ') + ' is installed');
+}
+
 function bundleDir() {
   if (process.env.NCEL_NATIVE_BUNDLE) {
     const explicit = path.resolve(process.env.NCEL_NATIVE_BUNDLE);
     if (fs.existsSync(path.join(explicit, 'bin', 'ncel-native'))) return explicit;
   }
   try {
-    const pkg = require.resolve('@ncel/linux-x64/package.json');
+    const pkg = firstResolvable(['northcel-linux-x64/package.json', '@ncel/linux-x64/package.json']);
     const candidate = path.join(path.dirname(pkg), 'bundle');
     if (fs.existsSync(path.join(candidate, 'bin', 'ncel-native'))) return candidate;
   } catch (err) {

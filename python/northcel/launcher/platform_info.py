@@ -115,7 +115,7 @@ def platform_info() -> PlatformInfo:
         reasons.append(
             "the native runtime is built and conformance-verified on Linux x86_64 "
             f"only; this is {sys_os}/{arch}. macOS needs Vulkan/MoltenVK or a tested "
-            "GL 4.1 path (see native/ncel/BUILD.md section 7) and Windows is untouched."
+            "GL 4.1 path (see native/BUILD.md section 7) and Windows is untouched."
         )
     else:
         if arch not in SUPPORTED_ARCHES:

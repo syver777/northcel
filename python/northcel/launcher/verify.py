@@ -16,12 +16,13 @@ import sys
 import tempfile
 from pathlib import Path
 
-from . import EXIT_NO_NATIVE, native
+from . import EXIT_NO_NATIVE, native, paths
 from .doctor import pins
 
 
 def _fixture(name: str) -> Path:
-    return Path(__file__).with_name("data") / name
+    """A bundled reference example, also used as the verify fixture."""
+    return paths.example(name)
 
 
 def _sha256(path: Path) -> str:
@@ -147,10 +148,11 @@ def run_checks(keep: Path | None = None) -> dict:
 def cmd_verify(as_json: bool, keep: str | None) -> int:
     usable, reason = native.available()
     if not usable:
-        print(f"ncel: cannot verify the native runtime here — {reason}", file=sys.stderr)
+        print(f"northcel: cannot verify the native runtime here — {reason}", file=sys.stderr)
         print(
-            "ncel: this release only ships and verifies Linux x86_64; install "
-            "`ncel-native` on a supported platform (ncel doctor shows the details).",
+            "northcel: this release only ships and verifies Linux x86_64; install "
+            "`northcel-native` on a supported platform (northcel doctor shows the "
+            "details).",
             file=sys.stderr,
         )
         return EXIT_NO_NATIVE
@@ -159,7 +161,7 @@ def cmd_verify(as_json: bool, keep: str | None) -> int:
     if as_json:
         print(json.dumps(result, indent=2))
     else:
-        print("ncel verify — native runtime self-test")
+        print("northcel verify — native runtime self-test")
         for check in result["checks"]:
             mark = "PASS" if check["ok"] else "FAIL"
             print(f"  [{mark}] {check['name']}: {check['detail']}")

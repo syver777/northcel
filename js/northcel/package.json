@@ -1,44 +1,56 @@
 {
-  "name": "ncel",
-  "version": "0.2.1",
-  "description": "NorthCel (.ncel) CLI: runs the native MoonBit + Bend/HVM2 + GLSL runtime on Linux x86_64, and says plainly when a platform cannot run it.",
-  "license": "Proprietary",
-  "author": "North Noir",
-  "homepage": "https://northnoir.com/northcel",
+  "name": "northcel",
+  "version": "0.3.1",
+  "description": "NorthCel (.ncel) — the open drawing language for AI-drawn video. This package runs the native MoonBit + Bend/HVM2 + GLSL runtime on Linux x86_64, ships a zero-dependency partial JS pre-check, and says plainly when a platform cannot render natively.",
+  "license": "MIT OR Apache-2.0",
+  "author": "NorthCel contributors",
+  "homepage": "https://github.com/syver777/northcel",
   "repository": {
     "type": "git",
-    "url": "https://github.com/syver777/NorthNoir.git",
-    "directory": "packaging/npm/ncel"
+    "url": "https://github.com/syver777/northcel.git",
+    "directory": "js/northcel"
+  },
+  "bugs": {
+    "url": "https://github.com/syver777/northcel/issues"
   },
   "bin": {
-    "ncel": "bin/ncel.js"
+    "northcel": "bin/northcel.js",
+    "ncel": "bin/northcel.js"
   },
-  "main": "lib/locate.js",
+  "main": "index.cjs",
   "files": [
-    "bin/ncel.js",
+    "bin/northcel.js",
     "lib/locate.js",
-    "data/AGENT-GUIDE.md",
+    "index.cjs",
+    "rules.json",
+    "northcel/AGENT-GUIDE.md",
     "data/pins.json",
     "data/starter.ncel",
     "data/lantern_film.ncel",
     "data/shower_f0001.ncel",
     "README.md",
-    "LICENSE"
+    "LICENSE-MIT",
+    "LICENSE-APACHE"
   ],
   "optionalDependencies": {
-    "@ncel/linux-x64": "0.2.1"
+    "northcel-linux-x64": "0.3.1"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "prepack": "python3 scripts/sync-assets.py --check"
   },
   "engines": {
     "node": ">=16"
   },
   "keywords": [
-    "ncel",
     "northcel",
+    "ncel",
     "ai-drawn-video",
     "animation",
     "moonbit",
     "bend",
     "hvm2",
-    "glsl"
+    "glsl",
+    "dsl"
   ]
 }

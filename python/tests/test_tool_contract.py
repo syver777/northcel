@@ -11,7 +11,8 @@ from northcel.cli import main
 from northcel.parser import parse_ncel
 from northcel.validator import validate_document
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[1]   # <repo>/python
+REPO_ROOT = ROOT.parent                       # <repo>
 
 
 class TestToolContract(unittest.TestCase):
@@ -33,7 +34,11 @@ class TestToolContract(unittest.TestCase):
         with redirect_stdout(output):
             self.assertEqual(main(["guide"]), 0)
         self.assertEqual(output.getvalue(), guide)
-        for path in [ROOT / "README.md", *list((ROOT.parents[1] / "docs/northcel").glob("*.md"))]:
+        docs = [REPO_ROOT / "README.md", REPO_ROOT / "CONTRIBUTING.md"]
+        docs += sorted((REPO_ROOT / "docs").glob("*.md"))
+        docs += sorted((REPO_ROOT / "js").glob("*/README.md"))
+        docs += [ROOT / "README.md"]
+        for path in docs:
             for snippet in re.findall(r"```ncel\n(.*?)```", path.read_text(), re.S):
                 doc = parse_ncel(snippet)
                 self.assertEqual([d for d in validate_document(doc) if d.level == "error"], [], str(path))

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Re-tag a built wheel to the platform tag the bundle actually requires.
 
-`ncel-native` ships prebuilt Linux x86_64 ELF binaries, so `py3-none-any` would be
+`northcel-native` ships prebuilt Linux x86_64 ELF binaries, so `py3-none-any` would be
 a false claim ("installable everywhere"). setuptools' `bdist_wheel` insists on
 `any` for a package without extension modules, so the tag is rewritten here:
 filename, `WHEEL` metadata and the `RECORD` entry for `WHEEL` are kept consistent.
 
-    python3 packaging/scripts/fix_wheel_tag.py dist/ncel_native-0.2.1-py3-none-any.whl \
+    python3 packaging/scripts/fix_wheel_tag.py dist/northcel_native-0.2.2-py3-none-any.whl \
         --platform manylinux_2_39_x86_64
 """
 
