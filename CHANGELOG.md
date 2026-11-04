@@ -22,7 +22,7 @@ move for packaging-only releases.
 - **Patterns cookbook** in `docs/patterns/` + `examples/patterns/`: ten complete
   films (head turn, blink, jump, colour beat, cloud drift, progressive assembly,
   duck walk, line boil, crowd swarm, two-shot), each with a contact sheet, byte
-  and `cl100k` token size, why it works and its pitfalls. Total: 19,819 bytes /
+  and `cl100k` token size, why it works and its pitfalls. Total: 19,821 bytes /
   9,616 tokens for all ten.
 - **Gallery** (`docs/gallery.md`): the shower frames, the lantern film contact
   sheet, the fitted Test Video 7 reference (linked, not embedded) and the patterns.

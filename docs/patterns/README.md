@@ -24,7 +24,7 @@ check does exactly that in CI.
 | 9 | [A crowd as a swarm of small marks](09-crowd-swarm.md) | two swarms (heads, bodies), one drift, `agents` as declaration | 6 @ 6 fps | 2,346 | 1,339 |
 | 10 | [A two-shot film with a frame override](10-two-shot.md) | both shots in one file, a `step` cut, a one-frame bird | 8 @ 8 fps | 2,151 | 1,004 |
 
-Total: **10 files, 19,819 bytes, 9,616 cl100k tokens** for ten finished,
+Total: **10 files, 19,821 bytes, 9,616 cl100k tokens** for ten finished,
 animated shots. That is the compactness argument in one line, and every number
 is measured by the docs build rather than copied from a slide.
 

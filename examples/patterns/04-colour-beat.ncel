@@ -1,6 +1,6 @@
 northcel "0.2.0-draft"
 
-// Colour arrives at a specific beat. The grey scene is the base; the colour
+// Colour arrives at a specific beat. The grey drawing is the base; the colour
 // plate is drawn over it and rises in three steps until it covers the frame.
 
 film ColourBeat(width: 320, height: 180, fps: 8, frames: 8, precision: 0.25px, seed: 404) {

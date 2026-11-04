@@ -9,7 +9,7 @@ Nothing changes colour in place: the colour plate is a complete second drawing, 
 | | |
 | --- | --- |
 | Source | [`examples/patterns/04-colour-beat.ncel`](../../examples/patterns/04-colour-beat.ncel) |
-| Size | **1,907 bytes** · **867 cl100k tokens** |
+| Size | **1,909 bytes** · **867 cl100k tokens** |
 | Timing | 8 frames at 8 fps (1.00 s) · 320×180 |
 | Render | `northcel film examples/patterns/04-colour-beat.ncel -o out/ --frames 0..7` |
 
@@ -23,7 +23,7 @@ The beat is a `step(4, f)` gate rather than a fade, so the colour arrives on the
 ```ncel
 northcel "0.2.0-draft"
 
-// Colour arrives at a specific beat. The grey scene is the base; the colour
+// Colour arrives at a specific beat. The grey drawing is the base; the colour
 // plate is drawn over it and rises in three steps until it covers the frame.
 
 film ColourBeat(width: 320, height: 180, fps: 8, frames: 8, precision: 0.25px, seed: 404) {
