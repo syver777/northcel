@@ -1,5 +1,10 @@
 # `northcel` (npm) — the NorthCel launcher and pre-check
 
+Version 0.4.0 understands spec 0.3's anchored `transform`, `ease` and `smoothstep`
+through the native runtime, while preserving 0.2 programs. Optional `fit` and
+`tween` authoring tools live in `pip install 'northcel[fit]'`, not this npm package;
+their ordinary vector `.ncel` output renders with either implementation.
+
 Installs the `northcel` command (short alias `ncel`) for the
 [NorthCel drawing language](https://github.com/syver777/northcel).
 

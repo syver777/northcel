@@ -72,7 +72,8 @@ $ northcel check broken.ncel
 broken.ncel:5:20: error: Unknown function 'oklch'
 ```
 
-Only `lerp`, `sin`, `cos` and `step` are functions. The fix is to use an RGB
+Spec 0.2 provides `lerp`, `sin`, `cos` and `step`; spec 0.3 adds `ease` and
+`smoothstep`. The fix is to use an RGB
 literal (or declare `oklch`'s nearest sRGB value in the palette):
 
 <!-- render: assets/guide/12-diagnostic-fixed.png -->

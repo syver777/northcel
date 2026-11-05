@@ -120,10 +120,20 @@ class DropNode:
 
 
 @dataclass(frozen=True)
+class TransformNode:
+    target_name: str
+    scale: tuple[Any, Any] = (1.0, 1.0)
+    rotate: Any = 0.0
+    anchor: tuple[Any, Any] = (0.0, 0.0)
+    translate: tuple[Any, Any] = (0.0, 0.0)
+    span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
+
+
+@dataclass(frozen=True)
 class DefBlock:
     name: str
     params: dict[str, float]
-    items: list[LayerNode | SwarmNode | StrokeNode | RibbonNode]
+    items: list[LayerNode | SwarmNode | StrokeNode | RibbonNode | TransformNode]
     span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
 
 
@@ -134,7 +144,7 @@ class UseNode:
     span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
 
 
-SceneItem = LayerNode | SwarmNode | StrokeNode | RibbonNode | UseNode | DropNode
+SceneItem = LayerNode | SwarmNode | StrokeNode | RibbonNode | UseNode | DropNode | TransformNode
 
 
 @dataclass(frozen=True)

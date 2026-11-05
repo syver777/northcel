@@ -1,5 +1,5 @@
 {
-  "spec_version": "0.1.0-draft",
+  "spec_version": "0.3.0-draft",
   "tolerance_mae": 1.0,
   "cases": [
     {
@@ -122,6 +122,16 @@
             "note": "frame 2 inside shifted box [28..44]"
           }
         ]
+      }
+    },
+    {
+      "name": "04_transforms_easing",
+      "file": "04_transforms_easing.ncel",
+      "tolerance_mae": 0.05,
+      "probes_by_frame": {
+        "0": [{"x": 17, "y": 16, "rgb": [224, 160, 64], "note": "anchored badge centre"}, {"x": 1, "y": 62, "rgb": [255,255,255], "note": "paper outside transformed geometry"}],
+        "2": [{"x": 27, "y": 48, "rgb": [224, 160, 64], "note": "frame-local reflection after eased motion"}],
+        "4": [{"x": 37, "y": 16, "rgb": [224, 160, 64], "note": "eased endpoint, paper unaffected"}]
       }
     }
   ]

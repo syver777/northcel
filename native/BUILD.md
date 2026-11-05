@@ -27,7 +27,7 @@ ffmpeg
 ## 2. Provision the pinned toolchain (user space)
 
 ```
-cd native/ncel
+cd native
 bash scripts/provision-toolchain.sh
 ```
 
@@ -46,7 +46,7 @@ shipped as binaries. Exact URLs, sha256 and licences are in `toolchain.lock`.
 ## 3. Build
 
 ```
-cd native/ncel
+cd native
 make -j4
 ```
 
@@ -115,6 +115,9 @@ sha256, timings, geometry and the swarm-stage counts.
   frame exceeds the limit the generator must chunk the dispatch tree.
 * **Colour profile:** the FBO is `RGBA32F`; the host applies the reference
   `floor(v + 0.5)` rounding, so no 8-bit GL conversion tie-breaking is involved.
+* **Spatial acceleration:** 8-row bands are partitioned into 32px-wide cells.
+  A y-only parity seed accounts for edges wholly right of each cell, and GLSL
+  retains the normative crossing test for local edges. No raster is embedded.
 * **GLSL float precision:** edges are uploaded as float32 (from the f64 IR).
   Rasterisation matches the Python float64 oracle exactly on the tested frames;
   differences are possible only for a subpixel centre within ~1e-3 px of an edge.

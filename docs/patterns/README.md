@@ -1,6 +1,6 @@
 # Patterns cookbook
 
-Ten complete `.ncel` programs for AI-drawn video. Every file compiles, renders
+Eleven complete `.ncel` programs for AI-drawn video. Every file compiles, renders
 and has a contact sheet of all its frames. The point is not to copy these
 drawings; it is to copy the **structure** — when to use a `frame` override, when
 one expression is enough, and where a swarm earns its place.
@@ -23,8 +23,9 @@ check does exactly that in CI.
 | 8 | [Line boil that reads as hand-drawn](08-line-boil.md) | per-element boil amplitudes on a still drawing | 4 @ 8 fps | 1,020 | 469 |
 | 9 | [A crowd as a swarm of small marks](09-crowd-swarm.md) | two swarms (heads, bodies), one drift, `agents` as declaration | 6 @ 6 fps | 2,346 | 1,339 |
 | 10 | [A two-shot film with a frame override](10-two-shot.md) | both shots in one file, a `step` cut, a one-frame bird | 8 @ 8 fps | 2,151 | 1,004 |
+| 11 | [Intact cel motion](11-intact-cel-motion.md) | one anchored matrix for fill and outline, continuous travel and eased scale/rotation | 9 @ 24 fps | 522 | 233 |
 
-Total: **10 files, 19,821 bytes, 9,616 cl100k tokens** for ten finished,
+The original ten total **19,821 bytes, 9,616 cl100k tokens** for ten finished,
 animated shots. That is the compactness argument in one line, and every number
 is measured by the docs build rather than copied from a slide.
 
@@ -47,6 +48,7 @@ is measured by the docs build rather than copied from a slide.
 | many similar small marks | `bend_swarm` | 9 |
 | a living line on a still drawing | `boil` | 8 |
 | reused geometry at several sizes | `def`/`use` | guide [7](../guide/07-def-use-and-parameters.md) |
+| move/scale/rotate a drawing without changing its pose | `transform` + `ease` | 11; guide [15](../guide/15-fitting-transforms-and-inbetweens.md) |
 
 If a pattern needs two constructs that disagree (for example a swarm that must
 move per-agent, or a `cel` whose outline must lag), it is usually a sign that the

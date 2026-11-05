@@ -152,6 +152,7 @@ fn validate_items(
           push_diag(errs, "error", u.line, u.col, "Use of undefined def block '" + u.def_name + "'")
         }
       IDrop(_) => ()
+      ITransform(_) => ()
     }
   }
 }
@@ -160,9 +161,9 @@ fn validate_items(
 fn validate_document(doc : Document) -> Validation {
   let errs : Array[String] = []
   let warns : Array[String] = []
-  let ok_versions = "0.1', '0.1.0', '0.1.0-draft', '0.2', '0.2.0', '0.2.0-draft"
+  let ok_versions = "0.1', '0.1.0', '0.1.0-draft', '0.2', '0.2.0', '0.2.0-draft', '0.3', '0.3.0', '0.3.0-draft"
   let mut supported = false
-  for v in ["0.1", "0.1.0", "0.1.0-draft", "0.2", "0.2.0", "0.2.0-draft"] {
+  for v in ["0.1", "0.1.0", "0.1.0-draft", "0.2", "0.2.0", "0.2.0-draft", "0.3", "0.3.0", "0.3.0-draft"] {
     if doc.spec_version == v {
       supported = true
     }

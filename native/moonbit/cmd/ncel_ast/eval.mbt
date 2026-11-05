@@ -170,6 +170,38 @@ fn process_list(
   for item_idx in 0..<seq.length() {
     let item = seq[item_idx]
     match item {
+      ITransform(tr) => {
+        let sx = eval_expr(tr.sx, local_env)
+        let sy = eval_expr(tr.sy, local_env)
+        let ax = eval_expr(tr.ax, local_env)
+        let ay = eval_expr(tr.ay, local_env)
+        let dx = eval_expr(tr.dx, local_env)
+        let dy = eval_expr(tr.dy, local_env)
+        let angle = eval_expr(tr.angle, local_env) * 3.141592653589793 / 180.0
+        let c = @math.cos(angle)
+        let s = @math.sin(angle)
+        let mut found = tr.target == "all"
+        for li in 0..<layers.length() {
+          let l = layers[li]
+          if tr.target == "all" || l.name == tr.target || l.name == tr.target + "__outline" {
+            found = true
+            let rings : Array[Array[(Double, Double)]] = []
+            for ring in l.rings {
+              let pts : Array[(Double, Double)] = []
+              for p in ring {
+                let u = (p.0-ax)*sx
+                let v = (p.1-ay)*sy
+                pts.push((ax+u*c-v*s+dx, ay+u*s+v*c+dy))
+              }
+              rings.push(pts)
+            }
+            layers[li] = { name: l.name, r: l.r, g: l.g, b: l.b, rings: rings }
+          }
+        }
+        if !found {
+          raise mkerr(tr.line, tr.col, "Transform target '" + tr.target + "' has not been painted")
+        }
+      }
       IDrop(d) => {
         match named.get(d.target) {
           Some(i) => {

@@ -15,9 +15,9 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const PACKAGE_VERSION = '0.3.1';
-const NATIVE_RUNTIME_VERSION = '0.2.0';
-const SPEC_VERSION = '0.2.0-draft';
+const PACKAGE_VERSION = '0.4.0';
+const NATIVE_RUNTIME_VERSION = '0.4.0';
+const SPEC_VERSION = '0.3.0-draft';
 const EXIT_NO_NATIVE = 3;
 
 // Mirrors the Python launcher (northcel/launcher/platform_info.py): the loader

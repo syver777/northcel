@@ -29,8 +29,8 @@ class Northcel < Formula
 
   desc "Drawing language for AI-drawn video; native MoonBit + Bend/HVM2 + GLSL"
   homepage "https://github.com/syver777/northcel"
-  url "https://files.pythonhosted.org/packages/0f/c5/6642d40caa9df78d2addbafc42faa1a96722fd17d79833d1b86de2d56a0e/northcel-0.3.1.tar.gz"
-  sha256 "57a90003b005864bdf033d686a89b33a3577a81be623a8ca4b6388c9566aeca5"
+  url "https://files.pythonhosted.org/packages/e0/65/d48b901de5502461a5bb8bd25533c68d1c2156056b3b01a4f7a0f47116fe/northcel-0.4.0.tar.gz"
+  sha256 "15c1b14dd8ae4eb4b814bc1cf977d372e73b87a76e6b9b909883e773f9a9b99c"
   license any_of: ["MIT", "Apache-2.0"]
 
   depends_on arch: :x86_64
@@ -67,8 +67,8 @@ class Northcel < Formula
   # Homebrew requires a resource name to differ from the formula name, which is why
   # the main package is the `url` and only the platform wheel is a resource.
   resource "northcel-native" do
-    url "https://files.pythonhosted.org/packages/bd/55/49dc6c886a88c0c69cb140bfd3338bd9ae09b4fbdf1577412d0d846ed5c0/northcel_native-0.3.1-py3-none-manylinux_2_39_x86_64.whl"
-    sha256 "bfa79300df1acbc200be245d64bbdcb7b057f22c2be40a5bda409fd90b9e6add"
+    url "https://files.pythonhosted.org/packages/12/f6/00416cfde23a8824f6718109885679cb87e0ae715aeb7d72dcec33bda654/northcel_native-0.4.0-py3-none-manylinux_2_39_x86_64.whl"
+    sha256 "ee2e0551fdb3d410de1ad8fca658b923aabd6befcf240630a880386c31c4304b"
   end
 
   def install
@@ -120,8 +120,8 @@ class Northcel < Formula
   end
 
   test do
-    assert_match "0.3.1", shell_output("#{bin}/northcel version")
-    assert_match "0.3.1", shell_output("#{bin}/ncel version")
+    assert_match "0.4.0", shell_output("#{bin}/northcel version")
+    assert_match "0.4.0", shell_output("#{bin}/ncel version")
     assert_match "\"ok\": true", shell_output("#{bin}/northcel doctor --json")
     system bin/"northcel", "verify"
 

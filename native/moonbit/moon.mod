@@ -1,5 +1,5 @@
 name = "northnoir/ncel-native"
-version = "0.2.0"
+version = "0.4.0"
 preferred_target = "native"
 license = "MIT"
 description = "NorthCel native runtime AST/IR stage (MoonBit)"

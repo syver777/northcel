@@ -26,6 +26,7 @@ animation? Read 8–10 and 14. Writing an AI agent prompt? Read
 | 12 | [Diagnostics and errors](12-diagnostics-and-errors.md) | diagnostic anatomy, check contract, the usual messages |
 | 13 | [Performance and limits](13-performance-and-limits.md) | measured timings, hard limits, platform matrix |
 | 14 | [Editing one frame surgically](14-editing-one-frame.md) | the delta recipe, neighbours, the shortened-film trap |
+| 15 | [Fitting, transforms and in-betweens](15-fitting-transforms-and-inbetweens.md) | offline contour fitting, intact-cel/camera transforms, easing, explicit tween fallback |
 
 After the guide:
 
@@ -36,6 +37,6 @@ After the guide:
 - [Common errors](../errors.md) — every diagnostic, generated from the source.
 - [Architecture](../architecture.md) — what MoonBit, Bend and GLSL each own.
 
-The normative grammar is [SPEC-0.2.0-draft](../spec/SPEC-0.2.0-draft.md). Where
+The current normative grammar is [SPEC-0.3.0-draft](../spec/SPEC-0.3.0-draft.md), extending 0.2. Where
 this guide and the spec disagree, the spec wins and the guide has a bug — please
 open an issue.

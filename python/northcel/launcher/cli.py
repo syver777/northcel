@@ -35,6 +35,8 @@ usage: northcel <command> [options]        (short alias: ncel)
   render  FILE [-o OUT.png] [--frame N] [--seed N] [--json]
   film    FILE -o OUTDIR [--frames 0..5] [--mp4 OUT.mp4] [--json]
   fmt     FILE [-w|--write] [--check]  canonical formatting (Python reference)
+  fit     IMAGE -o FILE [--colors N]  offline vector contour fitting (requires [fit])
+  tween   A.ncel B.ncel -o FILE      explicit contour in-betweens, never a quality judge
   guide                                offline authoring guide
   toolchain <status|install> [--json] [--dry-run]
   version, --version                   versions (native runtime + spec)
@@ -155,6 +157,12 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     command, rest = args[0], args[1:]
+    if command == "fit":
+        from ..fitting import main as fit_main
+        return fit_main(rest)
+    if command == "tween":
+        from ..tween import main as tween_main
+        return tween_main(rest)
 
     if command in {"--version", "version", "-V"}:
         print(_version_line())

@@ -22,6 +22,7 @@ from .ast_nodes import (
     SourceSpan,
     StrokeNode,
     SwarmNode,
+    TransformNode,
     UseNode,
 )
 from .config import SPEC_VERSION
@@ -84,6 +85,15 @@ class ExprValue:
             edge = self.args[0].eval(env)
             x = self.args[1].eval(env)
             return 0.0 if x < edge else 1.0
+        if self.op == "ease":
+            u = max(0.0, min(1.0, self.args[0].eval(env)))
+            return u*u*u*(u*(u*6.0 - 15.0) + 10.0)
+        if self.op == "smoothstep":
+            a, b, x = (v.eval(env) for v in self.args)
+            if a == b:
+                return 0.0 if x < a else 1.0
+            u = max(0.0, min(1.0, (x-a)/(b-a)))
+            return u*u*(3.0-2.0*u)
         raise ValueError(f"Unknown expression op '{self.op}'")
 
 
@@ -232,6 +242,8 @@ class _Parser:
                 items.append(self.parse_use())
             elif tok.kind == "IDENT" and tok.value == "drop":
                 items.append(self.parse_drop())
+            elif tok.kind == "IDENT" and tok.value == "transform":
+                items.append(self.parse_transform())
             elif tok.kind == "IDENT" and tok.value in ("layer", "wash", "cel"):
                 items.append(self.parse_layer(is_cel=(tok.value == "cel")))
             elif tok.kind == "IDENT" and tok.value in ("bend_swarm", "swarm"):
@@ -295,6 +307,8 @@ class _Parser:
                 items.append(self.parse_use())
             elif tok.kind == "IDENT" and tok.value == "drop":
                 items.append(self.parse_drop())
+            elif tok.kind == "IDENT" and tok.value == "transform":
+                items.append(self.parse_transform())
             elif tok.kind == "IDENT" and tok.value in ("layer", "wash", "cel"):
                 items.append(self.parse_layer(is_cel=(tok.value == "cel")))
             elif tok.kind == "IDENT" and tok.value in ("bend_swarm", "swarm"):
@@ -363,6 +377,8 @@ class _Parser:
                 items.append(self.parse_use())
             elif tok.kind == "IDENT" and tok.value == "drop":
                 items.append(self.parse_drop())
+            elif tok.kind == "IDENT" and tok.value == "transform":
+                items.append(self.parse_transform())
             elif tok.kind == "IDENT" and tok.value in ("layer", "wash", "cel"):
                 items.append(self.parse_layer(is_cel=(tok.value == "cel")))
             elif tok.kind == "IDENT" and tok.value in ("bend_swarm", "swarm"):
@@ -422,7 +438,7 @@ class _Parser:
             for k, v in raw_attrs.items():
                 params[k] = float(self._eval_const(v))
         self.expect("PUNCT", "{")
-        items: list[LayerNode | SwarmNode | StrokeNode | RibbonNode] = []
+        items: list[LayerNode | SwarmNode | StrokeNode | RibbonNode | TransformNode] = []
         while not (self.cur().kind == "PUNCT" and self.cur().value == "}"):
             if self.cur().kind == "EOF":
                 raise NorthCelSyntaxError(f"Unclosed 'def {name_tok.value}' block", kw.line, kw.column)
@@ -435,6 +451,8 @@ class _Parser:
                 items.append(self.parse_stroke())
             elif tok.kind == "IDENT" and tok.value == "ribbon":
                 items.append(self.parse_ribbon())
+            elif tok.kind == "IDENT" and tok.value == "transform":
+                items.append(self.parse_transform())
             else:
                 raise NorthCelSyntaxError(
                     f"Unsupported statement '{tok.value}' inside def block", tok.line, tok.column
@@ -448,6 +466,33 @@ class _Parser:
         args = self.parse_attr_list() if self.cur().value == "(" else {}
         self.match("PUNCT", ";")
         return UseNode(def_name=name_tok.value, args=args, span=SourceSpan(kw.line, kw.column))
+
+    def parse_transform(self) -> TransformNode:
+        kw = self.expect("IDENT", "transform")
+        target = self.expect("IDENT").value
+        attrs = self.parse_attr_list()
+        for key in attrs:
+            if key not in ("scale", "rotate", "anchor", "translate"):
+                raise NorthCelSyntaxError(f"Unknown transform attribute '{key}'", kw.line, kw.column)
+        def number(value):
+            if isinstance(value, str):
+                return ExprValue("const", (self._eval_const(value),))
+            if not isinstance(value, (int, float, ExprValue)):
+                raise NorthCelSyntaxError("Expected a numeric transform component", kw.line, kw.column)
+            return value
+        def pair(key, default, scalar=False):
+            value = attrs.get(key, default)
+            if not isinstance(value, tuple):
+                if scalar:
+                    return (number(value), number(value))
+                raise NorthCelSyntaxError(f"transform.{key} requires 2 components", kw.line, kw.column)
+            if len(value) != 2:
+                raise NorthCelSyntaxError(f"transform.{key} requires 2 components", kw.line, kw.column)
+            return (number(value[0]), number(value[1]))
+        self.match("PUNCT", ";")
+        return TransformNode(target, pair("scale", (1.0, 1.0), True), number(attrs.get("rotate", 0.0)),
+                             pair("anchor", (0.0, 0.0)), pair("translate", (0.0, 0.0)),
+                             SourceSpan(kw.line, kw.column))
 
     def parse_drop(self) -> DropNode:
         kw = self.expect("IDENT", "drop")
@@ -614,7 +659,7 @@ class _Parser:
             b = int(self._eval_const(self.parse_expr()))
             self.expect("PUNCT", ")")
             return ColorValue.from_rgb(r, g, b)
-        if tok.kind == "PUNCT" and tok.value == "(":
+        if tok.kind == "PUNCT" and tok.value == "(" and self._tuple_ahead():
             self.advance()
             items = [self.parse_attr_value()]
             while self.match("PUNCT", ","):
@@ -622,6 +667,19 @@ class _Parser:
             self.expect("PUNCT", ")")
             return tuple(items)
         return self.parse_expr()
+
+    def _tuple_ahead(self) -> bool:
+        depth = 0
+        for token in self.tokens[self.idx:]:
+            if token.value == "(":
+                depth += 1
+            elif token.value == ")":
+                depth -= 1
+                if depth == 0:
+                    return False
+            elif token.value == "," and depth == 1:
+                return True
+        return False
 
     def parse_expr(self) -> ExprValue:
         node = self.parse_term()
@@ -661,8 +719,11 @@ class _Parser:
                     while self.match("PUNCT", ","):
                         args.append(self.parse_expr())
                 self.expect("PUNCT", ")")
-                if ident not in ("lerp", "sin", "cos", "step"):
+                if ident not in ("lerp", "sin", "cos", "step", "ease", "smoothstep"):
                     raise NorthCelSyntaxError(f"Unknown function '{ident}'", tok.line, tok.column)
+                arity = {"ease": 1, "smoothstep": 3}.get(ident)
+                if arity is not None and len(args) != arity:
+                    raise NorthCelSyntaxError(f"{ident} expects {arity} arguments", tok.line, tok.column)
                 return ExprValue(ident, tuple(args))
             return ExprValue("var", (ident,))
         if tok.kind == "PUNCT" and tok.value == "(":

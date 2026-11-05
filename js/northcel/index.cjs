@@ -141,9 +141,9 @@ class Precheck {
       } else if (t.value === "frame") {
         this.kind("number");
         this.body("frame", new Set(palette), precision);
-      } else if (t.value === "use" || t.value === "drop") {
+      } else if (t.value === "use" || t.value === "drop" || t.value === "transform") {
         this.kind("ident");
-        if (t.value === "use" && this.cur().value === "(") this.attrs(palette);
+        if ((t.value === "use" || t.value === "transform") && this.cur().value === "(") this.attrs(palette);
         this.match(";");
       } else {
         const name = this.kind("ident");

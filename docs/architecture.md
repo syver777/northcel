@@ -32,6 +32,26 @@ launcher's job, and the launcher labels the result.
 
 ## What each stage owns
 
+### Spec 0.3 / tools 0.4 additions
+
+MoonBit parses typed `TransformNode`, `ease` and `smoothstep`, evaluates them
+after the applicable swarm/boil/outline stages, and emits transformed f64 edges
+in unchanged NCIR v1. The reference has the same AST, operation order and maths.
+`transform all` is an immediate camera/stage operation, not mutable frame state.
+
+`fit` and `tween` are **offline Python authoring tools**, not renderers or image
+models. Optional OpenCV/scikit-image libraries trace palette-region contours;
+NumPy resamples explicit vector rings. They emit ordinary vector `.ncel`. No
+image or raster table is embedded or read by any native render stage. The author
+chooses masks, correspondence, timing and acceptance.
+
+The GL host now partitions each 8-row band into 32px-wide cells. Edges wholly
+right of a cell contribute a y-only parity seed; GLSL evaluates the original
+crossing formula for local edges, starting with that seed. This exactly
+partitions the same ray test. It is an acceleration structure derived from
+geometry, not a stored image or a new paint rule. Both GLSL 4.30 and 4.10 use it;
+the reference and old golden images remain the conformance oracle.
+
 | Stage | Owns | Does not own |
 | --- | --- | --- |
 | **MoonBit** | grammar, typed AST, `palette`/`$ref`, `def`/`use` expansion, `drop` and in-place replacement, frame deltas, all three ring decoders, `cel` outline expansion, stroke/ribbon → closed polygon, expression evaluation, the 32-bit boil hash, NCIR emission, Bend codegen | rasterisation, pixel values |

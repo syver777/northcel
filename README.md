@@ -62,6 +62,12 @@ labelled Python reference everywhere else.
 
 ## First steps
 
+**New in 0.4.0 (spec 0.3):** fit existing drawings to vector contours with
+`northcel fit`, move a named drawing or whole stage with anchored scale/rotation,
+and author bounded easing and explicit contour-tween experiments. No image model
+or raster embedding. [The look-and-fix workflow](docs/guide/15-fitting-transforms-and-inbetweens.md)
+explains the fidelity/source-size trade-off and why bad tweens must be rejected.
+
 ```console
 $ northcel doctor     # every stage, version, shader hash and the platform verdict
 $ northcel verify     # renders the conformance frame and a 6-frame film, twice
@@ -97,7 +103,7 @@ through the labelled Python reference.
 - **[Documentation index](docs/README.md)** — the full map.
 - [Format & tooling reference](docs/reference.md) — the CLI and the validation
   contract.
-- [Specification](docs/spec/SPEC-0.2.0-draft.md) · [changelog](CHANGELOG.md) ·
+- [Specification](docs/spec/SPEC-0.3.0-draft.md) · [changelog](CHANGELOG.md) ·
   [decision log](docs/DECISIONS.md).
 
 ## Contributing

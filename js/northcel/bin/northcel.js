@@ -41,8 +41,8 @@ usage: northcel <command> [options]
   guide                                offline authoring guide
   version, --version                   versions (launcher, native runtime, spec)
 
-Not available from npm (use pip for these): fmt — formatting is the Python
-reference implementation (\`pip install northcel\`).
+Not available from npm (use pip for these): fmt, fit, tween — Python authoring
+tools (\`pip install 'northcel[fit]'\`). All resulting .ncel files render natively.
 Platform: the native runtime is Linux x86_64 only, glibc >= 2.39, Mesa EGL/llvmpipe.
 macOS and Windows are not supported natively in this release; \`northcel doctor\`
 explains exactly what is missing.
@@ -409,6 +409,7 @@ function main() {
     );
   }
   if (command === 'check') {
+    // The pre-check remains partial; new transform syntax does not make it a renderer.
     const verdict = locate.platformVerdict();
     const binary = locate.nativeBinary();
     const stripped = rest.filter((a) => a !== '--no-native');
@@ -424,6 +425,10 @@ function main() {
     return passthrough(command, stripped);
   }
 
+  if (command === 'fit' || command === 'tween') {
+    fail('northcel: `' + command + '` is an offline Python authoring tool.\n' +
+      'northcel: install with pip install "northcel[fit]"; the generated .ncel renders with this native npm runtime.', 1);
+  }
   fail(`northcel: unknown command ${JSON.stringify(command)}\n\n` + USAGE, 2);
 }
 

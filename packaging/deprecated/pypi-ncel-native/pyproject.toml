@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ncel-native"
-version = "0.3.1"
+version = "0.4.0"
 description = "DEPRECATED ALIAS — the native NorthCel runtime ships as `northcel-native` now. This package only depends on the real one."
 readme = "README.md"
 requires-python = ">=3.8"
@@ -20,7 +20,7 @@ classifiers = [
   "Topic :: Multimedia :: Graphics",
 ]
 dependencies = [
-  "northcel-native==0.3.1; sys_platform == 'linux' and platform_machine == 'x86_64'",
+  "northcel-native==0.4.0; sys_platform == 'linux' and platform_machine == 'x86_64'",
 ]
 
 [project.urls]

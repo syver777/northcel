@@ -144,3 +144,38 @@ This document records the key architectural, experimental, and naming decisions 
 - **Measured Before vs. After Evidence:**
   - **90-Frame Fitted Film:** Source size dropped from **`6,704,285 B` (`4,249,852 tok`) to `914,478 B` (`684,528 tok` — `-86.4%` bytes / `7.33×` smaller)**, Global Windowed SSIM improved from **`0.9719` to `0.9756`** (Block SSIM `0.9728`), Exact Canny Edge IoU improved from **`0.4412` to `0.4959`**, and render speed improved from `1.037s/frame` to **`0.957s/frame`**.
   - **8 AI-Authored Frames:** Mean source size dropped from **`8,830 B` (`5,052 tok`) to `4,718 B` (`3,303 tok` — `-46.6%` bytes)** while improving Block SSIM (`0.7852 -> 0.7869`) and Edge IoU (`0.0303 -> 0.0317`).
+# 0.4.0 / spec 0.3 — evidence-driven intact drawing edits (2026-11-05)
+
+- A 90-drawing film showed scale/position discontinuities that translation alone
+  could not express without requantising all contours. Add immediate named/all
+  transforms (anchor, scale/reflection, clockwise rotation, translation) plus pure
+  bounded cubic/quintic easing. Preserve old `use(scale: ...)` parameter semantics.
+- Keep MoonBit (typed AST/IR/geometry), Bend/HVM2 (independent agents) and GLSL
+  (subpixel integration). No new native stage replaces any of them. The Python
+  oracle implements the same operations. NCIR v1 is unchanged.
+- Integrate Phase B's demonstrated contour-fitting approach as a real optional
+  `fit` authoring tool. OpenCV/scikit-image are justified **offline numerical
+  tracing dependencies only**, not artistic judges, runtime image inputs, optical
+  flow, or semantic character/limb segmentation. Author-provided intact-cel mattes
+  are allowed. Count every contour byte; paper texture can cost megabytes/frame.
+- Marching squares cuts cell corners and blurs pencil texture. `--cell-edges`
+  restores colour-region cell-boundary geometry; it trades compactness for
+  fidelity without a per-pixel lookup table or embedded raster.
+- `tween` bakes arclength-resampled contour interpolation to normal language
+  geometry. Pair rings explicitly by order, align winding/start, never silently
+  guess semantic identity. Topology mismatch errors unless the author requests
+  a documented hold. A legal tween can still look wrong; keep visual review.
+- A measured textured-frame render took 69–85s with all edges in each 8-row band.
+  Add exact 32px cell partitioning with right-edge parity seeds. GLSL still owns
+  the same crossing/integration formula; golden/oracle comparisons gate release.
+- Fix toolchain reproducibility without redistributing the compiler: immutable
+  official URLs use **moonc** `0.10.19+bee578715`, not **moon** `0.1.20261102`.
+  Their checksums equal the previously pinned archives; `latest` had drifted.
+- In the local film study, the author selected intact-cel mattes and existing
+  empty texture patches, then used deterministic Poisson boundary blending to
+  restore only occluded stage underpaint. This is numerical **offline authoring**,
+  not a learned image generator, semantic/quality judge or a fourth native stage.
+  The repaired plate is traced into fully counted vector contours before native
+  rendering. Hidden limbs are never reconstructed: occlusions use explicit holds
+  of neighbouring whole existing drawings. Contour-tween trials that folded black
+  torso/limb regions were rejected, rather than reported as smooth animation.

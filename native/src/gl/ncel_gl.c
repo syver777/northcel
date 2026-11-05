@@ -364,21 +364,37 @@ static int render_frame(const NcelIr *ir, const NcelFrame *fr, const char *shade
     return 1;
   }
 
-  /* Flatten geometry and rebase span indices to the global edge array. */
+  /* 32px x 8px spatial cells. Edges wholly right of a cell contribute a
+   * y-only parity seed; only edges intersecting its x extent go to GLSL.
+   * This is an exact partition of the original ray test, not raster fitting. */
+  const int tile_count = (W + 31) / 32;
+  const int band_count = (H + 7) / 8;
+  const int sample_rows = H * (int)fr->aa;
   size_t total_edges = 0;
-  size_t total_spans = 0;
+  size_t total_spans = (size_t)fr->layer_count * band_count * tile_count;
+  size_t total_seeds = (size_t)fr->layer_count * sample_rows * tile_count;
   for (uint32_t li = 0; li < fr->layer_count; li++) {
-    total_edges += fr->layers[li].edge_count;
-    total_spans += (size_t)fr->layers[li].band_count;
+    const NcelLayer *l = &fr->layers[li];
+    for (uint32_t b = 0; b < l->band_count; b++) {
+      for (uint32_t j = l->spans[b*2]; j < l->spans[b*2+1]; j++) {
+        const float *e = &l->edges[(size_t)j*4];
+        int lo = (int)floorf(fminf(e[0], e[2])/32.0f);
+        int hi = (int)floorf(fmaxf(e[0], e[2])/32.0f);
+        if (lo < 0) lo = 0;
+        if (hi >= tile_count) hi = tile_count-1;
+        if (hi >= lo) total_edges += (size_t)(hi-lo+1);
+      }
+    }
   }
-  if (max_tbo > 0 && (total_edges > (size_t)max_tbo || total_spans > (size_t)max_tbo)) {
+  if (max_tbo > 0 && (total_edges > (size_t)max_tbo || total_spans > (size_t)max_tbo || total_seeds > (size_t)max_tbo)) {
     fprintf(stderr, "ncel-gl: geometry exceeds GL_MAX_TEXTURE_BUFFER_SIZE %d\n", max_tbo);
     return 1;
   }
   float *edges = (float *)malloc((total_edges ? total_edges : 1) * 4 * sizeof(float));
   int32_t *spans = (int32_t *)malloc((total_spans ? total_spans : 1) * 2 * sizeof(int32_t));
   float *colors = (float *)malloc(((size_t)fr->layer_count + 1) * 4 * sizeof(float));
-  if (!edges || !spans || !colors) { fprintf(stderr, "ncel-gl: out of memory\n"); return 1; }
+  uint8_t *seeds = (uint8_t *)calloc(total_seeds ? total_seeds : 1, 1);
+  if (!edges || !spans || !colors || !seeds) { fprintf(stderr, "ncel-gl: out of memory\n"); return 1; }
   colors[0] = fr->paper_r; colors[1] = fr->paper_g; colors[2] = fr->paper_b; colors[3] = 255.0f;
   size_t eoff = 0, soff = 0;
   for (uint32_t li = 0; li < fr->layer_count; li++) {
@@ -387,18 +403,49 @@ static int render_frame(const NcelIr *ir, const NcelFrame *fr, const char *shade
     colors[(size_t)(li + 1) * 4 + 1] = l->g;
     colors[(size_t)(li + 1) * 4 + 2] = l->b;
     colors[(size_t)(li + 1) * 4 + 3] = 255.0f;
-    memcpy(&edges[eoff * 4], l->edges, (size_t)l->edge_count * 4 * sizeof(float));
     for (uint32_t b = 0; b < l->band_count; b++) {
-      spans[(soff + b) * 2 + 0] = (int32_t)(l->spans[b * 2 + 0] + eoff);
-      spans[(soff + b) * 2 + 1] = (int32_t)(l->spans[b * 2 + 1] + eoff);
+      for (int tile = 0; tile < tile_count; tile++) {
+        spans[soff*2] = (int32_t)eoff;
+        for (uint32_t j = l->spans[b*2]; j < l->spans[b*2+1]; j++) {
+          const float *e = &l->edges[(size_t)j*4];
+          if (fmaxf(e[0], e[2]) >= tile*32.0f && fminf(e[0], e[2]) < (tile+1)*32.0f) {
+            memcpy(&edges[eoff*4], e, 4*sizeof(float));
+            eoff++;
+          }
+        }
+        spans[soff*2+1] = (int32_t)eoff;
+        soff++;
+      }
+      /* Difference-XOR prefix: one edge toggles every cell strictly left
+       * of min(x0,x1). Only exact y comparisons are needed; GLSL keeps the
+       * original float32 crossing formula for every local edge. */
+      for (uint32_t j = l->spans[b*2]; j < l->spans[b*2+1]; j++) {
+        const float *e = &l->edges[(size_t)j*4];
+        int end = (int)floorf(fminf(e[0], e[2])/32.0f);
+        if (end > tile_count) end = tile_count;
+        if (end <= 0) continue;
+        int last = (int)(b+1)*8*(int)fr->aa;
+        if (last > sample_rows) last = sample_rows;
+        for (int row = (int)b*8*(int)fr->aa; row < last; row++) {
+          float py = ((float)row+0.5f)/(float)fr->aa;
+          if ((e[1] > py) != (e[3] > py)) {
+            size_t at = ((size_t)li*sample_rows+row)*tile_count;
+            seeds[at] ^= 1;
+            if (end < tile_count) seeds[at+end] ^= 1;
+          }
+        }
+      }
     }
-    eoff += l->edge_count;
-    soff += l->band_count;
+    for (int row = 0; row < sample_rows; row++) {
+      size_t at = ((size_t)li*sample_rows+row)*tile_count;
+      for (int tile = 1; tile < tile_count; tile++) seeds[at+tile] ^= seeds[at+tile-1];
+    }
   }
+  total_edges = eoff;
 
-  GLuint bufs[3] = {0, 0, 0}, texs[3] = {0, 0, 0};
-  g.glGenBuffers(3, bufs);
-  g.glGenTextures(3, texs);
+  GLuint bufs[4] = {0}, texs[4] = {0};
+  g.glGenBuffers(4, bufs);
+  g.glGenTextures(4, texs);
   g.glBindBuffer(GL_ARRAY_BUFFER, bufs[0]);
   g.glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)((total_edges ? total_edges : 1) * 4 * sizeof(float)),
                  edges, GL_STATIC_DRAW);
@@ -414,6 +461,10 @@ static int render_frame(const NcelIr *ir, const NcelFrame *fr, const char *shade
                  colors, GL_STATIC_DRAW);
   g.glBindTexture(GL_TEXTURE_BUFFER, texs[2]);
   g.glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, bufs[2]);
+  g.glBindBuffer(GL_ARRAY_BUFFER, bufs[3]);
+  g.glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)(total_seeds ? total_seeds : 1), seeds, GL_STATIC_DRAW);
+  g.glBindTexture(GL_TEXTURE_BUFFER, texs[3]);
+  g.glTexBuffer(GL_TEXTURE_BUFFER, 0x8232 /* GL_R8UI */, bufs[3]);
 
   GLint u_edges = g.glGetUniformLocation(prog, "edgeTex");
   GLint u_spans = g.glGetUniformLocation(prog, "spanTex");
@@ -425,11 +476,13 @@ static int render_frame(const NcelIr *ir, const NcelFrame *fr, const char *shade
   g.glUniform1i(u_edges, 0);
   g.glUniform1i(u_spans, 1);
   g.glUniform1i(u_colors, 2);
+  g.glUniform1i(g.glGetUniformLocation(prog, "seedTex"), 3);
+  g.glUniform1i(g.glGetUniformLocation(prog, "tileCount"), tile_count);
   g.glUniform1i(u_bands, fr->layer_count ? (GLint)fr->layers[0].band_count : 1);
   g.glUniform1i(u_layers, (GLint)fr->layer_count);
   g.glUniform1i(u_aa, (GLint)fr->aa);
   g.glUniform2f(u_canvas, (GLfloat)W, (GLfloat)H);
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 4; i++) {
     g.glActiveTexture((GLenum)(GL_TEXTURE0 + i));
     g.glBindTexture(GL_TEXTURE_BUFFER, texs[i]);
   }
@@ -471,11 +524,11 @@ static int render_frame(const NcelIr *ir, const NcelFrame *fr, const char *shade
     fprintf(stderr, "ncel-gl: %dx%d aa=%u layers=%u edges=%zu spans=%zu renderer=%s\n",
             W, H, fr->aa, fr->layer_count, total_edges, total_spans, g.glGetString(0x1F01));
   }
-  free(edges); free(spans); free(colors); free(rgba); free(rgb); free(shader_src);
+  free(edges); free(spans); free(colors); free(seeds); free(rgba); free(rgb); free(shader_src);
   g.glDeleteFramebuffers(1, &fbo);
   g.glDeleteTextures(1, &color);
-  g.glDeleteTextures(3, texs);
-  g.glDeleteBuffers(3, bufs);
+  g.glDeleteTextures(4, texs);
+  g.glDeleteBuffers(4, bufs);
   g.glDeleteVertexArrays(1, &vao);
   g.glDeleteProgram(prog);
   g.glDeleteShader(vs);

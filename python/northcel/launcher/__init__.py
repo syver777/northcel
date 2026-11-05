@@ -13,8 +13,8 @@ northcel`. The native binaries come from the platform wheel `northcel-native`.
 from ..config import PACKAGE_VERSION as __version__
 from ..config import SPEC_VERSION
 
-#: Version of the bundled native runtime build (`native/`, commit 3ad5f7e).
-NATIVE_RUNTIME_VERSION = "0.2.0"
+#: Version of the bundled native runtime build (`native/`).
+NATIVE_RUNTIME_VERSION = "0.4.0"
 
 #: Exit code used when the native runtime is unavailable on this platform.
 EXIT_NO_NATIVE = 3

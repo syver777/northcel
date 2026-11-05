@@ -6,6 +6,8 @@
 uniform samplerBuffer edgeTex;
 uniform isamplerBuffer spanTex;
 uniform samplerBuffer colorTex;
+uniform usamplerBuffer seedTex;
+uniform int tileCount;
 uniform int bandCount;
 uniform int layerCount;
 uniform int aa;
@@ -25,8 +27,10 @@ void main() {
       if (band >= bandCount) band = bandCount - 1;
       vec3 value = texelFetch(colorTex, 0).rgb;
       for (int l = 0; l < layerCount; ++l) {
-        ivec2 span = texelFetch(spanTex, l * bandCount + band).xy;
-        bool inside = false;
+        int tile = int(origin.x) / 32;
+        ivec2 span = texelFetch(spanTex, (l * bandCount + band) * tileCount + tile).xy;
+        int row = int(origin.y) * grid + sy;
+        bool inside = texelFetch(seedTex, (l * int(canvas.y) * grid + row) * tileCount + tile).r != 0u;
         for (int i = span.x; i < span.y; ++i) {
           vec4 e = texelFetch(edgeTex, i);
           if ((e.y > p.y) != (e.w > p.y)) {

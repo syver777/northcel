@@ -13,6 +13,22 @@ ncel doctor                 # short alias, same program
 
 ## Two implementations, one command
 
+**Tools/native 0.4.0, spec 0.3.0-draft:** anchored named/whole-stage transforms,
+clamped easing, optional offline vector fitting and explicit contour-tween
+authoring. Valid 0.1/0.2 files keep their rendering semantics. Start with the
+[fitting and motion guide](https://github.com/syver777/northcel/blob/main/docs/guide/15-fitting-transforms-and-inbetweens.md).
+
+```
+pip install 'northcel[fit]'
+northcel fit drawing.png -o drawing.ncel --colors 128 --cell-edges --tolerance 0.05 --min-area 0
+northcel tween pose_a.ncel pose_b.ncel -o trial.ncel --fallback hold
+```
+
+These are offline numerical authoring tools, not image models. They emit ordinary
+vector source with no embedded raster. High-fidelity pencil texture can cost
+megabytes per drawing; receipts count all geometry. A legal tween can still fold
+or double lines: inspect every inserted drawing and keep a hold when it looks bad.
+
 `northcel` dispatches, in this order:
 
 1. **Native runtime** — MoonBit parses the typed scene/film AST, decodes every
@@ -58,15 +74,15 @@ reason, and `render`/`film`/`check` run the Python reference, marked
 ## What `doctor` prints
 
 ```
-northcel 0.3.1  (native runtime 0.2.0, spec 0.2.0-draft, native)
+northcel 0.4.0  (native runtime 0.4.0, spec 0.3.0-draft, native)
 platform      linux-x86_64 glibc 2.39
 supported     yes
-native        0.2.0  (bundle checksums 13 verified, stage MoonBit+Bend+GLSL)
+native        0.4.0  (bundle checksums verified, stage MoonBit+Bend+GLSL)
   MoonBit       stage present: yes  binary ncel-ast  compiled with MoonBit 0.1.20261102 (ea07287 2026-11-02)
   Bend          bend-lang 0.2.38  …/bin/bend
   HVM2          hvm 2.0.22  …/bin/hvm
   GL runtime    4.5 (Core Profile) Mesa 25.2.8  llvmpipe (LLVM 20.1.2, 256 bits)  GLSL 4.50
-  GLSL          draw430 14829a3cbb6c… compiles  draw410 fe4d0c4fe4e0… compiles
+  GLSL          draw430 791c9dc80b4b… compiles  draw410 5367bf91b40c… compiles
   ffmpeg        present (optional, --mp4)
 ```
 

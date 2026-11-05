@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD="${BUILD:-$ROOT/build}"
 VER="$(sed -n 's/^version = "\(.*\)"/\1/p' "$ROOT/moonbit/moon.mod" | head -1)"
-VER="${VER:-0.2.0}"
+VER="${VER:-0.4.0}"
 NAME="ncel-native-$VER-linux-x86_64"
 STAGE="$ROOT/artifacts/$NAME"
 TAR="$ROOT/artifacts/$NAME.tar.gz"
@@ -30,8 +30,10 @@ ncel-native bundles or links:
   hvm 2.0.22 (Apache-2.0)                    https://github.com/higherorderco/hvm
   stb_image_write 1.16 (public domain / MIT) https://github.com/nothings/stb
   Mesa llvmpipe EGL runtime (MIT, system)    https://mesa3d.org
-NorthCel native runtime, MoonBit sources and GLSL shaders: Proprietary, North Noir.
+NorthCel native runtime, MoonBit sources and GLSL shaders: MIT OR Apache-2.0.
+The MoonBit compiler is a build-time tool and is not included in this bundle.
 EOF
+cp "$ROOT/../LICENSE-MIT" "$ROOT/../LICENSE-APACHE" "$STAGE/licenses/"
 
 ( cd "$ROOT/artifacts" && tar --sort=name --mtime='2026-11-04 00:00:00Z' \
     --owner=0 --group=0 --numeric-owner -czf "$NAME.tar.gz" "$NAME" )

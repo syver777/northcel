@@ -39,10 +39,19 @@ from .ast_nodes import (
     SceneNode,
     StrokeNode,
     SwarmNode,
+    TransformNode,
     UseNode,
 )
 from .parser import ExprValue
 from .rings import decode_rings_payload
+
+
+class NorthCelEvaluationError(ValueError):
+    """A located semantic error, also consumable by the CLI without a traceback."""
+
+    def __init__(self, message: str, line: int, column: int):
+        self.message, self.line, self.column = message, line, column
+        super().__init__(f"{line}:{column}: {message}")
 
 
 def _hash_u32(x: int) -> int:
@@ -164,6 +173,28 @@ def _expand_items(
 
     def process_list(seq: list[SceneItem], local_env: dict[str, float]) -> None:
         for item_idx, item in enumerate(seq):
+            if isinstance(item, TransformNode):
+                sx, sy = (_eval_num(v, local_env) for v in item.scale)
+                ax, ay = (_eval_num(v, local_env) for v in item.anchor)
+                dx, dy = (_eval_num(v, local_env) for v in item.translate)
+                angle = _eval_num(item.rotate, local_env) * math.pi / 180.0
+                c, s = math.cos(angle), math.sin(angle)
+                found = item.target_name == "all"
+                for li, (nm, col, rings) in enumerate(layers_out):
+                    if item.target_name != "all" and nm not in (item.target_name, item.target_name+"__outline"):
+                        continue
+                    found = True
+                    transformed = []
+                    for ring in rings:
+                        pts = []
+                        for x, y in ring:
+                            u, v = (x-ax)*sx, (y-ay)*sy
+                            pts.append((ax+u*c-v*s+dx, ay+u*s+v*c+dy))
+                        transformed.append(pts)
+                    layers_out[li] = (nm, col, transformed)
+                if not found:
+                    raise NorthCelEvaluationError(f"Transform target '{item.target_name}' has not been painted", item.span.line, item.span.column)
+                continue
             if isinstance(item, DropNode):
                 if item.target_name in named_index:
                     layers_out[named_index[item.target_name]] = (item.target_name, ColorValue.from_tone(0), [])

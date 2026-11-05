@@ -15,7 +15,7 @@ from .ast_nodes import FilmNode, LayerNode, RibbonNode, StrokeNode, SwarmNode
 from .config import CLI_COMMAND, FILE_EXTENSION, LANGUAGE_NAME, PACKAGE_VERSION, SPEC_VERSION
 from .formatter import format_document
 from .parser import NorthCelSyntaxError, parse_ncel
-from .renderer import render_document_frame, render_film_frames
+from .renderer import NorthCelEvaluationError, render_document_frame, render_film_frames
 from .rings import decode_rings_payload
 from .validator import validate_document
 
@@ -193,7 +193,10 @@ def cmd_render(args: argparse.Namespace) -> int:
         return 1
 
     t0 = time.monotonic()
-    rgb = render_document_frame(doc, frame_index=args.frame, seed_override=args.seed)
+    try:
+        rgb = render_document_frame(doc, frame_index=args.frame, seed_override=args.seed)
+    except NorthCelEvaluationError as exc:
+        return evaluation_error(path, exc, args.json)
     out_p = Path(args.out) if args.out else path.with_suffix(".png")
     out_p.parent.mkdir(parents=True, exist_ok=True)
     Image.fromarray(rgb, mode="RGB").save(out_p)
@@ -240,10 +243,22 @@ def cmd_film(args: argparse.Namespace) -> int:
             indices = [int(x.strip()) for x in args.frames.split(",") if x.strip()]
 
     t0 = time.monotonic()
-    res = render_film_frames(doc, out_dir=args.out_dir, frame_indices=indices, mp4_path=args.mp4)
+    try:
+        res = render_film_frames(doc, out_dir=args.out_dir, frame_indices=indices, mp4_path=args.mp4)
+    except NorthCelEvaluationError as exc:
+        return evaluation_error(path, exc, False)
     res["seconds"] = round(time.monotonic() - t0, 4)
     print(json.dumps(res, indent=2))
     return 0
+
+
+def evaluation_error(path: Path, exc: NorthCelEvaluationError, as_json: bool) -> int:
+    message = f"{exc.line}:{exc.column}: error: {exc.message}"
+    if as_json:
+        print(json.dumps({"ok": False, "renderer": "python-reference", "native": False, "errors": [message]}))
+    else:
+        print(f"{path}:{message}", file=sys.stderr)
+    return 1
 
 
 def build_parser() -> argparse.ArgumentParser:

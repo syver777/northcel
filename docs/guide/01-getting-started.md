@@ -19,17 +19,17 @@ same binary.
 | Homebrew on Linux | `brew tap syver777/northcel && brew install northcel` | Yes |
 | A shell + curl | `curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh \| bash` | Yes on Linux x86_64 |
 
-Tools version **0.3.1**, specification **0.2.0-draft**. `0.1.0-draft` files still
+Tools version **0.4.0**, specification **0.3.0-draft**. `0.1.0-draft` and `0.2.0-draft` files still
 load.
 
 ## Prove the install
 
 ```console
 $ northcel doctor
-northcel 0.3.1  (NorthCel spec 0.2.0-draft)
+northcel 0.4.0  (NorthCel spec 0.3.0-draft)
 platform      linux-x86_64 glibc 2.39
 supported     yes
-native        0.2.0  (bundle checksums 13 verified, stage MoonBit+Bend+GLSL)
+native        0.4.0  (bundle checksums verified, stage MoonBit+Bend+GLSL)
 ...
 $ northcel verify
   [PASS] starter-render / shower-f0001-conformance / family-film-6-frames /

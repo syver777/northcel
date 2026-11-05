@@ -58,7 +58,7 @@ reproduced by CI. The [architecture page](architecture.md) explains why the
 reference and native renderers can differ by a handful of edge pixels.
 
 <!-- npm-guide:start -->
-# NorthCel quick agent guide — tools 0.3.1, spec 0.2.0-draft
+# NorthCel quick agent guide — tools 0.4.0, spec 0.3.0-draft
 
 Discover this guide offline with `northcel guide` (or `npx northcel guide`). The
 npm package runs the native runtime on Linux x86_64 and otherwise falls back to the
@@ -152,6 +152,23 @@ NorthCel films are silent; there is no native audio engine or hosted NorthCel AP
   leaving stale ink. For moving ink use cels or time expressions instead.
 - Undefined def, bad sizes/fps, expression variable errors: JS may miss these;
   use Python full check **and real renders**. No JS success authorizes shipping.
+## Existing drawings and intact-cel motion (spec 0.3)
+
+`northcel fit drawing.png -o drawing.ncel` (pip `northcel[fit]`) traces ordinary
+vector contours; it never embeds the image. Compare the round trip. For texture,
+try `--colors 128 --cell-edges --tolerance 0.05 --min-area 0`; count the much larger
+source. An author-supplied `--mask` selects one intact cel, not body parts.
+
+After painting: `transform name(scale: 1.2, rotate: 10deg, anchor: (160,90),
+translate: (20,0))`. `transform all` moves prior marks, not paper. Expanded ink
+scales with geometry; later replacements are unaffected. `ease(u)` is bounded
+quintic easing, `smoothstep(a,b,x)` bounded cubic. Keep constant-speed travel
+linear instead of stopping at every key.
+
+`northcel tween a.ncel b.ncel -o trial.ncel` is an explicit ordered-contour
+experiment, not an anatomy judge. Topology mismatch errors unless `--fallback
+hold` is requested; inspect every inserted frame and reject doubled/folded lines.
+Matching topology alone proves nothing. Source endpoints remain original geometry.
 <!-- npm-guide:end -->
 
 ---

@@ -242,7 +242,7 @@ fn Parser::parse_attr_value(self : Parser) -> AVal raise NcelError {
     self.expect_punct(")") |> ignore
     return AColor(CRgb(r, g, b))
   }
-  if tok.kind == "PUNCT" && tok.value == "(" {
+  if tok.kind == "PUNCT" && tok.value == "(" && self.tuple_ahead() {
     self.adv() |> ignore
     let items : Array[AVal] = []
     items.push(self.parse_attr_value())
@@ -253,6 +253,22 @@ fn Parser::parse_attr_value(self : Parser) -> AVal raise NcelError {
     return ATuple(items)
   }
   ANum(self.parse_expr())
+}
+
+fn Parser::tuple_ahead(self : Parser) -> Bool {
+  let mut depth = 0
+  for i in self.idx..<self.toks.length() {
+    let token = self.toks[i]
+    if token.value == "(" {
+      depth = depth + 1
+    } else if token.value == ")" {
+      depth = depth - 1
+      if depth == 0 { return false }
+    } else if token.value == "," && depth == 1 {
+      return true
+    }
+  }
+  false
 }
 
 ///| Expression: term { (+|-) term }.
@@ -312,7 +328,17 @@ fn Parser::parse_factor(self : Parser) -> Expr raise NcelError {
         }
       }
       self.expect_punct(")") |> ignore
-      if ident == "lerp" {
+      if ident == "ease" {
+        if args.length() != 1 {
+          raise mkerr(tok.line, tok.col, "ease expects 1 arguments")
+        }
+        return EEase(args[0])
+      } else if ident == "smoothstep" {
+        if args.length() != 3 {
+          raise mkerr(tok.line, tok.col, "smoothstep expects 3 arguments")
+        }
+        return ESmoothstep(args[0], args[1], args[2])
+      } else if ident == "lerp" {
         if args.length() != 3 {
           raise mkerr(tok.line, tok.col, "lerp expects 3 arguments")
         }
@@ -382,6 +408,23 @@ fn eval_expr(e : Expr, env : Map[String, Double]) -> Double raise NcelError {
       let ed = eval_expr(edge, env)
       let xv = eval_expr(x, env)
       if xv < ed { 0.0 } else { 1.0 }
+    }
+    EEase(x) => {
+      let v = eval_expr(x, env)
+      let u = if v < 0.0 { 0.0 } else if v > 1.0 { 1.0 } else { v }
+      u*u*u*(u*(u*6.0 - 15.0) + 10.0)
+    }
+    ESmoothstep(a, b, x) => {
+      let av = eval_expr(a, env)
+      let bv = eval_expr(b, env)
+      let xv = eval_expr(x, env)
+      if av == bv {
+        if xv < av { 0.0 } else { 1.0 }
+      } else {
+        let v = (xv-av)/(bv-av)
+        let u = if v < 0.0 { 0.0 } else if v > 1.0 { 1.0 } else { v }
+        u*u*(3.0-2.0*u)
+      }
     }
   }
 }
@@ -737,6 +780,8 @@ fn Parser::parse_def(self : Parser) -> DefBlock raise NcelError {
       items.push(IStroke(self.parse_stroke()))
     } else if tok.kind == "IDENT" && tok.value == "ribbon" {
       items.push(IRibbon(self.parse_ribbon()))
+    } else if tok.kind == "IDENT" && tok.value == "transform" {
+      items.push(ITransform(self.parse_transform()))
     } else {
       raise mkerr(tok.line, tok.col, "Unsupported statement '" + tok.value + "' inside def block")
     }
@@ -759,6 +804,42 @@ fn Parser::parse_use(self : Parser) -> UseNode raise NcelError {
 }
 
 ///| drop statement.
+fn Parser::transform_pair(self : Parser, attrs : Map[String, AVal], key : String, fallback : Double, scalar : Bool, kw : Token) -> (Expr, Expr) raise NcelError {
+  match attrs.get(key) {
+    None => (EConst(fallback), EConst(fallback))
+    Some(ATuple(v)) => {
+      if v.length() != 2 {
+        raise mkerr(kw.line, kw.col, "transform." + key + " requires 2 components")
+      }
+      (val_to_expr(self, v[0]), val_to_expr(self, v[1]))
+    }
+    Some(v) => {
+      if !scalar {
+        raise mkerr(kw.line, kw.col, "transform." + key + " requires 2 components")
+      }
+      let e = val_to_expr(self, v)
+      (e, e)
+    }
+  }
+}
+
+fn Parser::parse_transform(self : Parser) -> TransformNode raise NcelError {
+  let kw = self.expect_ident("transform")
+  let target = self.expect_kind("IDENT").value
+  let attrs = self.parse_attr_list()
+  for k, _v in attrs {
+    if k != "scale" && k != "rotate" && k != "anchor" && k != "translate" {
+      raise mkerr(kw.line, kw.col, "Unknown transform attribute '" + k + "'")
+    }
+  }
+  let (sx, sy) = self.transform_pair(attrs, "scale", 1.0, true, kw)
+  let (ax, ay) = self.transform_pair(attrs, "anchor", 0.0, false, kw)
+  let (dx, dy) = self.transform_pair(attrs, "translate", 0.0, false, kw)
+  let angle = val_to_expr(self, attrs.get("rotate").unwrap_or(ANum(EConst(0.0))))
+  self.eat_punct(";") |> ignore
+  { target: target, sx: sx, sy: sy, angle: angle, ax: ax, ay: ay, dx: dx, dy: dy, line: kw.line, col: kw.col }
+}
+
 fn Parser::parse_drop(self : Parser) -> DropNode raise NcelError {
   let kw = self.expect_ident("drop")
   let name_tok = self.expect_kind("IDENT")
@@ -809,6 +890,8 @@ fn Parser::parse_scene_body(
       items.push(IUse(self.parse_use()))
     } else if tok.kind == "IDENT" && tok.value == "drop" {
       items.push(IDrop(self.parse_drop()))
+    } else if tok.kind == "IDENT" && tok.value == "transform" {
+      items.push(ITransform(self.parse_transform()))
     } else if tok.kind == "IDENT" && (tok.value == "layer" || tok.value == "wash" || tok.value == "cel") {
       items.push(ILayer(self.parse_layer(tok.value == "cel")))
     } else if tok.kind == "IDENT" && (tok.value == "bend_swarm" || tok.value == "swarm") {
@@ -949,6 +1032,8 @@ fn Parser::parse_film_decl(self : Parser) -> FilmNode raise NcelError {
       items.push(IUse(self.parse_use()))
     } else if tok.kind == "IDENT" && tok.value == "drop" {
       items.push(IDrop(self.parse_drop()))
+    } else if tok.kind == "IDENT" && tok.value == "transform" {
+      items.push(ITransform(self.parse_transform()))
     } else if tok.kind == "IDENT" && (tok.value == "layer" || tok.value == "wash" || tok.value == "cel") {
       items.push(ILayer(self.parse_layer(tok.value == "cel")))
     } else if tok.kind == "IDENT" && (tok.value == "bend_swarm" || tok.value == "swarm") {
@@ -987,7 +1072,7 @@ fn Parser::parse_film_decl(self : Parser) -> FilmNode raise NcelError {
 fn parse_document(source : String) -> Document raise NcelError {
   let toks = lex(source)
   let p : Parser = { toks: toks, idx: 0, active_palette: Map::new() }
-  let mut spec = "0.2.0-draft"
+  let mut spec = "0.3.0-draft"
   let first = p.cur()
   if first.kind == "IDENT" && first.value == "northcel" {
     p.adv() |> ignore

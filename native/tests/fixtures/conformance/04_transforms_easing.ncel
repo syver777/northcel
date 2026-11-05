@@ -1,0 +1,14 @@
+northcel "0.3.0-draft"
+film TransformConformance(width: 96, height: 64, fps: 24, frames: 5, precision: 0.25px) {
+  paper { color: #FFFFFF, antialias_grid: 4 }
+  cel badge(color: #E0A040, outline: (#202020, 2px)) { "32,32 64,0 0,64 -64,0" }
+  transform badge(scale: (1.25, 0.75), rotate: 15deg, anchor: (16, 16), translate: (lerp(0, 20, ease(t)), 0))
+  stroke line(color: #204080, width: 3px) { (50, 8), (75, 18) }
+  transform line(scale: -1, anchor: (62, 13), rotate: 30)
+  ribbon ribbon_mark(color: #408020) { (50, 35, 2), (70, 40, 7), (85, 34, 3) }
+  bend_swarm marks(agents: 2, color: #202020) { "40,160 16,0 0,16 -16,0|80,160 16,0 0,16 -16,0" }
+  transform marks(translate: (0, lerp(0, 8, smoothstep(0, 1, t))))
+  transform all(translate: (1, 0))
+  frame 2 { transform all(scale: (1, -1), anchor: (48, 32)) }
+  frame 4 { transform ribbon_mark(scale: 0, anchor: (64, 40)) }
+}

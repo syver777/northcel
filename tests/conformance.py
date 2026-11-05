@@ -149,30 +149,27 @@ def check_native(manifest: dict, ref, results: dict, workdir: Path) -> None:
     cases = []
     for case in manifest["cases"]:
         source = MANIFEST.parent / case["file"]
-        out = workdir / f"native_{case['name']}.png"
-        proc = subprocess.run(
-            [str(binary), "render", str(source), "-o", str(out), "--frame", "0", "--json"],
-            capture_output=True,
-            text=True,
-        )
-        if proc.returncode != 0 or not out.is_file():
-            cases.append({"case": case["name"], "ok": False, "detail": (proc.stderr or "").strip()[:200]})
-            say(f"  [FAIL] native render: {case['name']} exit {proc.returncode}")
-            continue
-        native_img = np.asarray(Image.open(out).convert("RGB"), dtype=np.int16)
-        ref_img = np.asarray(ref["render"](_load(case["file"], ref), frame_index=0), dtype=np.int16)
-        if native_img.shape != ref_img.shape:
-            cases.append({"case": case["name"], "ok": False, "detail": f"size {native_img.shape} vs {ref_img.shape}"})
-            say(f"  [FAIL] native agreement: {case['name']} size mismatch")
-            continue
-        mae = float(np.abs(native_img - ref_img).mean())
-        differing = int((native_img != ref_img).any(axis=2).sum())
-        ok = mae <= tolerance
-        cases.append({"case": case["name"], "ok": ok, "mae": round(mae, 6), "differing_pixels": differing})
-        say(
-            f"  [{'PASS' if ok else 'FAIL'}] native agreement: {case['name']} "
-            f"MAE {mae:.6f} (tolerance {tolerance}), {differing} differing pixels"
-        )
+        frames = sorted(int(f) for f in case.get("probes_by_frame", {"0": []}))
+        doc = _load(case["file"], ref)
+        hashes = {}
+        for frame in frames + list(reversed(frames)):
+            out = workdir / f"native_{case['name']}_{frame}.png"
+            proc = subprocess.run(
+                [str(binary), "render", str(source), "-o", str(out), "--frame", str(frame), "--json"],
+                capture_output=True, text=True,
+            )
+            if proc.returncode != 0 or not out.is_file():
+                cases.append({"case": case["name"], "frame": frame, "ok": False, "detail": (proc.stderr or "").strip()[:200]})
+                continue
+            native_img = np.asarray(Image.open(out).convert("RGB"), dtype=np.int16)
+            ref_img = np.asarray(ref["render"](doc, frame_index=frame), dtype=np.int16)
+            mae = float(np.abs(native_img - ref_img).mean())
+            same = frame not in hashes or hashes[frame] == out.read_bytes()
+            hashes[frame] = out.read_bytes()
+            limit = float(case.get("tolerance_mae", tolerance))
+            ok = mae <= limit and same
+            cases.append({"case": case["name"], "frame": frame, "ok": ok, "mae": round(mae, 6), "deterministic": same})
+            say(f"  [{'PASS' if ok else 'FAIL'}] native agreement: {case['name']} frame {frame} MAE {mae:.6f}; deterministic={same}")
     results["native_agreement"] = {"ok": all(c["ok"] for c in cases), "binary": str(binary), "cases": cases}
 
 

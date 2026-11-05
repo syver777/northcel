@@ -28,7 +28,7 @@ NATIVE = ROOT / "native"
 LOCK = NATIVE / "toolchain.lock"
 ARTIFACTS = NATIVE / "artifacts"
 
-PACKAGE_VERSION = "0.3.1"
+PACKAGE_VERSION = "0.4.0"
 
 BINARIES = ("ncel-native", "ncel-ast", "ncel-gl", "bend", "hvm")
 SHADERS = ("draw430.glsl", "draw410.glsl")

@@ -8,7 +8,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-REPO="$(cd "$ROOT/../.." && pwd)"
+REPO="$(cd "$ROOT/.." && pwd)"
 BIN="$ROOT/build/bin"
 CLI="$BIN/ncel-native"
 OUT="${NCEL_TEST_OUT:-$ROOT/test-out}"
@@ -57,6 +57,10 @@ conformance() {
     case "$base" in
       03_film_def_use_boil)
         for fr in 0 1 2; do
+          "$CLI" render "$f" --frame "$fr" -o "$dir/${base}_f$(printf '%04d' "$fr").png" --json >/dev/null
+        done ;;
+      04_transforms_easing)
+        for fr in 0 2 4; do
           "$CLI" render "$f" --frame "$fr" -o "$dir/${base}_f$(printf '%04d' "$fr").png" --json >/dev/null
         done ;;
       *)

@@ -47,6 +47,8 @@ enum Expr {
   ESin(Expr)
   ECos(Expr)
   EStep(Expr, Expr)
+  EEase(Expr)
+  ESmoothstep(Expr, Expr, Expr)
 }
 
 ///| Attribute value union (colour, unit/string, numeric expression, or tuple).
@@ -124,6 +126,19 @@ struct DropNode {
 }
 
 ///| A scene item (paint-order primitive, def use, or frame delta).
+struct TransformNode {
+  target : String
+  sx : Expr
+  sy : Expr
+  angle : Expr
+  ax : Expr
+  ay : Expr
+  dx : Expr
+  dy : Expr
+  line : Int
+  col : Int
+}
+
 enum Item {
   ILayer(LayerNode)
   ISwarm(SwarmNode)
@@ -131,6 +146,7 @@ enum Item {
   IRibbon(RibbonNode)
   IUse(UseNode)
   IDrop(DropNode)
+  ITransform(TransformNode)
 }
 
 ///| A reusable `def` block.

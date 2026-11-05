@@ -1,5 +1,16 @@
 # NorthCel install graph — design
 
+## Current extension: 0.4.0 / spec 0.3
+
+The install graph is unchanged. Both tools and bundled runtime are now 0.4.0;
+MoonBit parses/evaluates anchored transforms and easing, Bend/HVM2 still handles
+independent rings, and GLSL still computes subpixel coverage. `fit`/`tween` are
+optional **Python authoring** tools that emit vector source; they do not replace a
+native stage or add a runtime image dependency. The GL spatial-cell structure is
+derived from vector edges, not an embedded image. Old 0.2 programs are golden
+regressions. The versioned 0.3.1 measurements below remain a historical baseline,
+not current artifact sizes or registry claims; see [RELEASE.md](RELEASE.md).
+
 Status: **implemented and verified on Linux x86_64**; macOS/Windows are a later
 phase and fail honestly.
 

@@ -1,5 +1,31 @@
 # Releasing NorthCel
 
+## 0.4.0 candidate — spec 0.3.0-draft
+
+Tools and native runtime both move to 0.4.0 for anchored transforms/easing and
+offline fitting/tween authoring; 0.2 programs retain their pixels. The original
+toolchain is now fetched from immutable official compiler-version URLs.
+
+Release gates: reference + optional fitting tests; native build/tests; both-way
+conformance and shuffled determinism; native `verify` from fresh built installs;
+docs/lint/generated assets; green GitHub CI including the manual native job; and
+the local code-only smoothing study's improved video. Never publish an unchecked
+artifact. Version 0.4.0 publication receipts are added only after live verification.
+
+Build with `packaging/scripts/build_python.sh`, `build_npm.sh` and `verify.sh`.
+The deprecated PyPI aliases depend on the matching new packages. PyPI order is
+`northcel-native`, then `northcel` wheel/sdist, then aliases. Credentials are passed
+in the environment, never printed or written to artifacts.
+
+**npm 0.4.0 is prepare/verify only. Do not publish it without the owner's separate
+browser approval.** The two tarballs are `northcel-linux-x64-0.4.0.tgz` and
+`northcel-0.4.0.tgz`. The old `publish_0_3_1.sh` is historical and publishes npm;
+it MUST NOT be used for this task.
+
+Homebrew must pin the actual published 0.4.0 sdist/native-wheel URLs and SHA-256,
+and the tap mirror must match. Do not claim a brew install was tested merely
+because the same wheels passed in a fresh venv.
+
 The repository is the source; the registries are the distribution. A release is a
 set of artifacts at one version, in a fixed order, plus optional deprecated aliases.
 

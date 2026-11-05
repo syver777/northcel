@@ -10,6 +10,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 WORK="${NCEL_VERIFY_DIR:-/tmp/northcel-verify-run}"
+VERSION="$(PYTHONPATH="$ROOT/python" python3 -c 'from northcel.config import PACKAGE_VERSION; print(PACKAGE_VERSION)')"
 SKIP_NPM=0
 SKIP_PIP=0
 while [ $# -gt 0 ]; do
@@ -48,7 +49,7 @@ if [ "$SKIP_PIP" -eq 0 ]; then
   # --find-links serves the just-built northcel + northcel-native; numpy and Pillow
   # still come from the index (they are dependencies, not artifacts of this repo).
   check "pip install built wheels" "$WORK/pip/bin/pip" install -q \
-        --find-links "$ROOT/dist/python" northcel
+        --find-links "$ROOT/dist/python" "northcel==$VERSION"
   check "northcel doctor" "$WORK/pip/bin/northcel" doctor
   check "northcel verify" "$WORK/pip/bin/northcel" verify
   check "ncel alias works" "$WORK/pip/bin/ncel" doctor
@@ -65,7 +66,7 @@ if [ "$SKIP_NPM" -eq 0 ] && compgen -G "$ROOT/dist/npm/northcel-*.tgz" >/dev/nul
   check "npm install tarballs" bash -c \
     "cd '$WORK/npm' && npm install --no-audit --no-fund \
       '$ROOT'/dist/npm/northcel-linux-x64-*.tgz \
-      '$ROOT'/dist/npm/northcel-*.tgz"
+      '$ROOT'/dist/npm/northcel-[0-9]*.tgz"
   check "npx northcel doctor" "$WORK/npm/node_modules/.bin/northcel" doctor
   check "npx northcel verify" "$WORK/npm/node_modules/.bin/northcel" verify
   check "npx ncel alias" "$WORK/npm/node_modules/.bin/ncel" doctor

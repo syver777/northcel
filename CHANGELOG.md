@@ -5,12 +5,52 @@ implementation, the native runtime, the CLI and the editor tooling.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-The language specification has its own draft number (`0.2.0-draft`), which does not
+The language specification has its own draft number (`0.3.0-draft`), which does not
 move for packaging-only releases.
 
 ---
 
 ## [Unreleased]
+
+## [0.4.0] — Intact drawing edits and offline fitting (2026-11-05)
+
+### Added
+- Spec **0.3.0-draft**: immediate `transform name(...)` / `transform all(...)`
+  with uniform/nonuniform scale, reflection, clockwise rotation, anchors and
+  translation; pure clamped `ease` and `smoothstep` expressions.
+- Matching MoonBit AST/parser/geometry/NCIR and Python reference semantics,
+  transformed fill/outline/stroke/ribbon/swarm conformance and shuffled-order tests.
+- `northcel fit` optional offline palette/contour authoring tool, supplied palette
+  and intact-cel matte support, compact or cell-corner-preserving tracing, honest
+  geometry-size/configuration receipts. No embedded raster or runtime image input.
+- `northcel tween`: explicit ordered vector correspondence, arclength resampling,
+  winding/start alignment and opt-in hold fallback; never a visual quality judge.
+- Guide chapter 15, intact-cel motion pattern, diagnostics and architectural
+  decisions. The renderer remains MoonBit + Bend/HVM2 + GLSL.
+
+### Fixed
+- Exact 32px spatial cells + right-edge parity seeds avoid scanning an entire
+  8-row edge band for every pixel in heavily textured fitted drawings. Both
+  GLSL variants retain the same crossing/integration rule and old goldens.
+- Canonical formatting retains binary-expression precedence and emits valid hex
+  colours for unreferenced greyscale outlines.
+- Formatting also retains frame-local paper/palettes, lexical colour snapshots
+  and round-tripping float precision. Tween output resolves palette-bound paper
+  to self-contained colour values and compares paint semantics, not source spans.
+- Conformance now compares **every declared probe frame**, forward and reverse,
+  in native and reference, rather than only native frame zero.
+- Native tests resolve this standalone repository's root, so examples, grammar
+  and oracle comparisons no longer silently skip after extraction from NorthNoir.
+- Toolchain URLs pin the original compiler/core archives by immutable official
+  `0.10.19+bee578715` URLs; no insecure checksum bypass or compiler redistribution.
+
+### Compatibility
+- No break: valid 0.1/0.2 drawing semantics and golden pixels are retained. The
+  spec minor moves for additive syntax; the tools/native release moves to 0.4.0.
+- A `scale` parameter in an old `use` remains an ordinary parameter, not a new
+  automatic transform. Native platform support remains Linux x86_64 only.
+
+### Earlier documentation work (included in this release)
 
 ### Added
 - **A real writing guide** in `docs/guide/` (14 numbered pages): getting started,

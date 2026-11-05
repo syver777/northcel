@@ -69,7 +69,8 @@ def _load(path: Path):
 
 
 def render(file: str, out: str | None, frame: int, seed: int | None, as_json: bool) -> int:
-    from ..renderer import render_document_frame
+    from ..renderer import NorthCelEvaluationError, render_document_frame
+    from ..cli import evaluation_error
 
     path = Path(file)
     _, doc, diags = _load(path)
@@ -87,7 +88,10 @@ def render(file: str, out: str | None, frame: int, seed: int | None, as_json: bo
     from PIL import Image
 
     started = time.monotonic()
-    rgb = render_document_frame(doc, frame_index=frame, seed_override=seed)
+    try:
+        rgb = render_document_frame(doc, frame_index=frame, seed_override=seed)
+    except NorthCelEvaluationError as exc:
+        return evaluation_error(path, exc, as_json)
     out_path = Path(out) if out else path.with_suffix(".png")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     Image.fromarray(np.asarray(rgb), mode="RGB").save(out_path)
@@ -127,7 +131,8 @@ def film(
     mp4: str | None,
     as_json: bool,
 ) -> int:
-    from ..renderer import render_film_frames
+    from ..renderer import NorthCelEvaluationError, render_film_frames
+    from ..cli import evaluation_error
 
     path = Path(file)
     _, doc, diags = _load(path)
@@ -150,9 +155,12 @@ def film(
             indices = [int(x) for x in frames.split(",") if x.strip()]
 
     started = time.monotonic()
-    result = render_film_frames(
-        doc, out_dir=out_dir, frame_indices=indices, mp4_path=mp4
-    )
+    try:
+        result = render_film_frames(
+            doc, out_dir=out_dir, frame_indices=indices, mp4_path=mp4
+        )
+    except NorthCelEvaluationError as exc:
+        return evaluation_error(path, exc, as_json)
     result["seconds"] = round(time.monotonic() - started, 4)
     if as_json:
         result.update({"renderer": "python-reference", "native": False})

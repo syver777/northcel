@@ -65,6 +65,9 @@ legal and are simply clipped, which is why hills can be written with vertices at
 `-2080` or `920` quarter-pixels. There is no viewport, no zoom and no device
 scale.
 
+A 0.3 `transform all` can move/zoom the geometry, but never the paper rectangle
+or canvas dimensions; see [chapter 15](15-fitting-transforms-and-inbetweens.md).
+
 A `film` may change paper per frame with a `paper` statement inside a `frame k`
 override (page [8](08-films-and-frame-overrides.md)).
 

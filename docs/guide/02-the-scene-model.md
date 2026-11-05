@@ -63,10 +63,9 @@ The moon is listed last, so it paints over both hills. Moving its block above
 `far_hill` would hide it behind the hills — the file would still be valid, and the
 picture would be different. That is the whole layering model.
 
-## There is no camera and no transform stack
+## Moving drawings (0.2 and 0.3)
 
-There is no camera, no group rotation and no scale statement. The ways to move a
-drawn thing are:
+In spec 0.2 the ways to move a drawn thing are:
 
 - write different coordinates (fine for a still);
 - `translate: (dx, dy)` on a layer or swarm (page [8](08-films-and-frame-overrides.md));
@@ -75,6 +74,11 @@ drawn thing are:
 
 Strokes and ribbons are not translatable; their points are expressions, so write
 the motion into the point coordinates.
+
+Spec 0.3 adds immediate named and whole-stage `transform` statements with scale,
+rotation, anchors and translation, including on expanded strokes and ribbons.
+See [chapter 15](15-fitting-transforms-and-inbetweens.md). This does not change
+the meaning of any older `use` parameter named `scale`.
 
 ## What goes wrong
 

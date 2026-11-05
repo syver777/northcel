@@ -42,7 +42,7 @@ def main() -> int:
     pins = {
         "schema": "northcel-pins/1",
         "generated_from": "native/toolchain.lock",
-        "northcel_version": lock.get("package_version", "0.2.2"),
+        "northcel_version": lock.get("package_version", lock["product_version"]),
         "native_runtime_version": lock["product_version"],
         "spec_version": lock["spec_version"],
         "target": lock["target"],

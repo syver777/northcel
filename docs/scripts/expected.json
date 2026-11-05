@@ -283,6 +283,27 @@
       "page": "docs/guide/14-editing-one-frame.md",
       "pixel_sha256": "9b810594737efa997092f90a31480775206545a3840e31318d7c01165eb12f97",
       "width": 1284
+    },
+    "assets/guide/15-intact-motion.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "37ac33e30904180489c6ce55ce63f010760d4cdf45c7a05c82ce3607b90dbfed"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "7cff1e659fd11df8de14bfcc2fe56abcf4ca136757fa2fccd445ca4d09291333"
+        },
+        {
+          "index": 8,
+          "pixel_sha256": "658a746e7bd49de6ccf65cc66cde950277ad4bedce3cb523ac1cb4116eccb6eb"
+        }
+      ],
+      "height": 192,
+      "page": "docs/guide/15-fitting-transforms-and-inbetweens.md",
+      "pixel_sha256": "87b08d07f11146a455563d8f0804f1b561bc43727d85022480473153bbf067f9",
+      "width": 984
     }
   },
   "patterns": {
@@ -737,8 +758,58 @@
       "sheet_pixel_sha256": "ad0b6f11e99aa4fa915bec9ee661cde89766582e53108e88eb4ff33a0070acbb",
       "sheet_width": 1470,
       "width": 360
+    },
+    "11-intact-cel-motion": {
+      "bytes": 522,
+      "file": "examples/patterns/11-intact-cel-motion.ncel",
+      "fps": 24,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "37ac33e30904180489c6ce55ce63f010760d4cdf45c7a05c82ce3607b90dbfed"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "7dbdc81bd4f716559ba2b9d87f74c59c7af9ba2861607bcd6f977c8d2c1918b4"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "9ba1380174f7ce7a62d336cd53562741da9c7e4ffb25fd77d522e177809b7e43"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "b1b57bd351b524ee862a5c6b6d18d68102cd32f976fd6daa825d09a379d49b8f"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "7cff1e659fd11df8de14bfcc2fe56abcf4ca136757fa2fccd445ca4d09291333"
+        },
+        {
+          "index": 5,
+          "pixel_sha256": "22c3c9d1adc1fd7c66fdd6428afdecb893ac28bd604433948caf748e22671fb6"
+        },
+        {
+          "index": 6,
+          "pixel_sha256": "6f717254e6063a6619b6bce2a3822b7192c3a5795e99df8d10c4d3885a681bb1"
+        },
+        {
+          "index": 7,
+          "pixel_sha256": "ffba57000b7e42996d69e2359932afe52692d37ef3a64440f65114898eb13f07"
+        },
+        {
+          "index": 8,
+          "pixel_sha256": "658a746e7bd49de6ccf65cc66cde950277ad4bedce3cb523ac1cb4116eccb6eb"
+        }
+      ],
+      "height": 180,
+      "kind": "film",
+      "sheet": "docs/assets/patterns/11-intact-cel-motion.png",
+      "sheet_height": 564,
+      "sheet_pixel_sha256": "eb99c1f9b5a89948f057e86a641f70128475c1e8a4accb01b5d4115fcd08c065",
+      "sheet_width": 1310,
+      "width": 320
     }
   },
   "renderer": "python-reference",
-  "tool": "northcel 0.3.1"
+  "tool": "northcel 0.4.0"
 }

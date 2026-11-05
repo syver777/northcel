@@ -21,8 +21,8 @@
 
 #include "sha256.h"
 
-#define NCEL_VERSION "0.2.0"
-#define NCEL_SPEC "0.2.0-draft"
+#define NCEL_VERSION "0.4.0"
+#define NCEL_SPEC "0.3.0-draft"
 #define PATH_MAX_LOCAL 4096
 
 static double now_s(void) {

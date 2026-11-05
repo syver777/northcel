@@ -60,7 +60,7 @@ test("Node-only invalid arguments, I/O errors and missing renderer never pass", 
   for (const command of ["render", "film"]) assert.equal(run([command, valid]).status, 3);
   assert.equal(run(["fmt", valid]).status, 1);
   assert.equal(run(["--version"]).status, 0);
-  assert.match(run(["--version"]).stdout, /^northcel 0\.3\.1 \(npm launcher/);
+  assert.match(run(["--version"]).stdout, /^northcel 0\.4\.0 \(npm launcher/);
   assert.equal(run(["check", "--help"]).status, 0);
 });
 
@@ -70,6 +70,13 @@ test("guide is offline and exactly the generated canonical section", () => {
   assert.equal(r.stdout, fs.readFileSync(path.join(root, "northcel/AGENT-GUIDE.md"), "utf8"));
   assert.match(r.stdout, /Five language features/);
   assert.equal(run(["guide", "--typo"]).status, 2);
+});
+
+test("spec 0.3 transforms remain a partial structural check, not a render claim", () => {
+  const r = checkNcelSource('northcel "0.3.0-draft" film Motion(frames: 4) { layer a(tone: 0) { "0,0 32,0 0,32" } transform a(scale: lerp(1,2,ease(t)), anchor: (4,4)) }');
+  assert.equal(r.ok, true);
+  assert.equal(r.partial, true);
+  assert.equal(r.validator, "js");
 });
 
 test("Python delegation preserves diagnostics and nonzero status; flag stripped for old CLI", () => {

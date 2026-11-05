@@ -22,6 +22,22 @@ PAGE = REPO / "docs" / "errors.md"
 PYTHON_DIR = REPO / "python"
 
 CASES = [
+    dict(id="p-transform-attribute", title="An unknown transform attribute",
+         cause="Only scale, rotate, anchor and translate are transform attributes.",
+         fix="Use a supported attribute; opacity is not part of spec 0.3.",
+         source='northcel "0.3.0-draft"\nscene X { transform all(opacity: 1) }\n'),
+    dict(id="p-transform-pair", title="A transform anchor with one component",
+         cause="Anchors and translations are explicit two-component tuples.",
+         fix="Write anchor: (x,y).",
+         source='northcel "0.3.0-draft"\nscene X { transform all(anchor: 3) }\n'),
+    dict(id="p-transform-number", title="A nonnumeric transform component",
+         cause="Every transform component is a number or pure expression, not a colour.",
+         fix="Use a numeric component.",
+         source='northcel "0.3.0-draft"\nscene X { transform all(rotate: #FFF) }\n'),
+    dict(id="p-easing-arity", title="An easing function with the wrong arity",
+         cause="ease needs one argument; smoothstep needs three.",
+         fix="Write ease(t) or smoothstep(0,1,t).",
+         source='northcel "0.3.0-draft"\nscene X { transform all(scale: ease(1,2)) }\n'),
     # --- parser -------------------------------------------------------------
     dict(
         id="p-unexpected-char",
@@ -260,7 +276,7 @@ scene Bad(width: 320, height: 180) {
         title="An unsupported specification version",
         cause="The version claim must be one of `0.1`, `0.1.0`, `0.1.0-draft`, `0.2`, `0.2.0`, `0.2.0-draft`.",
         fix="Use `northcel \"0.2.0-draft\"` (or drop the header).",
-        source='''northcel "0.3.0"
+        source='''northcel "9.9.0"
 
 scene Bad(width: 320, height: 180) {
   layer sky(color: #88AACC, rings: 1) { "0,0 1920,0 0,1080 -1920,0" }

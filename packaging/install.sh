@@ -21,7 +21,7 @@
 #   --no-verify      skip the render/conformance self-test
 #   --with-moonbit   also provision the pinned MoonBit compiler (101 MB, source builds only)
 #   --install-mesa   allow the one privileged step: install Mesa/EGL with sudo
-#   --version X.Y.Z  install a specific northcel version (default 0.3.1)
+#   --version X.Y.Z  install a specific northcel version (default 0.4.0)
 #   --prefix DIR     install root (default $HOME/.local/share/ncel)
 #   --bin-dir DIR    where the `northcel` symlink goes (default $HOME/.local/bin)
 #   -h, --help       this text
@@ -30,7 +30,7 @@
 # supported in this release and this script says so instead of pretending.
 set -euo pipefail
 
-NCEL_VERSION="0.3.1"
+NCEL_VERSION="0.4.0"
 NCEL_HOME="${NCEL_HOME:-$HOME/.local/share/ncel}"
 BIN_DIR="${NCEL_BIN_DIR:-$HOME/.local/bin}"
 INDEX_URL="${NCEL_INDEX_URL:-https://pypi.org/simple}"
@@ -62,7 +62,7 @@ user space.
   --no-verify      skip the render/conformance self-test
   --with-moonbit   also provision the pinned MoonBit compiler (101 MB, source builds only)
   --install-mesa   allow the one privileged step: install Mesa/EGL with sudo
-  --version X.Y.Z  install a specific northcel version (default 0.3.1)
+  --version X.Y.Z  install a specific northcel version (default 0.4.0)
   --prefix DIR     install root (default $HOME/.local/share/ncel)
   --bin-dir DIR    where the `northcel` symlink goes (default $HOME/.local/bin)
   -h, --help       this text

@@ -25,7 +25,7 @@
       "patterns": [
         {
           "name": "keyword.control.northcel",
-          "match": "\\b(northcel|scene|film|frame|palette|paper|def|use|drop|cel|layer|wash|bend_swarm|swarm|stroke|ribbon)\\b"
+          "match": "\\b(northcel|scene|film|frame|palette|paper|def|use|drop|transform|cel|layer|wash|bend_swarm|swarm|stroke|ribbon)\\b"
         }
       ]
     },
@@ -33,7 +33,7 @@
       "patterns": [
         {
           "name": "support.function.northcel",
-          "match": "\\b(lerp|sin|cos|step|rgb)\\b"
+          "match": "\\b(lerp|sin|cos|step|ease|smoothstep|rgb)\\b"
         }
       ]
     },

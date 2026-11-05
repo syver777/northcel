@@ -1,16 +1,16 @@
 {
   "schema": "northcel-pins/1",
   "generated_from": "native/toolchain.lock",
-  "northcel_version": "0.2.2",
-  "native_runtime_version": "0.2.0",
-  "spec_version": "0.2.0-draft",
+  "northcel_version": "0.4.0",
+  "native_runtime_version": "0.4.0",
+  "spec_version": "0.3.0-draft",
   "target": "linux-x86_64",
   "moonbit": {
     "version": "0.1.20261102 (ea07287 2026-11-02)",
-    "archive_url": "https://cli.moonbitlang.com/binaries/latest/moonbit-linux-x86_64.tar.gz",
+    "archive_url": "https://cli.moonbitlang.com/binaries/0.10.19%2Bbee578715/moonbit-linux-x86_64.tar.gz",
     "archive_sha256": "dd1d6d793c9675405ef32b39bce66d40041e2052a9c3f2f403e0a9da98bd94fd",
     "archive_bytes": 101006330,
-    "core_url": "https://cli.moonbitlang.com/cores/core-latest.tar.gz",
+    "core_url": "https://cli.moonbitlang.com/cores/core-0.10.19%2Bbee578715.tar.gz",
     "core_sha256": "b5b33afc759b8ae332346f357f42235d4c8d54afd91bb891b22ead3d746fa74f",
     "core_bytes": 2797220
   },
@@ -27,8 +27,8 @@
     "binary": "vendor/linux-x86_64/bin/hvm"
   },
   "shaders": {
-    "draw430": "14829a3cbb6cd868b876ed6afd3567338073c1c64fc0e98e13a7221511ec5b41",
-    "draw410": "fe4d0c4fe4e07d05a77ff6a5a5bb0eb5889587aa6f5be841da1acbe6a039ad45"
+    "draw430": "791c9dc80b4bf7a1f7d5515a41287f297739d4c65534616c958f9bc2c368f81b",
+    "draw410": "5367bf91b40cc9365195b7e4caa193ba14e2aaef10c40278c2e860fd18bdbbdd"
   },
   "gl_runtime": {
     "version": "25.2.8-0ubuntu0.24.04.2 (Mesa 4.5 core profile)",

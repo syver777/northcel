@@ -10,8 +10,8 @@ TC="$ROOT/.toolchain"
 DL="$TC/downloads"
 mkdir -p "$DL" "$TC/moon" "$TC/bin"
 
-MOON_URL="https://cli.moonbitlang.com/binaries/latest/moonbit-linux-x86_64.tar.gz"
-CORE_URL="https://cli.moonbitlang.com/cores/core-latest.tar.gz"
+MOON_URL="https://cli.moonbitlang.com/binaries/0.10.19%2Bbee578715/moonbit-linux-x86_64.tar.gz"
+CORE_URL="https://cli.moonbitlang.com/cores/core-0.10.19%2Bbee578715.tar.gz"
 MOON_SHA="dd1d6d793c9675405ef32b39bce66d40041e2052a9c3f2f403e0a9da98bd94fd"
 CORE_SHA="b5b33afc759b8ae332346f357f42235d4c8d54afd91bb891b22ead3d746fa74f"
 

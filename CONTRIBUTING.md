@@ -8,7 +8,7 @@ implementations, and the tests say so.**
 
 1. **Specification changes come first.** Any change to the lexical grammar, the
    EBNF, ring-chain encoding, or rendering semantics must be proposed against
-   [`docs/spec/SPEC-0.2.0-draft.md`](docs/spec/SPEC-0.2.0-draft.md) (never edit an
+    [`docs/spec/SPEC-0.3.0-draft.md`](docs/spec/SPEC-0.3.0-draft.md) (never edit an
    archived spec in place — add a new draft) and recorded in
    [`docs/DECISIONS.md`](docs/DECISIONS.md) and [`CHANGELOG.md`](CHANGELOG.md).
 2. **Determinism is not negotiable.** Every change to
@@ -62,6 +62,7 @@ $ python3 -m pytest python/tests -q
 $ npm --prefix js/northcel test
 $ python3 js/northcel/scripts/sync-assets.py --check   # generated assets in sync
 $ python3 tests/conformance.py                          # both implementations, both directions
+$ python3 -m pip install opencv-python-headless==5.0.0.93 scikit-image==0.26.0  # tracing tests; Python 3.11+
 ```
 
 The native tree has its own suite (needs the MoonBit compiler and a C toolchain):
@@ -133,9 +134,9 @@ publish order, deprecation aliases and the Homebrew formula bump are documented 
 [`packaging/RELEASE.md`](packaging/RELEASE.md), and the install graph contract is
 in [`packaging/DESIGN.md`](packaging/DESIGN.md).
 
-- The **tools** version moves (`0.3.1`, `0.3.2`, …).
+- The **tools** version moves (`0.4.0`, `0.4.1`, …).
 - The **language specification** moves only when the grammar or rendering
-  semantics change (`0.2.0-draft` today), and an archived draft is never edited.
+  semantics change (`0.3.0-draft` today), and an archived draft is never edited.
 - A packaging-only release keeps `spec_version` and the native runtime build
   identical; `northcel doctor` prints both numbers so they cannot be confused.
 
