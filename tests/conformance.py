@@ -160,6 +160,7 @@ def check_native(manifest: dict, ref, results: dict, workdir: Path) -> None:
             )
             if proc.returncode != 0 or not out.is_file():
                 cases.append({"case": case["name"], "frame": frame, "ok": False, "detail": (proc.stderr or "").strip()[:200]})
+                say(f"  [FAIL] native render: {case['name']} frame {frame}, exit {proc.returncode}: {(proc.stderr or '').strip()[:200]}")
                 continue
             native_img = np.asarray(Image.open(out).convert("RGB"), dtype=np.int16)
             ref_img = np.asarray(ref["render"](doc, frame_index=frame), dtype=np.int16)

@@ -236,6 +236,8 @@ jobs:
           # The native shell suite itself invokes the Python oracle/probe reader.
           # Install its dependencies before that suite, not after it.
           python -m pip install numpy Pillow pytest
+          # A child shell's PATH exports do not propagate to the later runners.
+          export PATH="$PWD/native/.toolchain/bin:$PATH"
           cd native
           bash tests/run-tests.sh
           cd ..
