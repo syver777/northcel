@@ -8,9 +8,10 @@ native renderer produces the same picture; see
 
 ## The shower frames
 
-The two *Man in the Shower* frames are the original reconstruction benchmark.
-They are traced contours, not hand-authored primitives, which is why the files
-are large: every wet hair strand and beard bristle is stored.
+The two *Man in the Shower* frames are the original reconstruction example: a
+photograph of a man under a running shower, redrawn as traced contours. They are
+traced contours, not hand-authored primitives, which is why the files are large:
+every wet hair strand and beard bristle is stored.
 
 <!-- image: assets/gallery/shower_f0001.png -->
 ![shower_f0001: 1024×1024 traced frame](assets/gallery/shower_f0001.png)
@@ -46,18 +47,18 @@ of six images.
 *command:* `northcel film python/northcel/examples/lantern_film.ncel -o frames/ --frames 0..5` ·
 1,068 bytes / 458 cl100k tokens for the whole film.
 
-## Fitted Test Video 7
+## A 90-frame AI-drawn film, recreated in `.ncel`
 
-The 90-frame fitted recreation of *Test Video 7* is the Phase B benchmark: 90
-drawings at 1536×864, three fitted tiers (0.25px text, 0.25px-b63 + palette, 1px
+This is a complete 15-second, 90-frame AI-drawn film — 90 drawings at 1536×864 —
+recreated in `.ncel` at three fitted tiers (0.25px text, 0.25px-b63 + palette, 1px
 Base-63). The 90 frames are **not** committed here: that would add megabytes of
-raster to a language repository for a benchmark. The measured comparison lives in
-[examples](examples.md) and the existing contact sheet is
-[`assets/tv7_contact_sheet.png`](assets/tv7_contact_sheet.png) (click to open; a contact
-sheet of the benchmark frames, not the 90 separate images).
+raster to a language repository. The measured comparison lives in
+[examples](examples.md) and the contact sheet is
+[`assets/90frame_contact_sheet.png`](assets/90frame_contact_sheet.png) (a contact
+sheet of the frames, not the 90 separate images).
 
-The AI-authored single frame `tv7_f0076_ai_cel.ncel` (seated man + duck, 6,306
-bytes / 4,438 tokens) is also in
+The AI-authored single frame `tv7_f0076_ai_cel.ncel` (a seated man with a walking
+duck, 6,306 bytes / 4,438 tokens) is also in
 [`python/northcel/examples/`](../python/northcel/examples/tv7_f0076_ai_cel.ncel).
 It renders with the same command:
 
@@ -65,11 +66,11 @@ It renders with the same command:
 $ northcel render python/northcel/examples/tv7_f0076_ai_cel.ncel -o tv7_f0076.png
 ```
 
-## The new pattern examples
+## The pattern examples
 
 All ten are on the [patterns index](patterns/README.md), each with a contact
 sheet of every frame. They are the best place to start copying: the shower and
-TV7 files are tracing benchmarks, while the patterns are authored drawings.
+film recreations are tracing examples, while the patterns are authored drawings.
 
 | | | |
 | --- | --- | --- |
@@ -82,9 +83,7 @@ TV7 files are tracing benchmarks, while the patterns are authored drawings.
 
 The whole gallery adds `docs/assets/gallery/` (~0.53 MB) and the pattern sheets
 add `docs/assets/patterns/` (~0.25 MB); the guide figures add
-`docs/assets/guide/` (~0.17 MB). The build prints the exact total, and
-[the report](https://github.com/syver777/northcel) records it per release. No
-video files are committed.
+`docs/assets/guide/` (~0.17 MB). No video files are committed.
 
 Every image is a PNG at the document's own resolution (contact sheets are
 composites at the frames' resolution). The renderer is recorded in

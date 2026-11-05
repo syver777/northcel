@@ -103,7 +103,7 @@ The reference (`pip install northcel`, `python/northcel/`) is:
 
 The native runtime matches the reference on the 10 conformance probes, is
 pixel-identical on the shower frames, and differs by a handful of edge pixels on
-the fitted Test Video 7 tiers. Both implementations are in this repository; a
+the fitted 90-frame film tiers. Both implementations are in this repository; a
 change to rendering semantics must land in both and be measured.
 
 ## Platform matrix
@@ -217,7 +217,7 @@ native and reference renders differ in **0 pixels**.
 ## Why these three stages
 
 The design came from measuring five stacks on the *Man in the Shower*
-reconstruction and the 90-frame *Test Video 7* film. The finding was that a
+reconstruction and on a 90-frame AI-drawn film. The finding was that a
 language is an execution paradigm, not extra visual information:
 
 - a typed declarative scene layer makes a compact, surgically editable document

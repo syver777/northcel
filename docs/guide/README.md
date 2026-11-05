@@ -31,8 +31,8 @@ After the guide:
 
 - [Patterns cookbook](../patterns/README.md) — ten complete, compiling
   animations with contact sheets, sizes and pitfalls.
-- [Gallery](../gallery.md) — the shower frames, the lantern film, the fitted
-  Test Video 7 recreation, and the pattern examples.
+- [Gallery](../gallery.md) — the shower frames, the lantern film, a 90-frame
+  AI-drawn film recreated in `.ncel`, and the pattern examples.
 - [Common errors](../errors.md) — every diagnostic, generated from the source.
 - [Architecture](../architecture.md) — what MoonBit, Bend and GLSL each own.
 

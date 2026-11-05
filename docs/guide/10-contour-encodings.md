@@ -81,7 +81,7 @@ scene BadgeBase63(width: 360, height: 220, fps: 12, precision: 0.25px-b63, seed:
 
 ![The same badge written with Base-63 deltas](../assets/guide/10-base63.png)
 
-Measured on the VM:
+The same badge in both encodings:
 
 | File | Payload characters | File bytes | Pixels |
 | --- | ---: | ---: | --- |

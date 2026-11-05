@@ -9,8 +9,7 @@ used only by the conformance tests as an oracle.
 
 ## 1. Prerequisites (Ubuntu 24.04 / Debian, x86_64)
 
-System packages (no sudo is needed on the North Noir VM because they are already
-present; on a fresh machine install them normally):
+System packages:
 
 ```
 libegl1 libgl1 mesa-libgallium build-essential
@@ -61,8 +60,8 @@ build/share/ncel/draw430.glsl
 build/share/ncel/draw410.glsl
 ```
 
-Measured on the North Noir VM (8 vCPU, shared): **≈ 12 s** for a clean build
-(MoonBit stage ≈ 9 s, C hosts ≈ 2 s). Rebuilds are incremental.
+On an 8-vCPU machine a clean build takes **≈ 12 s** (MoonBit stage ≈ 9 s, C
+hosts ≈ 2 s). Rebuilds are incremental.
 
 ## 4. Verify
 
@@ -133,5 +132,5 @@ shaders/            draw430.glsl (Linux) / draw410.glsl (4.1-portable)
 vendor/linux-x86_64 pinned Bend + HVM2 binaries
 tests/              conformance, examples, determinism, oracle comparisons
 scripts/            provision-toolchain.sh, package.sh
-toolchain.lock      machine-readable pins for the packaging worker
+toolchain.lock      machine-readable pins used by the packaging scripts
 ```

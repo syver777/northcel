@@ -29,14 +29,14 @@ Uploaded, in this order, and verified afterwards:
 | `ncel-0.3.1-py3-none-any.whl` (deprecated) | — | on PyPI |
 | `ncel_native-0.3.1-py3-none-manylinux_2_39_x86_64.whl` (deprecated) | — | on PyPI |
 
-Evidence: a fresh venv on the publishing VM, `pip install northcel==0.3.1` from the
+Evidence: a fresh venv, `pip install northcel==0.3.1` from the
 public index with no local artifacts → `northcel doctor` exit 0 (native, 13/13
 checksums, GL 4.5 Mesa 25.2.8 at homegrown homebrew paths), `ncel verify` 5/5
 (conformance sha256 `be0eb036…` = pinned), and a real 1024×1024 native render whose
 sha256 equals the pinned conformance hash. `pip install ncel==0.3.1` pulls
 `northcel` + `northcel-native` and runs the same launcher.
 
-npm 0.3.1 is **published** (2026-11-04): `northcel` and `northcel-linux-x64` both resolve to 0.3.1, installed from the public registry and verified by a global install.
+npm 0.3.1 is **published** (2026-11-04): `northcel` and `northcel-linux-x64` both resolve to 0.3.1, and install from the public registry with a global install.
 
 ## Build and prove
 
@@ -90,10 +90,9 @@ npm deprecate "@ncel/linux-x64@0.3.1" "NorthCel is one package now: npm install 
 ```
 
 Credentials: `TWINE_USERNAME=__token__` + `TWINE_PASSWORD` (or `~/.pypirc`) for
-PyPI, `NPM_TOKEN` or `npm login` for npm. On the North Noir VM,
-`northnoir-env bash -c …` exposes the long-lived PyPI token as
-`NORTH_NOIR_PYPI_API`, and `publish_0_3_1.sh` maps it to `TWINE_PASSWORD` (never
-echoed, never written to disk). The script refuses to start from a dirty tree.
+PyPI, `NPM_TOKEN` or `npm login` for npm. `publish_0_3_1.sh` reads the PyPI token
+from the `NORTH_NOIR_PYPI_API` environment variable, maps it to `TWINE_PASSWORD`
+(never echoed, never written to disk) and refuses to start from a dirty tree.
 
 A note from the 0.3.1 run that is not obvious: the public simple index can serve a
 stale page for a minute or two right after an upload. `pip install` said

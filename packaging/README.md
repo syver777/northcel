@@ -11,11 +11,18 @@ Mesa/EGL (llvmpipe) context. One command should be enough.
 | PyPI (primary) | `pip install northcel` | **0.3.1 published** — one distribution with the reference implementation and the launcher, depending on `northcel-native` 0.3.1 |
 | npm | `npm install -g northcel` | **0.3.1 published** — same launcher and native bundle as pip |
 | Homebrew tap | `brew tap syver777/northcel && brew install northcel` | formula in `packaging/homebrew/`; the tap repository is `syver777/homebrew-northcel` |
-| One-line curl | `curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh \| bash` | tested here; the URL is a release asset of the latest published release |
+| One-line curl | `curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh \| bash` | the URL is a release asset of the latest published release |
 
 `brew install northcel` on its own is **not** available: homebrew-core does not
 accept brand-new formulae without maintainer review. The honest command is the tap
 one.
+
+## Deprecated names
+
+The old package names still install and point at the current packages:
+`ncel` and `ncel-native` on PyPI and `@ncel/linux-x64` on npm are aliases that
+depend on `northcel` / `northcel-native` / `northcel-linux-x64`. The command
+`ncel` ships in `northcel` and is the short alias of `northcel`.
 
 ## Platform support
 
@@ -31,7 +38,7 @@ phase, not a packaging toggle.
 
 ## What gets installed, and how big it is
 
-Sizes are the measured 0.2.1 artifacts; the 0.3.1 layout merges the launcher into
+Sizes are for the published artifacts; the 0.3.1 layout merges the launcher into
 `northcel`, which removes one distribution without changing the download.
 
 | Artifact | Size | Contents |

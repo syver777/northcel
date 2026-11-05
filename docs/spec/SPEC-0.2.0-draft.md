@@ -30,7 +30,7 @@ NorthCel (`.ncel`) is a domain-specific programming language designed for AI cod
 
 ## 3. Design Rationale: The MoonBit + Bend + GLSL Triad (Non-Normative)
 
-NorthCel was created after benchmarking five unconventional language combinations on the 2-frame 1024×1024 *Man in the Shower* reconstruction task (`f0001` and `f0002`) and refined in Phase B on the 90-frame 1536×864 *Test Video 7* film. Our core experimental rule holds: **a different programming language is an execution paradigm, not a source of extra visual information.**
+NorthCel was created after benchmarking five unconventional language combinations on the 2-frame 1024×1024 *Man in the Shower* reconstruction task (`f0001` and `f0002`) and refined on a 90-frame 1536×864 AI-drawn film. Our core experimental rule holds: **a different programming language is an execution paradigm, not a source of extra visual information.**
 
 NorthCel deliberately combines the single strongest attribute of three layers we proved in that benchmark:
 

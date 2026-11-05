@@ -5,10 +5,9 @@ This document records the key architectural, experimental, and naming decisions 
 ## Decision 8 · 2026-11-04: The documentation is part of the product, and CI renders it
 
 - **Context:** The language shipped with a 66-line tutorial, a 35-line reference
-  and a 38-line examples page. The owner's words were that it "should maybe have
-  more documentation on how to write with `.ncel`". A language whose docs cannot
-  teach it is not usable, however good the renderer is; and a docs page that
-  drifts from the parser is worse than a thin one.
+  and a 38-line examples page, which cannot teach a language however good the
+  renderer is; and a docs page that drifts from the parser is worse than a thin
+  one.
 - **Decision:** The docs are a numbered writing guide (14 pages) with, on every
   construct page, the syntax, a complete `.ncel`, a rendered image of that file, a
   deliberate mistake with the **real** diagnostic and the exact command; a
@@ -37,12 +36,12 @@ This document records the key architectural, experimental, and naming decisions 
 
 ## Decision 7 · 2026-11-04: One install name (`northcel`), its own repository, dual licence
 
-- **Context:** NorthCel lived inside the NorthNoir monorepo as `packages/northcel`,
-  `docs/northcel`, `native/ncel` and `packaging/`, with two PyPI names (`ncel`,
-  `northcel`), three npm names (one published, one never published, one scope that
-  needs an org) and a proprietary licence. Users and agents had to learn which of
-  several names to install, and a display of "which package is the real one" was
-  impossible to answer.
+- **Context:** NorthCel was previously developed inside another repository as
+  `packages/northcel`, `docs/northcel`, `native/ncel` and `packaging/`, with two
+  PyPI names (`ncel`, `northcel`), three npm names (one published, one never
+  published, one scope that needs an org) and a proprietary licence. Users and
+  agents had to learn which of several names to install, and "which package is
+  the real one" was impossible to answer.
 - **Decision:** NorthCel becomes its own public repository
   (<https://github.com/syver777/northcel>), dual licensed **MIT OR Apache-2.0**, and
   **every install is called `northcel`**: one Python distribution containing the
@@ -60,12 +59,8 @@ This document records the key architectural, experimental, and naming decisions 
   other silently changes behaviour). One distribution owns both entry points and
   imports the reference in-package.
 - **Licence:** MIT OR Apache-2.0 is the conventional choice for a language (Rust,
-  Swift): permissive for tooling adoption, patent-granting for implementers. The
-  owner may still choose a single licence; NorthNoir itself is not relicensed.
-- **History:** the four trees were extracted with their real commit history (8
-  commits, preserved author/date/message, then a restructure commit that keeps
-  `git log --follow` working) rather than a squashed import.
-- **Rejected:** keeping the monorepo copy as the canonical source (two copies
+  Swift): permissive for tooling adoption, patent-granting for implementers.
+- **Rejected:** keeping a second canonical copy in another repository (two copies
   drift), publishing a `ncel` npm alias (name rejected), and a `-cli` suffix.
 
 ---
@@ -135,7 +130,7 @@ This document records the key architectural, experimental, and naming decisions 
 
 ## Decision 5 · 2026-11-03: Add `precision: 0.25px-b63`, `palette`, `cel`/`outline`, and Frame `drop` Deltas in v0.2.0
 
-- **Context:** In Phase B, we tested NorthCel `0.1.0` on **Test Video 7** — a complete 15-second, 90-drawing (`1536×864`) Ruvil 7.3 images-as-frames film (monochrome opening → jump → blue sky & clouds → colour arrival → cloud landing → grass landing → sitting with walking duck), both via automated contour fitting (all 90 frames) and hand-written AI authoring (8 representative frames across 3 self-review rounds).
+- **Context:** NorthCel `0.1.0` was tested on a complete 15-second, 90-drawing (`1536×864`) AI-drawn film (monochrome opening → jump → blue sky & clouds → colour arrival → cloud landing → grass landing → sitting with walking duck), both via automated contour fitting (all 90 frames) and hand-written AI authoring (8 representative frames across 3 self-review rounds).
 - **Measured Weaknesses of `0.1.0` Exposed by the 90-Frame Video:**
   1. **Source size explosion on 90 subpixel frames:** Space-separated `0.25px` text coordinates plus uncleaned antialias boundary halos took `6,704,285 bytes` (`74.5 KB/frame`, `4.25M tokens`) for the 90 frames.
   2. **Duplicate fill + stroke coordinates in AI-authored cels:** In `0.1.0`, every hand-authored cloud, shirt, trouser leg, shoe, and duck body required a `layer` block for the fill and a second `stroke` block repeating the exact same coordinates for the black ink outline (`8,830 bytes/frame` in Round 3).

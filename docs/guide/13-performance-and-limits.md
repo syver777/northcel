@@ -6,23 +6,23 @@ NumPy. A GPU is not required and is not used.
 
 ## What is measured
 
-These numbers come from the native-runtime report (`work/checks/ncel-native/`),
-measured on this VM with the pinned toolchain (Mesa 25.2.8, llvmpipe, 1 vCPU
-Cloud Run shape for the stage split). They are wall clock, not a benchmark score.
+These are wall-clock timings for the native runtime and the Python reference on
+the same machine (Ubuntu 24.04, x86_64, Mesa 25.2.8 llvmpipe, 1 vCPU), not a
+benchmark score.
 
 | Case | Native | Reference |
 | --- | ---: | ---: |
-| `shower_f0001` still, 1024×1024, 2 swarms | 0.85 s | 0.62 s |
-| Test Video 7 `f0076`, 1536×864, 8 cels | 0.69 s | 1.13 s |
-| Whole 90-frame fitted TV7 film, 1536×864 | 56.1 s | — |
+| shower still, 1024×1024, 2 swarms | 0.85 s | 0.62 s |
+| a 1536×864 colour frame, 8 cels | 0.69 s | 1.13 s |
+| the whole 90-frame fitted film, 1536×864 | 56.1 s | — |
 
 Peak memory was 140 MB (native) and 78 MB (reference) on the shower still;
-150 MB / 190 MB on the TV7 frame. Stage split for the shower frame: Bend 0.20 s,
-MoonBit IR 0.019 s, GLSL 0.657 s.
+150 MB / 190 MB on the 1536×864 framed. Stage split for the shower frame: Bend
+0.20 s, MoonBit IR 0.019 s, GLSL 0.657 s.
 
-On this VM, the reference renderer draws the 640×360 star field below in about
-0.4 s per frame (three runs: 0.35–0.39 s for the 60-agent scene). Treat that as
-an order of magnitude for a laptop-class CPU, not a promise.
+The reference renderer draws the 640×360 star field below in about 0.4 s per
+frame (three runs: 0.35–0.39 s for the 60-agent scene). Treat that as an order of
+magnitude for a laptop-class CPU, not a promise.
 
 ## The knobs that matter
 
@@ -94,15 +94,15 @@ such.
 
 ## Determinism, measured
 
-Every frame is a pure function of `(document, frame index, seed)`. The native
-report compared forward and shuffled frame order (identical sha256 for all six
-lantern frames), repeated renders (identical bytes), and Mesa thread counts
-1/2/4/8 (one unique hash). Across 296 frames and ~388 M pixels, native and
-reference differ on **52 pixels**, worst per-frame grey MAE 2.06e-4, worst block
-SSIM 0.99999931. The cause is float32 edge upload versus float64 crossings, not
-geometry. A handful of pixels is what "the two implementations agree" means in
-practice; the docs check uses the reference renderer so its committed hashes do
-not depend on a host Mesa version.
+Every frame is a pure function of `(document, frame index, seed)`. Forward and
+shuffled frame order produce identical sha256 hashes for all six lantern frames,
+repeated renders produce identical bytes, and Mesa thread counts 1/2/4/8 produce
+one unique hash. Across 296 frames and ~388 M pixels, native and reference differ
+on **52 pixels**, worst per-frame grey MAE 2.06e-4, worst block SSIM 0.99999931.
+The cause is float32 edge upload versus float64 crossings, not geometry. A handful
+of pixels is what "the two implementations agree" means in practice; the docs
+check uses the reference renderer so its committed hashes do not depend on a host
+Mesa version.
 
 ## What goes wrong
 

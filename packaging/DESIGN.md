@@ -9,8 +9,8 @@ alias, never a package name: npm rejected the bare `ncel` name, and a scoped
 reason.
 
 This note is the contract that the packaging, the CLI and the installers implement.
-Every figure was measured on the reference VM (Ubuntu 24.04, x86_64, Mesa 25.2.8
-llvmpipe, Python 3.12, Node 24) and re-verified from a clean install.
+Every figure was measured on Ubuntu 24.04 (x86_64, Mesa 25.2.8 llvmpipe,
+Python 3.12, Node 24) and checked against a clean install.
 
 ## 1. Which implementation runs
 
