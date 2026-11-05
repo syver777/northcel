@@ -53,10 +53,9 @@ Project-level documents live in the repository root:
 | 13 | [Performance and limits](guide/13-performance-and-limits.md) | measured timings, limits |
 | 14 | [Editing one frame surgically](guide/14-editing-one-frame.md) | the delta recipe |
 
-The old `tutorial.md` is retired: its content is pages 1, 5 and 8 of the guide,
-with a rendered image and a real diagnostic on every page. The old
-`reference.md` keeps only the CLI and validation contract; the grammar reference
-moved into the guide and the specification.
+[`tutorial.md`](tutorial.md) points to the matching guide pages.
+[`reference.md`](reference.md) covers the CLI and the validation contract; the
+grammar reference lives in the guide and the specification.
 
 ## Machine-checked docs
 

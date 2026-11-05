@@ -1,8 +1,7 @@
-# Tutorial (retired — use the guide)
+# Tutorial
 
-This page used to be a 66-line tour. It has been folded into the numbered
-[writing guide](guide/README.md), which covers the same material with a rendered
-image and a real diagnostic on every page.
+The tutorial is the numbered [writing guide](guide/README.md): it covers the same
+material, with a rendered image and a real diagnostic on every page.
 
 If you arrived here from an old link:
 
@@ -16,6 +15,3 @@ If you arrived here from an old link:
 | reuse | [7. Definitions and parameters](guide/07-def-use-and-parameters.md) |
 | animation and timing | [8. Films, frame overrides and `drop`](guide/08-films-and-frame-overrides.md) |
 | an animated example to copy | [Patterns cookbook](patterns/README.md) |
-
-The historical text is in git history (`docs/tutorial.md` before the docs
-round); nothing was silently deleted from the language.

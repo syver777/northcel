@@ -19,10 +19,9 @@ one.
 
 ## Deprecated names
 
-The old package names still install and point at the current packages:
-`ncel` and `ncel-native` on PyPI and `@ncel/linux-x64` on npm are aliases that
-depend on `northcel` / `northcel-native` / `northcel-linux-x64`. The command
-`ncel` ships in `northcel` and is the short alias of `northcel`.
+The old package names still install and point at the current packages: `ncel` and
+`ncel-native` on PyPI and `@ncel/linux-x64` on npm are aliases that depend on
+`northcel` / `northcel-native` / `northcel-linux-x64`.
 
 ## Platform support
 
