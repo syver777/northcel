@@ -233,10 +233,12 @@ jobs:
           build/bin/ncel-native --version
       - name: Native test suite + conformance against the reference
         run: |
+          # The native shell suite itself invokes the Python oracle/probe reader.
+          # Install its dependencies before that suite, not after it.
+          python -m pip install numpy Pillow pytest
           cd native
           bash tests/run-tests.sh
           cd ..
-          python -m pip install numpy Pillow pytest
           NCEL_NATIVE_BIN="$PWD/native/build/bin/ncel-native" \
             PYTHONPATH=python python tests/conformance.py --native
           PATH="$PWD/native/.toolchain/bin:$PATH" NCEL_NATIVE_BIN="$PWD/native/build/bin/ncel-native" \
