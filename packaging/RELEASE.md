@@ -34,10 +34,9 @@ The deprecated PyPI aliases depend on the matching new packages. PyPI order is
 `northcel-native`, then `northcel` wheel/sdist, then aliases. Credentials are passed
 in the environment, never printed or written to artifacts.
 
-**npm 0.4.0 is prepare/verify only. Do not publish it without the owner's separate
-browser approval.** The two tarballs are `northcel-linux-x64-0.4.0.tgz` and
-`northcel-0.4.0.tgz`. The old `publish_0_3_1.sh` is historical and publishes npm;
-it MUST NOT be used for this task.
+**npm 0.4.0 is published.** For 0.5.0 publish only the `northcel-0.5.0.tgz`
+launcher; `northcel-linux-x64` stays at 0.4.0. The old `publish_0_3_1.sh` is
+historical and publishes npm; it MUST NOT be used for this task.
 
 Homebrew must pin the actual published 0.4.0 sdist/native-wheel URLs and SHA-256,
 and the tap mirror must match. Do not claim a brew install was tested merely
@@ -87,7 +86,7 @@ npm 0.3.1 is **published** (2026-11-04): `northcel` and `northcel-linux-x64` bot
 bash packaging/scripts/build_python.sh        # wheels + sdist -> dist/python
 bash packaging/scripts/build_npm.sh           # tarballs        -> dist/npm
 bash packaging/scripts/verify.sh              # installs both paths into /tmp and renders
-python3 packaging/scripts/publish_0_3_1.sh --dry-run
+bash packaging/scripts/publish_0_5_0.sh --dry-run
 ```
 
 `build_python.sh` needs `native/artifacts/ncel-native-0.2.0-linux-x86_64/` (the
@@ -121,7 +120,7 @@ npm publish dist/npm/northcel-0.5.0.tgz --access public
 # 3. optional: the deprecated PyPI alias (it only depends on northcel==0.5.0)
 python3 -m build --outdir dist/deprecated packaging/deprecated/pypi-ncel
 python3 -m twine upload --non-interactive dist/deprecated/*
-( cd packaging/deprecated/npm-ncel-linux-x64 && npm publish --access public )
+# The npm alias @ncel/linux-x64 stays at 0.2.1; deprecate it, do not republish.
 npm deprecate "@ncel/linux-x64@0.2.1" "NorthCel is one package now: npm install -g northcel"
 ```
 

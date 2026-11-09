@@ -22,7 +22,8 @@ This page is the short lookup. The language itself is taught in the
 | `northcel toolchain <status\|install>` | the optional MoonBit compiler for rebuilding the native tree |
 
 Global `--no-native` (before or after the command) forces the labelled Python
-reference path. On a platform without a native bundle, the launcher prints a
+reference path for `check`, `info`, `render` and `film`; `fit`, `tween` and `fmt`
+are Python-only authoring tools and do not take it. On a platform without a native bundle, the launcher prints a
 two-line notice and labels the receipt `"renderer": "python-reference"`; it never
 claims a native render.
 
