@@ -1,0 +1,44 @@
+northcel "0.4.0-draft"
+
+film Tween(width: 192, height: 128, fps: 12, frames: 7, precision: 0.25px-b63) {
+  palette { c0: #BFE6F4, c1: #111416, c2: #FEFEFE, c3: #FCC89E, c4: #EE2C2C }
+  paper { color: $c0, antialias_grid: 4 }
+  def K0 {
+    layer k0_0(color: $c1) { "264,240:yVyVzVyVzVyVVyVyVzVyVzVy2V2V1V2V1V2V" }
+    layer k0_1(color: $c2) { "276,252:zVzV_VzV_VVzVzV_VzV_1V1V0V1V0V" }
+    layer k0_2(color: $c1) { "420,160:SqLoGkCfAYASCLGGLCSAYAfCkGoLqSqYofkkfo" }
+    layer k0_3(color: $c2) { "40,120:yTxTyTxTySxTySpxpx3X3X3X3X3X3X3X3X" }
+    layer k0_4(color: $c3) { "408,160:SmNlJhFdEYESFNJJNFSEYEdFhJlNmSmYldhhdl" }
+    layer k0_5(color: $c1) { "432,264:tbtbtbtbNt2Q1P2Q" }
+    layer k0_6(color: $c1) { "336,152:TbPXPTTPXPbTbX" }
+  }
+  def K1 {
+    layer k1_0(color: $c1) { "320,224:yVyVzVyVzVyVVyVyVzVyVzVy2V2V1V2V1V2V" }
+    layer k1_1(color: $c4) { "332,236:zVzV_VzV_VVzVzV_VzV_1V1V0V1V0V" }
+    layer k1_2(color: $c1) { "476,144:SqLoGkCfAYASCLGGLCSAYAfCkGoLqSqYofkkfo" }
+    layer k1_3(color: $c2) { "57,120:yTxTyTxTySxTySpxpx3X3X3X3X3X3X3X3X" }
+    layer k1_4(color: $c3) { "464,144:SmNlJhFdEYESFNJJNFSEYEdFhJlNmSmYldhhdl" }
+    layer k1_5(color: $c1) { "488,240:r7r7r7r7tlBtBt3x3x" }
+    layer k1_6(color: $c1) { "392,136:TbPXPTTPXPbTbX" }
+    layer k1_7(color: $c1) { "440,136:TbPXPTTPXPbTbX" }
+  }
+  def T0(u: 0) {
+    morph t0_0(color: $c1, u: u, samples: 50) { "264,240:yVyVzVyVzVyVVyVyVzVyVzVy2V2V1V2V1V2V" => "320,224:yVyVzVyVzVyVVyVyVzVyVzVy2V2V1V2V1V2V" }
+    morph t0_1(color: mix($c2, $c4, u), u: u, samples: 43) { "276,252:zVzV_VzV_VVzVzV_VzV_1V1V0V1V0V" => "332,236:zVzV_VzV_VVzVzV_VzV_1V1V0V1V0V" }
+    morph t0_2(color: $c1, u: u, samples: 30) { "420,160:SqLoGkCfAYASCLGGLCSAYAfCkGoLqSqYofkkfo" => "476,144:SqLoGkCfAYASCLGGLCSAYAfCkGoLqSqYofkkfo" }
+    morph t0_3(color: $c2, u: u, samples: 39) { "40,120:yTxTyTxTySxTySpxpx3X3X3X3X3X3X3X3X" => "57,120:yTxTyTxTySxTySpxpx3X3X3X3X3X3X3X3X" }
+    morph t0_4(color: $c3, u: u, samples: 24) { "408,160:SmNlJhFdEYESFNJJNFSEYEdFhJlNmSmYldhhdl" => "464,144:SmNlJhFdEYESFNJJNFSEYEdFhJlNmSmYldhhdl" }
+    morph t0_5(color: $c1, u: u, samples: 24) { "432,264:tbtbtbtbNt2Q1P2Q" => "488,240:r7r7r7r7tlBtBt3x3x" }
+    morph t0_6(color: $c1, u: u, samples: 24) { "336,152:TbPXPTTPXPbTbX" => "392,136:TbPXPTTPXPbTbX" }
+    layer t0_b7(color: $c1, opacity: step(0.5, u)) { "440,136:TbPXPTTPXPbTbX" }
+  }
+  frame 0 {
+    use K0
+  }
+  frame 1..5 {
+    use T0(u: smoothstep(0, 6, f))
+  }
+  frame 6 {
+    use K1
+  }
+}

@@ -13,7 +13,7 @@ frame of timing and re-render only what changed.
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#licence)
 
 ```ncel
-northcel "0.2.0-draft"
+northcel "0.4.0-draft"
 
 scene StarterScene(width: 320, height: 180, fps: 12, precision: 0.25px) {
   paper { color: #F6F1E7, antialias_grid: 4, grain: 0.01 }
@@ -62,7 +62,16 @@ labelled Python reference everywhere else.
 
 ## First steps
 
-**New in 0.4.0 (spec 0.3):** fit existing drawings to vector contours with
+**New in 0.5.0 (spec 0.4):** `mix(a, b, u)` colour expressions, a `morph`
+primitive, inclusive `frame A..B` blocks and layer/group `opacity`; `fit --stacked`
+writes painter's-order shapes and `tween --match` fills the gaps between
+independently drawn keys with one compact film, falling back to an explicit cut or
+dissolve when the match is weak. Spec 0.4 documents render with the labelled Python
+reference (the native runtime implements spec 0.3); the reference fill is also
+about three times faster. See [guide 16](docs/guide/16-colour-morph-ranges-opacity.md)
+and [pattern 12](docs/patterns/12-polishing-ai-frames.md).
+
+**0.4.0 (spec 0.3):** fit existing drawings to vector contours with
 `northcel fit`, move a named drawing or whole stage with anchored scale/rotation,
 and author bounded easing and explicit contour-tween experiments. No image model
 or raster embedding. [The look-and-fix workflow](docs/guide/15-fitting-transforms-and-inbetweens.md)
@@ -90,7 +99,7 @@ through the labelled Python reference.
 
 - **[The writing guide](docs/guide/README.md)** — start here: install, first file,
   then every construct with a rendered example and its real diagnostic.
-- **[Patterns cookbook](docs/patterns/README.md)** — ten complete animated
+- **[Patterns cookbook](docs/patterns/README.md)** — twelve complete animated
   programs with contact sheets, sizes and pitfalls.
 - **[Common errors](docs/errors.md)** — every diagnostic, generated from the
   source and reproduced in CI.
@@ -103,7 +112,7 @@ through the labelled Python reference.
 - **[Documentation index](docs/README.md)** — the full map.
 - [Format & tooling reference](docs/reference.md) — the CLI and the validation
   contract.
-- [Specification](docs/spec/SPEC-0.3.0-draft.md) · [changelog](CHANGELOG.md) ·
+- [Specification](docs/spec/SPEC-0.4.0-draft.md) · [changelog](CHANGELOG.md) ·
   [decision log](docs/DECISIONS.md).
 
 ## Contributing

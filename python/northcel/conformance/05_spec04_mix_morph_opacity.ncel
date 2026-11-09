@@ -1,0 +1,15 @@
+northcel "0.4.0-draft"
+
+// Spec 0.4 conformance: mix (paper), layer opacity, morph and frame ranges.
+// Reference-only: the native runtime 0.4.0 implements spec 0.3.
+film Spec04(width: 32, height: 16, fps: 6, frames: 3, precision: 0.25px) {
+  paper { color: mix(#000000, #FFFFFF, t), antialias_grid: 4 }
+  layer half(tone: 0, opacity: 0.5) { "0,0 32,0 0,64 -32,0" }
+  morph m(color: #FF0000, u: t) { "40,16 16,0 0,32 -16,0" => "72,16 16,0 0,32 -16,0" }
+  frame 1..2 {
+    layer tag(color: #00FF00) { "104,0 16,0 0,64 -16,0" }
+  }
+  frame 2 {
+    layer tag(color: #0000FF) { "104,0 16,0 0,64 -16,0" }
+  }
+}

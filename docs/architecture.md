@@ -32,6 +32,32 @@ launcher's job, and the launcher labels the result.
 
 ## What each stage owns
 
+### Spec 0.4 / tools 0.5 additions: reference only
+
+`mix` colour expressions, `morph`, `frame A..B` ranges and layer/group
+`opacity` are implemented in the Python reference only. **No native stage was
+changed and the native runtime 0.4.0 implements spec 0.3.** The launchers detect
+spec 0.4 documents (the constructs, or a 0.4 header) and render them with the
+labelled reference even on Linux x86_64; the npm launcher without Python exits 3
+naming the features. They never pass such a document to `ncel-native`, which
+would reject it or, worse, ignore an attribute it does not know (`opacity` was
+silently ignored before 0.4). The conformance case `05` is reference-only and
+reported as SKIP against native. Porting means: MoonBit parses and evaluates
+`mix`/`morph`/ranges and emits per-entry opacity and group markers in the IR; the
+GL host composites with the spec's `floor(c + (s − c)·α + 0.5)` rule on its
+RGBA32F framebuffer per subpixel; then case `05` must pass in both directions.
+
+The reference fill path was also vectorised in tools 0.5: all crossings of a
+layer are computed at once, sorted per row and painted as spans, and the box
+filter sums subpixel rows in `uint16`. The arithmetic and the even-odd pairing
+are unchanged, so every committed golden, conformance probe and docs image is
+byte-identical; on an Apple M1, 1920×1080 fitted frames render in 0.21–0.52 s
+instead of 0.75–1.93 s.
+
+`fit --stacked` and `tween --match` are offline Python authoring tools like
+`fit` and `tween` (next section). Stacked output is spec 0.3 and renders
+natively; `tween --match` output is spec 0.4.
+
 ### Spec 0.3 / tools 0.4 additions
 
 MoonBit parses typed `TransformNode`, `ease` and `smoothstep`, evaluates them
@@ -119,7 +145,9 @@ The reference (`pip install northcel`, `python/northcel/`) is:
   `"renderer": "python-reference"` — never called native;
 - the **conformance source** (`tests/conformance.py`, the shower probes and the
   fitted-film comparison);
-- the **checker/formatter** used by the `fmt` command and by the docs check.
+- the **checker/formatter** used by the `fmt` command and by the docs check;
+- the **only implementation of spec 0.4** (`mix`, `morph`, frame ranges,
+  opacity) in tools 0.5. Spec 0.4 documents always render here, labelled.
 
 The native runtime matches the reference on the 10 conformance probes, is
 pixel-identical on the shower frames, and differs by a handful of edge pixels on
@@ -249,7 +277,8 @@ language is an execution paradigm, not extra visual information:
 
 The full decision record, with the rejected alternatives and measured numbers, is
 in [DECISIONS.md](DECISIONS.md). The normative grammar is
-[SPEC-0.2.0-draft](spec/SPEC-0.2.0-draft.md).
+[SPEC-0.4.0-draft](spec/SPEC-0.4.0-draft.md); the native runtime implements
+[SPEC-0.3.0-draft](spec/SPEC-0.3.0-draft.md).
 
 ## The docs check
 

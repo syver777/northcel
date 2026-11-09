@@ -27,12 +27,14 @@ from PIL import Image
 
 from .ast_nodes import (
     BoilSpec,
+    ColorMix,
     ColorValue,
     DefBlock,
     DocumentNode,
     DropNode,
     FilmNode,
     LayerNode,
+    MorphNode,
     PaperSpec,
     RibbonNode,
     SceneItem,
@@ -152,26 +154,161 @@ def _ribbon_to_ring(pts_w: list[tuple[float, float, float]]) -> list[tuple[float
     return left_pts + list(reversed(right_pts))
 
 
-def _expand_items(
+def _clamp01(v: float) -> float:
+    return 0.0 if v < 0.0 else (1.0 if v > 1.0 else v)
+
+
+def resolve_color(spec: ColorValue | ColorMix, env: dict[str, float]) -> ColorValue:
+    """Evaluate a colour attribute for one frame (spec 0.4 `mix` in sRGB, u clamped)."""
+    if isinstance(spec, ColorValue):
+        return spec
+    a = resolve_color(spec.a, env)
+    b = resolve_color(spec.b, env)
+    u = _clamp01(_eval_num(spec.u, env))
+    r, g, bl = (
+        int(math.floor(x + (y - x) * u + 0.5)) for x, y in zip(a.as_rgb_tuple(), b.as_rgb_tuple())
+    )
+    return ColorValue.from_rgb(r, g, bl)
+
+
+# ------------------------------------------------------------------- morph
+def _signed_area(ring: np.ndarray) -> float:
+    x, y = ring[:, 0], ring[:, 1]
+    return 0.5 * float(np.sum(x * np.roll(y, -1) - np.roll(x, -1) * y))
+
+
+def resample_closed(ring: np.ndarray, samples: int) -> np.ndarray:
+    """`samples` points at uniform arclength k*L/samples from vertex 0 (spec 0.4 morph)."""
+    pts = np.asarray(ring, dtype=np.float64)
+    edges = np.roll(pts, -1, axis=0) - pts
+    lengths = np.sqrt(np.sum(edges * edges, axis=1))
+    cum = np.concatenate(([0.0], np.cumsum(lengths)))
+    total = cum[-1]
+    if total <= 0.0:
+        return np.repeat(pts[:1], samples, axis=0)
+    at = np.arange(samples, dtype=np.float64) * (total / samples)
+    ix = np.minimum(np.searchsorted(cum, at, side="right") - 1, len(pts) - 1)
+    u = (at - cum[ix]) / np.maximum(lengths[ix], 1e-300)
+    return pts[ix] + edges[ix] * u[:, None]
+
+
+def align_cyclic(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """Roll `b` by the shift k minimising sum |(a_j - mean a) - (b_(j+k) - mean b)|^2; ties -> smallest k."""
+    m = len(a)
+    ca = a - a.mean(axis=0)
+    cb = b - b.mean(axis=0)
+    idx = (np.arange(m)[None, :] + np.arange(m)[:, None]) % m
+    cross = np.einsum("kjc,jc->k", cb[idx], ca)
+    cost = float(np.sum(ca * ca)) + float(np.sum(cb * cb)) - 2.0 * cross
+    k = int(np.argmin(cost))
+    return np.roll(b, -k, axis=0)
+
+
+_MORPH_CACHE: dict[tuple[str, str, str, int | None], list[tuple[np.ndarray, np.ndarray]]] = {}
+
+
+def morph_pairs(payload_a: str, payload_b: str, precision: str, samples: int | None):
+    """Decoded, winding-normalised, resampled and start-aligned ring pairs (pure, cached)."""
+    key = (payload_a, payload_b, precision, samples)
+    hit = _MORPH_CACHE.get(key)
+    if hit is not None:
+        return hit
+    rings_a = decode_rings_payload(payload_a, precision=precision)
+    rings_b = decode_rings_payload(payload_b, precision=precision)
+    pairs = []
+    for ra, rb in zip(rings_a, rings_b):
+        pa = np.asarray(ra, dtype=np.float64)
+        pb = np.asarray(rb, dtype=np.float64)
+        if _signed_area(pa) < 0.0:
+            pa = pa[::-1]
+        if _signed_area(pb) < 0.0:
+            pb = pb[::-1]
+        m = samples if samples is not None else min(1024, max(8, len(pa), len(pb)))
+        sa = resample_closed(pa, m)
+        sb = align_cyclic(sa, resample_closed(pb, m))
+        pairs.append((sa, sb))
+    if len(_MORPH_CACHE) > 4096:
+        _MORPH_CACHE.clear()
+    _MORPH_CACHE[key] = pairs
+    return pairs
+
+
+def morph_rings(item: MorphNode, precision: str, env: dict[str, float]) -> list[list[tuple[float, float]]]:
+    u = _clamp01(_eval_num(item.u, env))
+    if u <= 0.0:
+        return decode_rings_payload(item.payload_a, precision=precision)
+    if u >= 1.0:
+        return decode_rings_payload(item.payload_b, precision=precision)
+    out = []
+    for sa, sb in morph_pairs(item.payload_a, item.payload_b, precision, item.samples):
+        ring = sa + (sb - sa) * u
+        out.append([(float(x), float(y)) for x, y in ring])
+    return out
+
+
+# ------------------------------------------------------------- paint list
+class _Paint:
+    """One paint-list entry: a named layer with an evaluated colour, rings and opacity.
+
+    `groups` is the tuple of enclosing group-opacity scopes `(group_id, opacity)`
+    opened by `use ...(opacity: ...)` in spec 0.4 documents.
+    """
+
+    __slots__ = ("name", "color", "rings", "opacity", "groups")
+
+    def __init__(self, name, color, rings, opacity=1.0, groups=()):
+        self.name = name
+        self.color = color
+        self.rings = rings
+        self.opacity = opacity
+        self.groups = groups
+
+    def as_tuple(self):
+        return (self.name, self.color, self.rings)
+
+
+def _expand_paint(
     items: list[SceneItem],
     defs: dict[str, DefBlock],
     precision: str,
     env: dict[str, float],
     seed: int,
     frame_idx: int,
-) -> list[tuple[str, ColorValue, list[list[tuple[float, float]]]]]:
-    """Expands scene items and `use` blocks into ordered (name, color, rings) layers."""
-    layers_out: list[tuple[str, ColorValue, list[list[tuple[float, float]]]]] = []
+    spec04: bool = True,
+) -> list[_Paint]:
+    """Expands scene items and `use` blocks into the ordered paint list."""
+    layers_out: list[_Paint] = []
     named_index: dict[str, int] = {}
+    group_counter = [0]
 
-    def upsert_layer(name: str, color: ColorValue, rings: list[list[tuple[float, float]]]) -> None:
+    def upsert_layer(name, color, rings, opacity, groups) -> None:
+        paint = _Paint(name, color, rings, opacity, groups)
         if name in named_index:
-            layers_out[named_index[name]] = (name, color, rings)
+            layers_out[named_index[name]] = paint
         else:
             named_index[name] = len(layers_out)
-            layers_out.append((name, color, rings))
+            layers_out.append(paint)
 
-    def process_list(seq: list[SceneItem], local_env: dict[str, float]) -> None:
+    def opacity_of(item, local_env) -> float:
+        expr = getattr(item, "opacity", None)
+        if expr is None or not spec04:
+            return 1.0
+        return _clamp01(_eval_num(expr, local_env))
+
+    def add_outline(name, rings, outline_color, outline_width, opacity, groups, local_env) -> None:
+        if outline_color is None or outline_width <= 0.0:
+            return
+        stroke_rings: list[list[tuple[float, float]]] = []
+        for r in rings:
+            if len(r) >= 3:
+                closed = list(r) + [r[0]]
+                sr = _stroke_to_ring(closed, outline_width, outline_width)
+                if len(sr) >= 3:
+                    stroke_rings.append(sr)
+        if stroke_rings:
+            upsert_layer(f"{name}__outline", resolve_color(outline_color, local_env), stroke_rings, opacity, groups)
+
+    def process_list(seq: list[SceneItem], local_env: dict[str, float], groups: tuple) -> None:
         for item_idx, item in enumerate(seq):
             if isinstance(item, TransformNode):
                 sx, sy = (_eval_num(v, local_env) for v in item.scale)
@@ -180,27 +317,28 @@ def _expand_items(
                 angle = _eval_num(item.rotate, local_env) * math.pi / 180.0
                 c, s = math.cos(angle), math.sin(angle)
                 found = item.target_name == "all"
-                for li, (nm, col, rings) in enumerate(layers_out):
+                for paint in layers_out:
+                    nm = paint.name
                     if item.target_name != "all" and nm not in (item.target_name, item.target_name+"__outline"):
                         continue
                     found = True
                     transformed = []
-                    for ring in rings:
+                    for ring in paint.rings:
                         pts = []
                         for x, y in ring:
                             u, v = (x-ax)*sx, (y-ay)*sy
                             pts.append((ax+u*c-v*s+dx, ay+u*s+v*c+dy))
                         transformed.append(pts)
-                    layers_out[li] = (nm, col, transformed)
+                    paint.rings = transformed
                 if not found:
                     raise NorthCelEvaluationError(f"Transform target '{item.target_name}' has not been painted", item.span.line, item.span.column)
                 continue
             if isinstance(item, DropNode):
                 if item.target_name in named_index:
-                    layers_out[named_index[item.target_name]] = (item.target_name, ColorValue.from_tone(0), [])
+                    layers_out[named_index[item.target_name]] = _Paint(item.target_name, ColorValue.from_tone(0), [])
                 out_key = f"{item.target_name}__outline"
                 if out_key in named_index:
-                    layers_out[named_index[out_key]] = (out_key, ColorValue.from_tone(0), [])
+                    layers_out[named_index[out_key]] = _Paint(out_key, ColorValue.from_tone(0), [])
                 continue
 
             if isinstance(item, UseNode):
@@ -211,13 +349,17 @@ def _expand_items(
                     child_env[k] = _eval_num(v, local_env)
                 dx = float(child_env.get("dx", 0.0))
                 dy = float(child_env.get("dy", 0.0))
+                child_groups = groups
+                if spec04 and "opacity" in item.args:
+                    group_opacity = _clamp01(child_env["opacity"])
+                    if group_opacity < 1.0:
+                        group_counter[0] += 1
+                        child_groups = groups + ((group_counter[0], group_opacity),)
                 before_len = len(layers_out)
-                process_list(list(d.items), child_env)
+                process_list(list(d.items), child_env, child_groups)
                 if abs(dx) > 1e-9 or abs(dy) > 1e-9:
-                    for li in range(before_len, len(layers_out)):
-                        nm, col, rlist = layers_out[li]
-                        shifted = [[(x + dx, y + dy) for x, y in r] for r in rlist]
-                        layers_out[li] = (nm, col, shifted)
+                    for paint in layers_out[before_len:]:
+                        paint.rings = [[(x + dx, y + dy) for x, y in r] for r in paint.rings]
                 continue
 
             if isinstance(item, LayerNode):
@@ -231,18 +373,15 @@ def _expand_items(
                         bx, by = boil_offset(seed, frame_idx, item_idx, ri, vi, item.boil)
                         pts.append((x + tx + bx, y + ty + by))
                     final_rings.append(pts)
-                upsert_layer(item.name, item.color, final_rings)
+                opacity = opacity_of(item, local_env)
+                upsert_layer(item.name, resolve_color(item.color, local_env), final_rings, opacity, groups)
+                add_outline(item.name, final_rings, item.outline_color, item.outline_width, opacity, groups, local_env)
 
-                if item.outline_color is not None and item.outline_width > 0.0:
-                    stroke_rings: list[list[tuple[float, float]]] = []
-                    for r in final_rings:
-                        if len(r) >= 3:
-                            closed = list(r) + [r[0]]
-                            sr = _stroke_to_ring(closed, item.outline_width, item.outline_width)
-                            if len(sr) >= 3:
-                                stroke_rings.append(sr)
-                    if stroke_rings:
-                        upsert_layer(f"{item.name}__outline", item.outline_color, stroke_rings)
+            elif isinstance(item, MorphNode):
+                rings = morph_rings(item, precision, local_env)
+                opacity = opacity_of(item, local_env)
+                upsert_layer(item.name, resolve_color(item.color, local_env), rings, opacity, groups)
+                add_outline(item.name, rings, item.outline_color, item.outline_width, opacity, groups, local_env)
 
             elif isinstance(item, SwarmNode):
                 raw_rings = decode_rings_payload(item.payload, precision=precision)
@@ -260,11 +399,12 @@ def _expand_items(
                 # swarm and the matching host layer exists, merge into it so even-odd
                 # aperture cutouts match the MoonBit + Bend + GLSL pipeline identically!
                 if item.name == "water_droplets" and "tile_wall" in named_index:
-                    layers_out[named_index["tile_wall"]][2].extend(final_rings)
+                    layers_out[named_index["tile_wall"]].rings.extend(final_rings)
                 elif item.name == "beard_and_chest_bristles" and "ink_contours" in named_index:
-                    layers_out[named_index["ink_contours"]][2].extend(final_rings)
+                    layers_out[named_index["ink_contours"]].rings.extend(final_rings)
                 else:
-                    layers_out.append((item.name, item.color, final_rings))
+                    layers_out.append(_Paint(item.name, resolve_color(item.color, local_env), final_rings,
+                                             opacity_of(item, local_env), groups))
 
             elif isinstance(item, StrokeNode):
                 pts_eval: list[tuple[float, float]] = []
@@ -275,7 +415,8 @@ def _expand_items(
                     pts_eval.append((x + bx, y + by))
                 ring = _stroke_to_ring(pts_eval, item.width_start, item.width_end)
                 if len(ring) >= 3:
-                    layers_out.append((item.name, item.color, [ring]))
+                    layers_out.append(_Paint(item.name, resolve_color(item.color, local_env), [ring],
+                                             opacity_of(item, local_env), groups))
 
             elif isinstance(item, RibbonNode):
                 pts_w: list[tuple[float, float, float]] = []
@@ -286,93 +427,241 @@ def _expand_items(
                     pts_w.append((x + bx, y + by, w))
                 ring = _ribbon_to_ring(pts_w)
                 if len(ring) >= 3:
-                    layers_out.append((item.name, item.color, [ring]))
+                    layers_out.append(_Paint(item.name, resolve_color(item.color, local_env), [ring],
+                                             opacity_of(item, local_env), groups))
 
-    process_list(items, env)
+    process_list(items, env, ())
     return layers_out
 
 
-def _rasterize_layers_subpixel(
+def _expand_items(
+    items: list[SceneItem],
+    defs: dict[str, DefBlock],
+    precision: str,
+    env: dict[str, float],
+    seed: int,
+    frame_idx: int,
+) -> list[tuple[str, ColorValue, list[list[tuple[float, float]]]]]:
+    """Expands scene items into ordered (name, color, rings) layers.
+
+    Kept for callers written against tools 0.4. Opacity and group opacity are
+    not represented in this view; use `_expand_paint` for the full paint list.
+    """
+    return [p.as_tuple() for p in _expand_paint(items, defs, precision, env, seed, frame_idx)]
+
+
+# ------------------------------------------------------------ rasteriser
+_CHUNK = 1 << 22  # subpixels written per vectorised batch
+
+
+def _layer_spans(
+    rings: list[list[tuple[float, float]]], aa: int, sh: int, sw: int
+) -> tuple[np.ndarray, np.ndarray, np.ndarray] | None:
+    """Even-odd spans (row, ix0, ix1) for one layer on the subpixel grid.
+
+    Exactly the rule of spec 0.1 §6: a subpixel row `sy` samples `py = sy + 0.5`;
+    an edge is active when `(y0 > py) != (y1 > py)`; crossings
+    `x0 + (py - y0) * (x1 - x0) / (y1 - y0)` are sorted, mapped to
+    `clip(ceil(x - 0.5), 0, sw)` and paired. Vectorised over all rows at once; the
+    arithmetic and the pairing are the same as the per-row loop it replaces, so the
+    covered subpixels are identical.
+    """
+    ys0: list[float] = []
+    xs0: list[float] = []
+    ys1: list[float] = []
+    xs1: list[float] = []
+    for ring in rings:
+        if len(ring) < 3:
+            continue
+        for (ax, ay), (bx, by) in zip(ring, ring[1:] + ring[:1]):
+            if ay != by:
+                ys0.append(ay * aa)
+                xs0.append(ax * aa)
+                ys1.append(by * aa)
+                xs1.append(bx * aa)
+    if not ys0:
+        return None
+    y0 = np.asarray(ys0, dtype=np.float64)
+    x0 = np.asarray(xs0, dtype=np.float64)
+    y1 = np.asarray(ys1, dtype=np.float64)
+    x1 = np.asarray(xs1, dtype=np.float64)
+    inv_dy = (x1 - x0) / (y1 - y0)
+    ymin = np.minimum(y0, y1)
+    ymax = np.maximum(y0, y1)
+    # Candidate rows: ymin <= sy + 0.5 < ymax, clipped to the canvas.
+    lo = np.clip(np.ceil(ymin - 0.5), 0, sh).astype(np.int64)
+    hi = np.clip(np.ceil(ymax - 0.5), 0, sh).astype(np.int64)
+    counts = np.maximum(hi - lo, 0)
+    total = int(counts.sum())
+    if total == 0:
+        return None
+    edge = np.repeat(np.arange(len(y0)), counts)
+    row = np.arange(total, dtype=np.int64) - np.repeat(np.cumsum(counts) - counts, counts) + np.repeat(lo, counts)
+    py = row + 0.5
+    ey0 = y0[edge]
+    active = (ey0 > py) != (y1[edge] > py)
+    if not active.all():
+        edge, row, py, ey0 = edge[active], row[active], py[active], ey0[active]
+    cross = x0[edge] + (py - ey0) * inv_dy[edge]
+    order = np.lexsort((cross, row))
+    row = row[order]
+    ix = np.clip(np.ceil(cross[order] - 0.5).astype(np.int64), 0, sw)
+    if len(row) % 2 or np.any(row[0::2] != row[1::2]):
+        # A row with an odd crossing count cannot come from closed rings; keep the
+        # per-row rule (the unmatched last crossing of a row is ignored).
+        rows_out, a_out, b_out = [], [], []
+        start = 0
+        n = len(row)
+        while start < n:
+            end = start
+            while end < n and row[end] == row[start]:
+                end += 1
+            for k in range(start, end - 1, 2):
+                rows_out.append(row[start])
+                a_out.append(ix[k])
+                b_out.append(ix[k + 1])
+            start = end
+        rows = np.asarray(rows_out, dtype=np.int64)
+        a = np.asarray(a_out, dtype=np.int64)
+        b = np.asarray(b_out, dtype=np.int64)
+    else:
+        rows, a, b = row[0::2], ix[0::2], ix[1::2]
+    keep = a < b
+    return rows[keep], a[keep], b[keep]
+
+
+def _span_indices(rows: np.ndarray, a: np.ndarray, b: np.ndarray, sw: int):
+    """Yield flat subpixel indices covered by the spans, in bounded batches."""
+    lengths = b - a
+    starts = rows * sw + a
+    n = len(lengths)
+    i = 0
+    while i < n:
+        csum = np.cumsum(lengths[i:])
+        j = i + max(1, int(np.searchsorted(csum, _CHUNK, side="right")))
+        ln = lengths[i:j]
+        st = starts[i:j]
+        tot = int(ln.sum())
+        offs = np.repeat(st - (np.cumsum(ln) - ln), ln)
+        yield offs + np.arange(tot, dtype=np.int64)
+        i = j
+
+
+def _paint_spans(flat: np.ndarray, spans, color: ColorValue, opacity: float, grey: bool, sw: int) -> None:
+    rows, a, b = spans
+    if grey:
+        if opacity >= 1.0:
+            if len(rows) < 64 or int((b - a).sum()) > 48 * len(rows):
+                for r, x0, x1 in zip(rows.tolist(), a.tolist(), b.tolist()):
+                    flat[r * sw + x0 : r * sw + x1] = color.r
+                return
+            for idx in _span_indices(rows, a, b, sw):
+                flat[idx] = color.r
+            return
+        for idx in _span_indices(rows, a, b, sw):
+            dst = flat[idx].astype(np.float64)
+            flat[idx] = np.floor(dst + (color.r - dst) * opacity + 0.5).astype(np.uint8)
+        return
+    col = np.asarray(color.as_rgb_tuple(), dtype=np.uint8)
+    if opacity >= 1.0:
+        # Long spans: a slice per span beats building a large index array.
+        if len(rows) < 64 or int((b - a).sum()) > 48 * len(rows):
+            for r, x0, x1 in zip(rows.tolist(), a.tolist(), b.tolist()):
+                flat[r * sw + x0 : r * sw + x1] = col
+            return
+        for idx in _span_indices(rows, a, b, sw):
+            flat[idx] = col
+        return
+    colf = col.astype(np.float64)
+    for idx in _span_indices(rows, a, b, sw):
+        dst = flat[idx].astype(np.float64)
+        flat[idx] = np.floor(dst + (colf - dst) * opacity + 0.5).astype(np.uint8)
+
+
+def _box_mean(canvas: np.ndarray, aa: int) -> np.ndarray:
+    """Mean of each aa x aa subpixel block, as float64.
+
+    The sum of at most 64 8-bit values is exact in uint16 and the float mean of
+    integers is exact too, so this equals `reshape(...).mean(axis=(1, 3))` bit for
+    bit; it is just several times faster.
+    """
+    rows = np.zeros(canvas[::aa].shape, dtype=np.uint16)
+    for i in range(aa):
+        rows += canvas[i::aa]          # whole rows: contiguous adds
+    acc = np.zeros(canvas[::aa, ::aa].shape, dtype=np.uint16)
+    for j in range(aa):
+        acc += rows[:, j::aa]
+    return acc / float(aa * aa)
+
+
+def _rasterize_paint(
     width: int,
     height: int,
     paper: PaperSpec,
-    layers: list[tuple[str, ColorValue, list[list[tuple[float, float]]]]],
+    paper_color: ColorValue,
+    paints: list[_Paint],
     seed: int,
 ) -> np.ndarray:
-    """Rasterizes layers at `N x N` subpixel resolution with exact even-odd winding parity."""
+    """Rasterizes the paint list at `N x N` subpixel resolution with exact even-odd parity.
+
+    Opaque layers overwrite covered subpixels (spec 0.1). Spec 0.4 opacity blends
+    each covered subpixel channel as `floor(c + (s - c) * a + 0.5)` on the 8-bit
+    subpixel canvas; a group (`use ...(opacity: a)`) paints its layers onto the
+    canvas, then every subpixel is blended back towards the pre-group canvas with
+    the same formula.
+    """
     aa = max(1, int(paper.antialias_grid))
     sh = height * aa
     sw = width * aa
 
-    all_grey = paper.color.is_grey and all(col.is_grey for _, col, _ in layers)
+    all_grey = paper_color.is_grey and all(p.color.is_grey for p in paints)
     if all_grey:
-        canvas = np.full((sh, sw), paper.color.r, dtype=np.uint8)
+        canvas = np.full((sh, sw), paper_color.r, dtype=np.uint8)
+        flat = canvas.reshape(-1)
     else:
         canvas = np.empty((sh, sw, 3), dtype=np.uint8)
-        canvas[:, :, 0] = paper.color.r
-        canvas[:, :, 1] = paper.color.g
-        canvas[:, :, 2] = paper.color.b
+        canvas[:, :, 0] = paper_color.r
+        canvas[:, :, 1] = paper_color.g
+        canvas[:, :, 2] = paper_color.b
+        flat = canvas.reshape(-1, 3)
 
-    band_h = 8 * aa
-    for _, color, rings in layers:
-        ys0: list[float] = []
-        xs0: list[float] = []
-        ys1: list[float] = []
-        xs1: list[float] = []
-        for ring in rings:
-            if len(ring) < 3:
-                continue
-            for (ax, ay), (bx, by) in zip(ring, ring[1:] + ring[:1]):
-                if ay != by:
-                    ys0.append(ay * aa)
-                    xs0.append(ax * aa)
-                    ys1.append(by * aa)
-                    xs1.append(bx * aa)
-        if not ys0:
+    # Open group-opacity scopes: (group_id, opacity, snapshot of the canvas).
+    stack: list[tuple[int, float, np.ndarray]] = []
+
+    def close_group() -> None:
+        _gid, gop, snap = stack.pop()
+        changed = canvas != snap
+        if changed.ndim == 3:
+            changed = changed.any(axis=2)
+        if not changed.any():
+            return
+        rows = np.flatnonzero(changed.any(axis=1))
+        r0, r1 = int(rows[0]), int(rows[-1]) + 1
+        src = snap[r0:r1].astype(np.float64)
+        dst = canvas[r0:r1].astype(np.float64)
+        canvas[r0:r1] = np.floor(src + (dst - src) * gop + 0.5).astype(np.uint8)
+
+    for paint in paints:
+        groups = paint.groups
+        # A paint that cannot change a subpixel is not an event: it neither opens
+        # nor closes a group scope.
+        if not paint.rings or paint.opacity <= 0.0 or any(gop <= 0.0 for _gid, gop in groups):
             continue
-
-        y0 = np.asarray(ys0, dtype=np.float64)
-        x0 = np.asarray(xs0, dtype=np.float64)
-        y1 = np.asarray(ys1, dtype=np.float64)
-        x1 = np.asarray(xs1, dtype=np.float64)
-        ymin = np.minimum(y0, y1)
-        ymax = np.maximum(y0, y1)
-        inv_dy = (x1 - x0) / (y1 - y0)
-
-        c_r, c_g, c_b = color.r, color.g, color.b
-        for b0 in range(0, sh, band_h):
-            b1 = min(sh, b0 + band_h)
-            mask = (ymin < b1) & (ymax > b0)
-            if not np.any(mask):
-                continue
-            by0 = y0[mask]
-            bx0 = x0[mask]
-            by1 = y1[mask]
-            binv = inv_dy[mask]
-            for sy in range(b0, b1):
-                py = sy + 0.5
-                active = (by0 > py) != (by1 > py)
-                if not np.any(active):
-                    continue
-                cross = bx0[active] + (py - by0[active]) * binv[active]
-                cross.sort()
-                ix = np.clip(np.ceil(cross - 0.5).astype(np.int32), 0, sw)
-                if all_grey:
-                    row = canvas[sy]
-                    for k in range(0, len(ix) - 1, 2):
-                        if ix[k] < ix[k + 1]:
-                            row[ix[k] : ix[k + 1]] = c_r
-                else:
-                    row = canvas[sy]
-                    for k in range(0, len(ix) - 1, 2):
-                        if ix[k] < ix[k + 1]:
-                            row[ix[k] : ix[k + 1], 0] = c_r
-                            row[ix[k] : ix[k + 1], 1] = c_g
-                            row[ix[k] : ix[k + 1], 2] = c_b
+        # Close scopes that this paint is not inside, then open its new scopes.
+        while stack and (len(stack) > len(groups) or stack[-1][0] != groups[len(stack) - 1][0]):
+            close_group()
+        for gid, gop in groups[len(stack):]:
+            stack.append((gid, gop, canvas.copy()))
+        spans = _layer_spans(paint.rings, aa, sh, sw)
+        if spans is None:
+            continue
+        _paint_spans(flat, spans, paint.color, paint.opacity, all_grey, sw)
+    while stack:
+        close_group()
 
     if all_grey:
         if aa > 1:
-            avg = canvas.reshape(height, aa, width, aa).mean(axis=(1, 3))
+            avg = _box_mean(canvas, aa)
         else:
             avg = canvas.astype(np.float64)
         if paper.grain > 0.0:
@@ -384,7 +673,7 @@ def _rasterize_layers_subpixel(
         return np.repeat(u8[:, :, None], 3, axis=2)
 
     if aa > 1:
-        avg_rgb = canvas.reshape(height, aa, width, aa, 3).mean(axis=(1, 3))
+        avg_rgb = _box_mean(canvas, aa)
     else:
         avg_rgb = canvas.astype(np.float64)
     if paper.grain > 0.0:
@@ -395,6 +684,52 @@ def _rasterize_layers_subpixel(
     return np.clip(np.floor(avg_rgb + 0.5), 0, 255).astype(np.uint8)
 
 
+def _rasterize_layers_subpixel(
+    width: int,
+    height: int,
+    paper: PaperSpec,
+    layers: list[tuple[str, ColorValue, list[list[tuple[float, float]]]]],
+    seed: int,
+) -> np.ndarray:
+    """Tools-0.4 entry point: opaque (name, colour, rings) layers over a static paper."""
+    paints = [_Paint(name, color, rings) for name, color, rings in layers]
+    return _rasterize_paint(width, height, paper, resolve_color(paper.color, {}), paints, seed)
+
+
+def _spec04(doc: DocumentNode) -> bool:
+    parts = doc.spec_version.split("-", 1)[0].split(".")
+    try:
+        return not (parts[0] == "0" and len(parts) > 1 and int(parts[1]) < 4)
+    except ValueError:
+        return True
+
+
+def frame_paint_list(doc: DocumentNode, frame_index: int = 0, seed_override: int | None = None):
+    """(paper spec, evaluated paper colour, paint list) for one frame. Pure."""
+    root = doc.root
+    seed = seed_override if seed_override is not None else root.seed
+    spec04 = _spec04(doc)
+
+    if isinstance(root, SceneNode):
+        env = {"t": 0.0, "f": float(frame_index), "seed": float(seed)}
+        paints = _expand_paint(root.items, root.defs, root.precision, env, seed, frame_index, spec04)
+        return root.paper, resolve_color(root.paper.color, env), paints
+
+    total_frames = max(1, root.frames)
+    t_norm = frame_index / float(max(1, total_frames - 1)) if total_frames > 1 else 0.0
+    env = {"t": t_norm, "f": float(frame_index), "seed": float(seed)}
+
+    ov = root.override_for(frame_index)
+    if ov is not None:
+        merged_defs = {**root.defs, **ov.defs}
+        combined_items = list(root.items) + list(ov.items)
+        paints = _expand_paint(combined_items, merged_defs, ov.precision, env, seed, frame_index, spec04)
+        return ov.paper, resolve_color(ov.paper.color, env), paints
+
+    paints = _expand_paint(root.items, root.defs, root.precision, env, seed, frame_index, spec04)
+    return root.paper, resolve_color(root.paper.color, env), paints
+
+
 def render_document_frame(
     doc: DocumentNode,
     frame_index: int = 0,
@@ -403,25 +738,8 @@ def render_document_frame(
     """Renders a single frame `frame_index` from a NorthCel DocumentNode to an (H, W, 3) uint8 RGB array."""
     root = doc.root
     seed = seed_override if seed_override is not None else root.seed
-
-    if isinstance(root, SceneNode):
-        env = {"t": 0.0, "f": float(frame_index), "seed": float(seed)}
-        layers = _expand_items(root.items, root.defs, root.precision, env, seed, frame_index)
-        return _rasterize_layers_subpixel(root.width, root.height, root.paper, layers, seed)
-
-    total_frames = max(1, root.frames)
-    t_norm = frame_index / float(max(1, total_frames - 1)) if total_frames > 1 else 0.0
-    env = {"t": t_norm, "f": float(frame_index), "seed": float(seed)}
-
-    if frame_index in root.frame_overrides:
-        ov = root.frame_overrides[frame_index]
-        merged_defs = {**root.defs, **ov.defs}
-        combined_items = list(root.items) + list(ov.items)
-        layers = _expand_items(combined_items, merged_defs, ov.precision, env, seed, frame_index)
-        return _rasterize_layers_subpixel(root.width, root.height, ov.paper, layers, seed)
-
-    layers = _expand_items(root.items, root.defs, root.precision, env, seed, frame_index)
-    return _rasterize_layers_subpixel(root.width, root.height, root.paper, layers, seed)
+    paper, paper_color, paints = frame_paint_list(doc, frame_index, seed_override)
+    return _rasterize_paint(root.width, root.height, paper, paper_color, paints, seed)
 
 
 def render_film_frames(

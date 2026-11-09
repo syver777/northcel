@@ -1,5 +1,5 @@
 {
-  "spec_version": "0.3.0-draft",
+  "spec_version": "0.4.0-draft",
   "tolerance_mae": 1.0,
   "cases": [
     {
@@ -129,9 +129,166 @@
       "file": "04_transforms_easing.ncel",
       "tolerance_mae": 0.05,
       "probes_by_frame": {
-        "0": [{"x": 17, "y": 16, "rgb": [224, 160, 64], "note": "anchored badge centre"}, {"x": 1, "y": 62, "rgb": [255,255,255], "note": "paper outside transformed geometry"}],
-        "2": [{"x": 27, "y": 48, "rgb": [224, 160, 64], "note": "frame-local reflection after eased motion"}],
-        "4": [{"x": 37, "y": 16, "rgb": [224, 160, 64], "note": "eased endpoint, paper unaffected"}]
+        "0": [
+          {
+            "x": 17,
+            "y": 16,
+            "rgb": [
+              224,
+              160,
+              64
+            ],
+            "note": "anchored badge centre"
+          },
+          {
+            "x": 1,
+            "y": 62,
+            "rgb": [
+              255,
+              255,
+              255
+            ],
+            "note": "paper outside transformed geometry"
+          }
+        ],
+        "2": [
+          {
+            "x": 27,
+            "y": 48,
+            "rgb": [
+              224,
+              160,
+              64
+            ],
+            "note": "frame-local reflection after eased motion"
+          }
+        ],
+        "4": [
+          {
+            "x": 37,
+            "y": 16,
+            "rgb": [
+              224,
+              160,
+              64
+            ],
+            "note": "eased endpoint, paper unaffected"
+          }
+        ]
+      }
+    },
+    {
+      "name": "05_spec04_mix_morph_opacity",
+      "file": "05_spec04_mix_morph_opacity.ncel",
+      "reference_only": true,
+      "reference_only_reason": "spec 0.4: the native runtime 0.4.0 implements spec 0.3; the launchers route this document to the Python reference",
+      "probes_by_frame": {
+        "0": [
+          {
+            "x": 4,
+            "y": 8,
+            "rgb": [
+              0,
+              0,
+              0
+            ],
+            "note": "opacity 0.5 ink over mix paper at t=0 (black)"
+          },
+          {
+            "x": 11,
+            "y": 8,
+            "rgb": [
+              255,
+              0,
+              0
+            ],
+            "note": "morph at u=0 is ring A exactly"
+          },
+          {
+            "x": 28,
+            "y": 8,
+            "rgb": [
+              0,
+              0,
+              0
+            ],
+            "note": "no frame block: paper"
+          }
+        ],
+        "1": [
+          {
+            "x": 4,
+            "y": 8,
+            "rgb": [
+              64,
+              64,
+              64
+            ],
+            "note": "floor(128 + (0-128)*0.5 + 0.5)"
+          },
+          {
+            "x": 11,
+            "y": 8,
+            "rgb": [
+              128,
+              128,
+              128
+            ],
+            "note": "paper mix(#000,#FFF,0.5) = 128"
+          },
+          {
+            "x": 16,
+            "y": 8,
+            "rgb": [
+              255,
+              0,
+              0
+            ],
+            "note": "morph half-way"
+          },
+          {
+            "x": 28,
+            "y": 8,
+            "rgb": [
+              0,
+              255,
+              0
+            ],
+            "note": "frame 1..2 range"
+          }
+        ],
+        "2": [
+          {
+            "x": 4,
+            "y": 8,
+            "rgb": [
+              128,
+              128,
+              128
+            ],
+            "note": "floor(255 + (0-255)*0.5 + 0.5)"
+          },
+          {
+            "x": 20,
+            "y": 8,
+            "rgb": [
+              255,
+              0,
+              0
+            ],
+            "note": "morph at u=1 is ring B exactly"
+          },
+          {
+            "x": 28,
+            "y": 8,
+            "rgb": [
+              0,
+              0,
+              255
+            ],
+            "note": "exact frame 2 wins over the 1..2 range"
+          }
+        ]
       }
     }
   ]

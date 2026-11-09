@@ -27,16 +27,17 @@ animation? Read 8–10 and 14. Writing an AI agent prompt? Read
 | 13 | [Performance and limits](13-performance-and-limits.md) | measured timings, hard limits, platform matrix |
 | 14 | [Editing one frame surgically](14-editing-one-frame.md) | the delta recipe, neighbours, the shortened-film trap |
 | 15 | [Fitting, transforms and in-betweens](15-fitting-transforms-and-inbetweens.md) | offline contour fitting, intact-cel/camera transforms, easing, explicit tween fallback |
+| 16 | [Colour expressions, morph, frame ranges and opacity](16-colour-morph-ranges-opacity.md) | spec 0.4: `mix`, `morph`, `frame A..B`, layer and group `opacity`, dissolves |
 
 After the guide:
 
-- [Patterns cookbook](../patterns/README.md) — ten complete, compiling
+- [Patterns cookbook](../patterns/README.md) — twelve complete, compiling
   animations with contact sheets, sizes and pitfalls.
 - [Gallery](../gallery.md) — the shower frames, the lantern film, a 90-frame
   AI-drawn film recreated in `.ncel`, and the pattern examples.
 - [Common errors](../errors.md) — every diagnostic, generated from the source.
 - [Architecture](../architecture.md) — what MoonBit, Bend and GLSL each own.
 
-The current normative grammar is [SPEC-0.3.0-draft](../spec/SPEC-0.3.0-draft.md), extending 0.2. Where
+The current normative grammar is [SPEC-0.4.0-draft](../spec/SPEC-0.4.0-draft.md), a complete restatement. Where
 this guide and the spec disagree, the spec wins and the guide has a bug — please
 open an issue.

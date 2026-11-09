@@ -8,7 +8,7 @@ implementations, and the tests say so.**
 
 1. **Specification changes come first.** Any change to the lexical grammar, the
    EBNF, ring-chain encoding, or rendering semantics must be proposed against
-    [`docs/spec/SPEC-0.3.0-draft.md`](docs/spec/SPEC-0.3.0-draft.md) (never edit an
+    [`docs/spec/SPEC-0.4.0-draft.md`](docs/spec/SPEC-0.4.0-draft.md) (never edit an
    archived spec in place — add a new draft) and recorded in
    [`docs/DECISIONS.md`](docs/DECISIONS.md) and [`CHANGELOG.md`](CHANGELOG.md).
 2. **Determinism is not negotiable.** Every change to
@@ -19,7 +19,10 @@ implementations, and the tests say so.**
 3. **Two implementations, one truth.** If you change a rendering rule, change it in
    both the Python reference and the native stage (MoonBit/GLSL) and prove they
    still agree on the conformance frame. A change that only lands in one of them is
-   a bug, even if the tests of that one pass.
+   a bug, even if the tests of that one pass. The one documented exception is
+   spec 0.4 (Decision 9): it is reference-only until a native release passes
+   conformance case `05`, and the launchers route spec 0.4 documents to the
+   reference rather than to native.
 4. **Never claim more than you measured.** Diagnostics say `PARTIAL` when they are
    partial; a render says `python-reference` when it is not native. Passing the
    conformance suite proves agreement, not visual quality.
@@ -136,7 +139,7 @@ in [`packaging/DESIGN.md`](packaging/DESIGN.md).
 
 - The **tools** version moves (`0.4.0`, `0.4.1`, …).
 - The **language specification** moves only when the grammar or rendering
-  semantics change (`0.3.0-draft` today), and an archived draft is never edited.
+  semantics change (`0.4.0-draft` today), and an archived draft is never edited.
 - A packaging-only release keeps `spec_version` and the native runtime build
   identical; `northcel doctor` prints both numbers so they cannot be confused.
 

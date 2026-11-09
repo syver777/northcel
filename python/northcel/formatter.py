@@ -1,4 +1,4 @@
-"""Canonical formatter for NorthCel (.ncel) v0.2 AST documents."""
+"""Canonical formatter for NorthCel (.ncel) AST documents (spec 0.1 through 0.4)."""
 
 from __future__ import annotations
 
@@ -7,11 +7,13 @@ from decimal import Decimal
 
 from .ast_nodes import (
     BoilSpec,
+    ColorMix,
     ColorValue,
     DefBlock,
     DocumentNode,
     DropNode,
     LayerNode,
+    MorphNode,
     PaperSpec,
     RibbonNode,
     SceneItem,
@@ -56,17 +58,27 @@ def _fmt_expr(e: Any, parent_precedence: int = 0) -> str:
 
 
 def _has_color_ref(c: ColorValue, palette: dict[str, ColorValue] | None) -> bool:
+    if isinstance(c, ColorMix):
+        return False
     return bool(c.palette_ref and (palette is None or
         (c.palette_ref in palette and palette[c.palette_ref].as_rgb_tuple() == c.as_rgb_tuple())))
 
 
-def _fmt_color_val(c: ColorValue, palette: dict[str, ColorValue] | None = None) -> str:
+def _fmt_mix(c: ColorMix, palette: dict[str, ColorValue] | None = None) -> str:
+    return f"mix({_fmt_color_val(c.a, palette)}, {_fmt_color_val(c.b, palette)}, {_fmt_expr(c.u)})"
+
+
+def _fmt_color_val(c: ColorValue | ColorMix, palette: dict[str, ColorValue] | None = None) -> str:
+    if isinstance(c, ColorMix):
+        return _fmt_mix(c, palette)
     if _has_color_ref(c, palette):
         return f"${c.palette_ref}"
     return c.to_hex()
 
 
-def _fmt_color_kv(c: ColorValue, palette: dict[str, ColorValue] | None = None) -> str:
+def _fmt_color_kv(c: ColorValue | ColorMix, palette: dict[str, ColorValue] | None = None) -> str:
+    if isinstance(c, ColorMix):
+        return f"color: {_fmt_mix(c, palette)}"
     if _has_color_ref(c, palette):
         return f"color: ${c.palette_ref}"
     if c.is_grey:
@@ -89,7 +101,17 @@ def _fmt_translate_kv(tx: tuple[Any, Any]) -> str:
     return f", translate: ({s0}, {s1})"
 
 
-def _fmt_outline_kv(c: ColorValue | None, w: float, palette: dict[str, ColorValue] | None = None) -> str:
+def _fmt_opacity_kv(o: Any) -> str:
+    return "" if o is None else f", opacity: {_fmt_expr(o)}"
+
+
+def _paper_key(p: PaperSpec) -> tuple:
+    color = p.color
+    key = _fmt_mix(color, None) if isinstance(color, ColorMix) else color.as_rgb_tuple()
+    return (key, p.antialias_grid, p.grain)
+
+
+def _fmt_outline_kv(c: ColorValue | ColorMix | None, w: float, palette: dict[str, ColorValue] | None = None) -> str:
     if c is None or w <= 0.0:
         return ""
     color = _fmt_color_val(c, palette)
@@ -123,13 +145,14 @@ def _fmt_item(item: SceneItem, indent: str = "  ", palette: dict[str, ColorValue
             _fmt_outline_kv(item.outline_color, item.outline_width, palette)
             + _fmt_boil_kv(item.boil)
             + _fmt_translate_kv(item.translate_expr)
+            + _fmt_opacity_kv(item.opacity)
         )
         kw = "cel" if (item.outline_color is not None and item.outline_width > 0) else "layer"
         return [
             f'{indent}{kw} {item.name}({_fmt_color_kv(item.color, palette)}{rings_part}{extra}) {{ "{item.payload}" }}'
         ]
     if isinstance(item, SwarmNode):
-        extra = _fmt_boil_kv(item.boil) + _fmt_translate_kv(item.translate_expr)
+        extra = _fmt_boil_kv(item.boil) + _fmt_translate_kv(item.translate_expr) + _fmt_opacity_kv(item.opacity)
         return [
             f'{indent}bend_swarm {item.name}(agents: {item.agents}, {_fmt_color_kv(item.color, palette)}{extra}) {{ "{item.payload}" }}'
         ]
@@ -138,13 +161,20 @@ def _fmt_item(item: SceneItem, indent: str = "  ", palette: dict[str, ColorValue
             w_kv = f"width: {_fmt_num(item.width_start)}"
         else:
             w_kv = f"taper: ({_fmt_num(item.width_start)}, {_fmt_num(item.width_end)})"
-        extra = _fmt_boil_kv(item.boil)
+        extra = _fmt_boil_kv(item.boil) + _fmt_opacity_kv(item.opacity)
         pts_s = ", ".join(f"({_fmt_expr(x)}, {_fmt_expr(y)})" for x, y in item.points)
         return [f"{indent}stroke {item.name}({_fmt_color_kv(item.color, palette)}, {w_kv}{extra}) {{ {pts_s} }}"]
     if isinstance(item, RibbonNode):
-        extra = _fmt_boil_kv(item.boil)
+        extra = _fmt_boil_kv(item.boil) + _fmt_opacity_kv(item.opacity)
         pts_s = ", ".join(f"({_fmt_expr(x)}, {_fmt_expr(y)}, {_fmt_num(w)})" for x, y, w in item.points)
         return [f"{indent}ribbon {item.name}({_fmt_color_kv(item.color, palette)}{extra}) {{ {pts_s} }}"]
+    if isinstance(item, MorphNode):
+        samples = f", samples: {item.samples}" if item.samples is not None else ""
+        extra = _fmt_outline_kv(item.outline_color, item.outline_width, palette) + _fmt_opacity_kv(item.opacity)
+        return [
+            f'{indent}morph {item.name}({_fmt_color_kv(item.color, palette)}, u: {_fmt_expr(item.u)}{samples}{extra}) '
+            f'{{ "{item.payload_a}" => "{item.payload_b}" }}'
+        ]
     if isinstance(item, UseNode):
         args_s = ", ".join(f"{k}: {_fmt_expr(v)}" for k, v in item.args.items())
         return [f"{indent}use {item.def_name}({args_s})"]
@@ -204,14 +234,16 @@ def format_document(doc: DocumentNode, include_version_header: bool = True) -> s
             lines.extend(_fmt_def(d, "  ", root.palette))
         for item in root.items:
             lines.extend(_fmt_item(item, "  ", root.palette))
-        for f_idx in sorted(root.frame_overrides):
-            f_scene = root.frame_overrides[f_idx]
-            lines.append(f"  frame {f_idx} {{")
+        blocks = [(f"{f_idx}", root.frame_overrides[f_idx]) for f_idx in sorted(root.frame_overrides)]
+        # Ranges keep source order: among overlapping ranges the later one wins.
+        blocks += [(f"{lo}..{hi}", f_scene) for lo, hi, f_scene in root.frame_ranges]
+        for label, f_scene in blocks:
+            lines.append(f"  frame {label} {{")
             local = {k: v for k, v in f_scene.palette.items()
                      if k not in root.palette or v.as_rgb_tuple() != root.palette[k].as_rgb_tuple()}
             scope = {**root.palette, **local}
             lines.extend(_fmt_palette(local, "    "))
-            if (f_scene.paper.color.as_rgb_tuple(), f_scene.paper.antialias_grid, f_scene.paper.grain) != (root.paper.color.as_rgb_tuple(), root.paper.antialias_grid, root.paper.grain):
+            if _paper_key(f_scene.paper) != _paper_key(root.paper):
                 lines.append(_fmt_paper(f_scene.paper, "    ", scope))
             for d in f_scene.defs.values():
                 lines.extend(_fmt_def(d, "    ", scope))

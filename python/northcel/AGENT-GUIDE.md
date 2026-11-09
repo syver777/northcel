@@ -1,4 +1,4 @@
-# NorthCel quick agent guide — tools 0.4.0, spec 0.3.0-draft
+# NorthCel quick agent guide — tools 0.5.0, spec 0.4.0-draft
 
 Discover this guide offline with `northcel guide` (or `npx northcel guide`). The
 npm package runs the native runtime on Linux x86_64 and otherwise falls back to the
@@ -8,7 +8,7 @@ neither is available. There is no JavaScript renderer.
 ## Start here (a complete 3-second film)
 
 ```ncel
-northcel "0.2.0-draft"
+northcel "0.4.0-draft"
 film Kite(width: 320, height: 180, fps: 12, frames: 36, precision: 0.25px, seed: 42) {
   palette { ink: #202830, red: #D65C52 }
   paper { color: #FFF8EC, antialias_grid: 4 }
@@ -109,3 +109,19 @@ linear instead of stopping at every key.
 experiment, not an anatomy judge. Topology mismatch errors unless `--fallback
 hold` is requested; inspect every inserted frame and reject doubled/folded lines.
 Matching topology alone proves nothing. Source endpoints remain original geometry.
+
+## In-betweens for independently drawn keys (spec 0.4, Python reference)
+
+Spec 0.4 adds `color: mix($a, $b, u)` (also outlines and paper; u clamped),
+`morph name(color: $c, u: expr) { "ringsA" => "ringsB" }` (ring i pairs ring i,
+vertex counts may differ, exact A at u<=0 and B at u>=1), `frame 12..18 { ... }`
+(exact `frame N` wins, else the last range) and `opacity: expr` on primitives or
+`use D(opacity: u)` for a group (dissolve: `use A` then `use B(opacity: u)`).
+They need `northcel "0.4.0-draft"` and render with the labelled Python reference;
+the native runtime implements spec 0.3, and the npm launcher without Python
+refuses them (exit 3). `northcel fit img.png -o key.ncel --stacked --palette p.json`
+writes painter's-order shapes; `northcel tween a.ncel b.ncel -o t.ncel --match
+--steps 6` matches shapes across topology mismatch and writes one film. Read the
+receipt: below `--min-match`/`--max-displacement` it cuts (or `--fallback
+dissolve`). A match proves no anatomy: a crouch→jump needs a drawn key. Inspect
+every in-between; unmatched shapes pop at u = 0.5.

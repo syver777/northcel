@@ -36,12 +36,17 @@ usage: northcel <command> [options]        (short alias: ncel)
   film    FILE -o OUTDIR [--frames 0..5] [--mp4 OUT.mp4] [--json]
   fmt     FILE [-w|--write] [--check]  canonical formatting (Python reference)
   fit     IMAGE -o FILE [--colors N]  offline vector contour fitting (requires [fit])
-  tween   A.ncel B.ncel -o FILE      explicit contour in-betweens, never a quality judge
+  tween   A.ncel B.ncel -o FILE [--match]
+                                       contour in-betweens (--match: across topology
+                                       mismatch, spec 0.4 film); never a quality judge
+  fit     IMAGE -o FILE --stacked      painter's-order solid shapes instead of a planar map
   guide                                offline authoring guide
   toolchain <status|install> [--json] [--dry-run]
   version, --version                   versions (native runtime + spec)
 
 Global: --no-native  force the labelled Python reference path (never called "native")
+Spec 0.4 documents (mix, morph, opacity, frame A..B) always use the labelled Python
+reference: the native runtime 0.4.0 implements spec 0.3.
 Platform: Linux x86_64, glibc >= 2.39, Mesa EGL/llvmpipe. macOS/Windows are not
 supported natively in this release; `northcel doctor` explains exactly what is
 missing and every render there is labelled `python-reference`.
@@ -56,7 +61,8 @@ def _version_line() -> str:
         if doc.get("version"):
             native_version = doc["version"]
     state = "native" if usable else "python-reference only"
-    return f"northcel {__version__} (native runtime {native_version}, spec {SPEC_VERSION}, {state})"
+    return (f"northcel {__version__} (native runtime {native_version} implements spec 0.3.0-draft, "
+            f"spec {SPEC_VERSION}, {state})")
 
 
 def _pop_flag(args: list[str], *names: str) -> bool:
@@ -82,10 +88,56 @@ def _pop_option(args: list[str], *names: str) -> str | None:
     return None
 
 
+#: The newest spec minor the bundled native runtime implements (spec 0.3).
+NATIVE_SPEC_MINOR = 3
+
+
+def spec04_reason(args: list[str]) -> str | None:
+    """Why a document must use the reference: it needs spec 0.4, which native 0.4.0 lacks.
+
+    The native runtime implements spec 0.3. A document that uses `mix`, `morph`,
+    `frame A..B` or `opacity`, or that declares a 0.4 header, is routed to the
+    labelled Python reference instead of being rendered (or rejected) by a runtime
+    that does not know those rules. Files the reference cannot parse go to native
+    unchanged, so diagnostics stay the native ones.
+    """
+    files = [a for a in args if not a.startswith("-")]
+    if not files:
+        return None
+    try:
+        from pathlib import Path
+
+        from ..parser import NorthCelSyntaxError, parse_ncel, tokenize
+        from ..validator import spec04_features, spec_minor
+
+        source = Path(files[0]).read_text(encoding="utf-8")
+        doc = parse_ncel(source)
+        declared = tokenize(source)[0].value == "northcel"
+    except (OSError, UnicodeDecodeError, NorthCelSyntaxError, ValueError):
+        return None
+    features = sorted({name for name, _line, _col in spec04_features(doc)})
+    if features:
+        return (
+            f"{files[0]} uses spec 0.4 features ({', '.join(features)}); the native runtime "
+            f"{NATIVE_RUNTIME_VERSION} implements spec 0.3 only"
+        )
+    if declared and spec_minor(doc.spec_version) > NATIVE_SPEC_MINOR:
+        return (
+            f"{files[0]} declares spec {doc.spec_version}; the native runtime "
+            f"{NATIVE_RUNTIME_VERSION} implements spec 0.3 only"
+        )
+    return None
+
+
 def _native_or_reason(args: list[str], command: str) -> tuple[bool, str | None]:
     if _pop_flag(args, "--no-native", "--python"):
         return False, "explicitly requested with --no-native"
-    return native.available() if command != "" else (False, None)
+    usable, reason = native.available() if command != "" else (False, None)
+    if usable:
+        newer = spec04_reason(args)
+        if newer:
+            return False, newer
+    return usable, reason
 
 
 def _passthrough(command: str, args: list[str], strip_native_only: bool = True) -> int:
@@ -156,7 +208,13 @@ def main(argv: list[str] | None = None) -> int:
         print(USAGE, end="")
         return 0
 
-    command, rest = args[0], args[1:]
+    leading = []
+    while args and args[0] in {"--no-native", "--python"}:
+        leading.append(args.pop(0))
+    if not args:
+        print(USAGE, end="")
+        return 0
+    command, rest = args[0], leading + args[1:]
     if command == "fit":
         from ..fitting import main as fit_main
         return fit_main(rest)

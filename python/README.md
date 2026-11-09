@@ -13,6 +13,13 @@ ncel doctor                 # short alias, same program
 
 ## Two implementations, one command
 
+**Tools 0.5.0, spec 0.4.0-draft:** `mix` colour expressions, `morph`, `frame A..B`
+ranges and `opacity`; `fit --stacked` and `tween --match` for in-betweens between
+independently drawn keys (Python API: `northcel.correspond`). Spec 0.4 documents
+render with the labelled Python reference; the bundled native runtime 0.4.0
+implements spec 0.3. See the
+[polishing pattern](https://github.com/syver777/northcel/blob/main/docs/patterns/12-polishing-ai-frames.md).
+
 **Tools/native 0.4.0, spec 0.3.0-draft:** anchored named/whole-stage transforms,
 clamped easing, optional offline vector fitting and explicit contour-tween
 authoring. Valid 0.1/0.2 files keep their rendering semantics. Start with the

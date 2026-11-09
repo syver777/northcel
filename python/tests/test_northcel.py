@@ -52,7 +52,7 @@ class TestConfigAndRings(unittest.TestCase):
         self.assertEqual(FILE_EXTENSION, ".ncel")
         self.assertEqual(CLI_COMMAND, "northcel")
         self.assertEqual(CLI_SHORT_ALIAS, "ncel")
-        self.assertEqual(SPEC_VERSION, "0.3.0-draft")
+        self.assertEqual(SPEC_VERSION, "0.4.0-draft")
 
     def test_ring_b63_q25_roundtrip(self) -> None:
         ring = [(12.25, 40.5), (18.75, 40.5), (18.75, 46.25), (12.25, 46.25)]
@@ -247,3 +247,32 @@ class TestConformanceAndGoldenShower(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestParserHardening(unittest.TestCase):
+    """Normative 'integers'/'3 or 6 digits' claims must not silently truncate or crash."""
+
+    def test_exact_frame_index_must_be_an_integer(self) -> None:
+        with self.assertRaises(NorthCelSyntaxError) as caught:
+            parse_ncel('northcel "0.4.0-draft"\nfilm F(width: 100, height: 100, frames: 3) {\n'
+                       '  frame 1.5 { layer a(color: #000000) { "0,0 10,0 0,10 -10,0" } }\n}\n')
+        self.assertIn("Frame index must be an integer", str(caught.exception))
+
+    def test_hex_colour_needs_three_or_six_digits(self) -> None:
+        with self.assertRaises(NorthCelSyntaxError) as caught:
+            parse_ncel('northcel "0.4.0-draft"\nscene S(width: 100, height: 100) {\n'
+                       '  layer a(color: #1234) { "0,0 10,0 0,10 -10,0" }\n}\n')
+        self.assertIn("Hex colours must have 3 or 6 digits", str(caught.exception))
+
+
+class TestLauncherGlobalFlags(unittest.TestCase):
+    def test_no_native_before_the_command_is_accepted(self) -> None:
+        import contextlib
+        import io
+        from northcel.launcher.cli import main
+
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = main(["--no-native", "version"])
+        self.assertEqual(code, 0)
+        self.assertIn("northcel", out.getvalue())

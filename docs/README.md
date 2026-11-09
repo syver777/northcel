@@ -8,22 +8,24 @@ the frames.
 - **Commands:** `northcel` (short alias `ncel`)
 - **Packages:** `northcel` on PyPI and npm (plus the `northcel-native` /
   `northcel-linux-x64` platform artifacts)
-- **Version:** tools `0.3.1`; specification `0.2.0-draft` (backward compatible with
-  `0.1.0-draft`)
+- **Version:** tools `0.5.0`; specification `0.4.0-draft` (the native runtime 0.4.0
+  implements `0.3.0-draft`; spec 0.4 documents use the Python reference). Earlier
+  history: tools `0.4.0` / spec `0.3.0-draft`, then tools `0.3.1` / spec
+  `0.2.0-draft` (backward compatible with `0.1.0-draft`)
 - **Source:** <https://github.com/syver777/northcel>
 
 ## Start here
 
 | If you want to… | Read |
 | --- | --- |
-| learn the language in order | **[The writing guide](guide/README.md)** — 14 numbered pages, every construct with a rendered example and its real diagnostic |
-| copy a working animation | **[Patterns cookbook](patterns/README.md)** — ten complete programs with contact sheets, sizes and pitfalls |
+| learn the language in order | **[The writing guide](guide/README.md)** — 16 numbered pages, every construct with a rendered example and its real diagnostic |
+| copy a working animation | **[Patterns cookbook](patterns/README.md)** — twelve complete programs with contact sheets, sizes and pitfalls |
 | see what it looks like | **[Gallery](gallery.md)** |
 | fix an error message | **[Common errors](errors.md)** — generated from the source, reproduced in CI |
 | understand the runtime | **[Architecture](architecture.md)** — grammar → swarms → pixels, determinism, platforms |
 | have an AI agent author `.ncel` | **[AI-agent guide](agent-guide.md)** |
 | look up a CLI flag or the check contract | **[Format & tooling reference](reference.md)** |
-| read the normative grammar | [Specification `0.2.0-draft`](spec/SPEC-0.2.0-draft.md) (and the archival [`0.1.0-draft`](spec/SPEC-0.1.0-draft.md)) |
+| read the normative grammar | [Specification `0.4.0-draft`](spec/SPEC-0.4.0-draft.md) (complete; archival [`0.3.0-draft`](spec/SPEC-0.3.0-draft.md), [`0.2.0-draft`](spec/SPEC-0.2.0-draft.md), [`0.1.0-draft`](spec/SPEC-0.1.0-draft.md)) |
 | see what the examples measure | [Examples & measurements](examples.md) |
 | understand why it is built this way | [Decision log](DECISIONS.md) |
 | get a short answer | [FAQ](faq.md) |
@@ -52,6 +54,8 @@ Project-level documents live in the repository root:
 | 12 | [Diagnostics and errors](guide/12-diagnostics-and-errors.md) | the check contract |
 | 13 | [Performance and limits](guide/13-performance-and-limits.md) | measured timings, limits |
 | 14 | [Editing one frame surgically](guide/14-editing-one-frame.md) | the delta recipe |
+| 15 | [Fitting, transforms and in-betweens](guide/15-fitting-transforms-and-inbetweens.md) | offline fitting, transforms, easing, tween |
+| 16 | [Colour expressions, morph, frame ranges and opacity](guide/16-colour-morph-ranges-opacity.md) | `mix`, `morph`, `frame A..B`, `opacity` |
 
 [`tutorial.md`](tutorial.md) points to the matching guide pages.
 [`reference.md`](reference.md) covers the CLI and the validation contract; the
