@@ -1,0 +1,217 @@
+{
+  "format": "northcel-paintlist-v1",
+  "source": "semantics.ncel",
+  "frame_index": 0,
+  "width": 32,
+  "height": 32,
+  "seed": 1,
+  "paper": {
+    "rgb": [
+      255,
+      255,
+      255
+    ],
+    "grain": 0.0,
+    "antialias_grid": 4
+  },
+  "paint_order": "back_to_front",
+  "layers": [
+    {
+      "name": "red",
+      "color": [
+        255,
+        0,
+        0
+      ],
+      "opacity": 1.0,
+      "group_opacity": [
+        [
+          1,
+          0.5
+        ]
+      ],
+      "rings": [
+        [
+          [
+            2.0,
+            2.0
+          ],
+          [
+            14.0,
+            2.0
+          ],
+          [
+            14.0,
+            14.0
+          ],
+          [
+            2.0,
+            14.0
+          ]
+        ]
+      ],
+      "clip_shapes": []
+    },
+    {
+      "name": "blue",
+      "color": [
+        0,
+        0,
+        255
+      ],
+      "opacity": 1.0,
+      "group_opacity": [
+        [
+          1,
+          0.5
+        ]
+      ],
+      "rings": [
+        [
+          [
+            8.0,
+            2.0
+          ],
+          [
+            20.0,
+            2.0
+          ],
+          [
+            20.0,
+            14.0
+          ],
+          [
+            8.0,
+            14.0
+          ]
+        ]
+      ],
+      "clip_shapes": []
+    },
+    {
+      "name": "mask",
+      "color": [
+        0,
+        0,
+        0
+      ],
+      "opacity": 0.0,
+      "group_opacity": [],
+      "rings": [
+        [
+          [
+            2.0,
+            18.0
+          ],
+          [
+            20.0,
+            18.0
+          ],
+          [
+            20.0,
+            30.0
+          ],
+          [
+            2.0,
+            30.0
+          ]
+        ],
+        [
+          [
+            6.0,
+            22.0
+          ],
+          [
+            12.0,
+            22.0
+          ],
+          [
+            12.0,
+            26.0
+          ],
+          [
+            6.0,
+            26.0
+          ]
+        ]
+      ],
+      "clip_shapes": []
+    },
+    {
+      "name": "green",
+      "color": [
+        0,
+        255,
+        0
+      ],
+      "opacity": 1.0,
+      "group_opacity": [],
+      "rings": [
+        [
+          [
+            0.0,
+            16.0
+          ],
+          [
+            24.0,
+            16.0
+          ],
+          [
+            24.0,
+            32.0
+          ],
+          [
+            0.0,
+            32.0
+          ]
+        ]
+      ],
+      "clip_shapes": [
+        [
+          [
+            [
+              2.0,
+              18.0
+            ],
+            [
+              20.0,
+              18.0
+            ],
+            [
+              20.0,
+              30.0
+            ],
+            [
+              2.0,
+              30.0
+            ]
+          ],
+          [
+            [
+              6.0,
+              22.0
+            ],
+            [
+              12.0,
+              22.0
+            ],
+            [
+              12.0,
+              26.0
+            ],
+            [
+              6.0,
+              26.0
+            ]
+          ]
+        ]
+      ]
+    }
+  ],
+  "notes": [
+    "Flattened paint list exported from python/northcel/renderer.py frame_paint_list().",
+    "Rings are already resolved (boil, transform, warp, nudge, stroke and ribbon expansion applied).",
+    "clip_shapes contains the resolved rings of every clip target; the reference treats their spans as a union.",
+    "This is not NCIR: NCIR v1 stores band-partitioned edges and does not carry ring topology, opacity, group scopes or clips."
+  ]
+}

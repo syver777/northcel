@@ -1,0 +1,40 @@
+   Compiling ncel-vello v0.1.0 (/home/dev/northcel-vello/native/vello)
+    Finished `release` profile [optimized + debuginfo] target(s) in 2.31s
+     Running unittests src/main.rs (target/release/deps/ncel_vello-faa25d9d2abe7790)
+
+running 9 tests
+test fixture::tests::rejects_empty_drawable_geometry ... ok
+test fixture::tests::rejects_invalid_clip_geometry_and_opacity ... ok
+test render::tests::group_scope_survives_consecutive_paints ... ok
+test render::tests::raw_rgba_diff_counts_pixels_and_channels ... ok
+test render::tests::rings_are_closed_separately_for_even_odd_fill ... ok
+test render::tests::grain_preserves_alpha_and_seed_wraps ... ok
+test fixture::tests::rejects_invalid_format_and_dimensions ... ok
+test render::tests::group_scope_closes_only_to_common_ancestor ... ok
+test fixture::tests::supplied_fixture_has_expected_geometry ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+	Command being timed: "cargo test --release --locked"
+	User time (seconds): 2.65
+	System time (seconds): 1.63
+	Percent of CPU this job got: 177%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:02.41
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 269460
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 40
+	Minor (reclaiming a frame) page faults: 64556
+	Voluntary context switches: 637
+	Involuntary context switches: 236
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 33688
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

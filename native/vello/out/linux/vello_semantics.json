@@ -1,0 +1,90 @@
+{
+  "adapter": {
+    "backend": "Vulkan",
+    "device": 0,
+    "device_type": "Cpu",
+    "driver": "llvmpipe",
+    "driver_info": "Mesa 25.2.8-0ubuntu0.24.04.2 (LLVM 20.1.2)",
+    "name": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "vendor": 65541
+  },
+  "clip_points": 8,
+  "cpu_stages": false,
+  "deterministic_in_process": true,
+  "fixture": "out/linux/semantics.paintlist.json",
+  "fixture_notes": [
+    "Flattened paint list exported from python/northcel/renderer.py frame_paint_list().",
+    "Rings are already resolved (boil, transform, warp, nudge, stroke and ribbon expansion applied).",
+    "clip_shapes contains the resolved rings of every clip target; the reference treats their spans as a union.",
+    "This is not NCIR: NCIR v1 stores band-partitioned edges and does not carry ring topology, opacity, group scopes or clips."
+  ],
+  "frame_index": 0,
+  "height": 32,
+  "layers": 4,
+  "notes": [
+    "1 invisible paint(s) skipped exactly like the reference paint loop",
+    "1 paint(s) clipped by resolved clip shapes",
+    "render_passes measures CPU encoding/submission, not GPU completion; add readback_passes for completed render+readback wall time",
+    "Vello uses analytic area AA; the reference integrates a 4x4 subpixel grid."
+  ],
+  "pass_diff_from_first": [
+    {
+      "differing_bytes": 0,
+      "differing_pixels": 0,
+      "max_channel_delta": 0,
+      "pass": 1
+    }
+  ],
+  "passes": [
+    {
+      "fnv1a64": "0x3fc09f164985b7d5",
+      "index": 0,
+      "path": "out/linux/vello_semantics.png",
+      "png_bytes": 162
+    },
+    {
+      "fnv1a64": "0x3fc09f164985b7d5",
+      "index": 1,
+      "path": "out/linux/vello_semantics.png",
+      "png_bytes": 0
+    }
+  ],
+  "points": 20,
+  "repeat": 2,
+  "rings": 5,
+  "source": "semantics.ncel",
+  "status": "prototype",
+  "timing_ms": {
+    "grain_passes": [
+      0.00016,
+      0.00016
+    ],
+    "init": 216.47913,
+    "png_passes": [
+      0.441183,
+      0.000521
+    ],
+    "readback_passes": [
+      216.243136,
+      21.908805
+    ],
+    "render_including_readback_passes": [
+      218.413847,
+      22.446123
+    ],
+    "render_passes": [
+      2.1707110000000003,
+      0.537318
+    ],
+    "scene_build": 0.047321,
+    "total": 459.30096599999996
+  },
+  "tool": "ncel-vello",
+  "width": 32,
+  "command": "/home/dev/northcel-vello/native/vello/target/release/ncel-vello --fixture out/linux/semantics.paintlist.json --out out/linux/vello_semantics.png --repeat 2 --no-pass-files --json",
+  "process_wall_ms": 623.7826580181718,
+  "stderr": "",
+  "png_sha256": "05756a5844898b057e0d5dc5510b08d38d3c9464f75f9f6fe4df19413b226af6",
+  "rgba_sha256": "bfb3a64c52797642d57a966b749b7821f5ae05c1e93c286ccd329c9ee1ba4118",
+  "completed_render_readback_ms_median_excluding_first": 22.446123
+}

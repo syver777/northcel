@@ -1,0 +1,35 @@
+{
+  "vello": "out/linux/vello_skyline_1080.png",
+  "reference": "out/linux/reference_skyline_1080.png",
+  "width": 1920,
+  "height": 1080,
+  "pixels": 2073600,
+  "full_frame": {
+    "pixels": 2073600,
+    "mae": 0.02553851594650206,
+    "max_channel_delta": 21,
+    "mean_max_channel_delta": 0.03977334104938272
+  },
+  "flat_interior_3x3": {
+    "pixels": 0,
+    "mae": 0.0,
+    "max_channel_delta": 0,
+    "mean_max_channel_delta": 0.0
+  },
+  "differing_pixels_any_channel": 35277,
+  "differing_pixels_pct": 1.701244212962963,
+  "exact_pixels": 2038323,
+  "exact_pixels_pct": 98.29875578703704,
+  "max_channel_histogram": {
+    "0": 2038323,
+    "1": 22888,
+    "2-4": 6947,
+    "5-16": 5423,
+    "17-64": 19,
+    "65-128": 0,
+    "129-255": 0
+  },
+  "psnr_db": 57.46997321807041,
+  "compare_wall_ms": 585.8620989602059,
+  "heatmap": "out/linux/diff_skyline_1080.png"
+}

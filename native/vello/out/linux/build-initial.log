@@ -1,0 +1,189 @@
+    Updating crates.io index
+    Blocking waiting for file lock on package cache
+ Downloading crates ...
+  Downloaded wgpu-types v30.0.1
+  Downloaded termcolor v1.4.1
+  Downloaded adler2 v2.0.1
+  Downloaded bytemuck v1.25.2
+  Downloaded unicode-width v0.2.3
+  Downloaded bit-set v0.10.0
+  Downloaded litrs v1.0.1
+  Downloaded euclid v0.22.14
+  Downloaded ordered-float v5.5.1
+  Downloaded polycool v0.4.0
+  Downloaded allocator-api2 v0.2.21
+  Downloaded wgpu-hal v30.0.1
+  Downloaded scopeguard v1.2.0
+  Downloaded font-types v0.12.7
+  Downloaded libm v0.2.16
+  Downloaded vello v0.11.0
+  Downloaded svg_fmt v0.4.5
+  Downloaded wgpu-core-deps-windows-linux-android v30.0.1
+  Downloaded guillotiere v0.7.0
+  Downloaded document-features v0.2.12
+  Downloaded rustc-hash v1.1.0
+  Downloaded kurbo v0.13.1
+  Downloaded pollster v1.0.1
+  Downloaded spirv v0.4.0+sdk-1.4.341.0
+  Downloaded ash v0.38.0+1.3.281
+  Downloaded presser v0.3.1
+  Downloaded color v0.3.3
+  Downloaded codespan-reporting v0.13.1
+  Downloaded naga-types v30.0.1
+  Downloaded peniko v0.6.1
+  Downloaded glow v0.17.0
+  Downloaded lock_api v0.4.14
+  Downloaded profiling v1.0.18
+  Downloaded read-fonts v0.41.0
+  Downloaded parking_lot_core v0.9.12
+  Downloaded wgpu v30.0.1
+  Downloaded wgpu-naga-bridge v30.0.1
+  Downloaded png v0.18.1
+  Downloaded cfg_aliases v0.2.2
+  Downloaded fdeflate v0.3.7
+  Downloaded vello_shaders v0.11.0
+  Downloaded gpu-allocator v0.28.0
+  Downloaded simd-adler32 v0.3.10
+  Downloaded wayland-sys v0.31.11
+  Downloaded parking_lot v0.12.5
+  Downloaded renderdoc-sys v1.1.0
+  Downloaded khronos-egl v6.0.0
+  Downloaded static_assertions v1.1.0
+  Downloaded bytemuck_derive v1.12.1
+  Downloaded bit-vec v0.9.1
+  Downloaded crc32fast v1.5.4
+  Downloaded dlib v0.5.3
+  Downloaded flate2 v1.1.11
+  Downloaded libloading v0.8.9
+  Downloaded miniz_oxide v0.8.9
+  Downloaded miniz_oxide v0.9.1
+  Downloaded raw-window-handle v0.6.2
+  Downloaded half v2.7.1
+  Downloaded skrifa v0.44.0
+  Downloaded arrayvec v0.7.8
+  Downloaded linebender_resource_handle v0.1.1
+  Downloaded zlib-rs v0.6.8
+  Downloaded vello_encoding v0.11.0
+  Downloaded wgpu-core v30.0.1
+  Downloaded naga v30.0.1
+  Downloaded futures-intrusive v0.5.0
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.27
+   Compiling quote v1.0.47
+   Compiling libm v0.2.16
+   Compiling autocfg v1.5.1
+   Compiling cfg_aliases v0.2.2
+   Compiling cfg-if v1.0.5
+   Compiling thiserror v2.0.21
+   Compiling zerocopy v0.8.63
+   Compiling foldhash v0.2.0
+   Compiling equivalent v1.0.3
+   Compiling once_cell v1.21.4
+   Compiling smallvec v1.16.5
+   Compiling arrayvec v0.7.8
+   Compiling num-traits v0.2.19
+   Compiling libc v0.2.191
+   Compiling hashbrown v0.17.1
+   Compiling libloading v0.8.9
+   Compiling log v0.4.35
+   Compiling bitflags v2.13.2
+   Compiling rustc-hash v1.1.0
+   Compiling parking_lot_core v0.9.12
+   Compiling naga v30.0.1
+   Compiling syn v3.0.10
+   Compiling syn v2.0.119
+   Compiling unicode-width v0.2.3
+   Compiling pkg-config v0.3.34
+   Compiling scopeguard v1.2.0
+   Compiling bit-vec v0.9.1
+   Compiling ash v0.38.0+1.3.281
+   Compiling indexmap v2.14.2
+   Compiling wayland-sys v0.31.11
+   Compiling bit-set v0.10.0
+   Compiling lock_api v0.4.14
+   Compiling codespan-reporting v0.13.1
+   Compiling spirv v0.4.0+sdk-1.4.341.0
+   Compiling allocator-api2 v0.2.21
+   Compiling raw-window-handle v0.6.2
+   Compiling static_assertions v1.1.0
+   Compiling khronos-egl v6.0.0
+   Compiling hashbrown v0.16.1
+   Compiling parking_lot v0.12.5
+   Compiling thiserror-impl v2.0.21
+   Compiling bytemuck_derive v1.12.1
+   Compiling dlib v0.5.3
+   Compiling zerocopy-derive v0.8.63
+   Compiling wgpu-hal v30.0.1
+   Compiling presser v0.3.1
+   Compiling simd-adler32 v0.3.10
+   Compiling naga-types v30.0.1
+   Compiling bytemuck v1.25.2
+   Compiling wgpu-types v30.0.1
+   Compiling font-types v0.12.7
+   Compiling ordered-float v5.5.1
+   Compiling polycool v0.4.0
+   Compiling glow v0.17.0
+   Compiling profiling v1.0.18
+   Compiling adler2 v2.0.1
+   Compiling renderdoc-sys v1.1.0
+   Compiling crc32fast v1.5.4
+   Compiling read-fonts v0.41.0
+   Compiling kurbo v0.13.1
+   Compiling euclid v0.22.14
+   Compiling wgpu-core v30.0.1
+   Compiling svg_fmt v0.4.5
+   Compiling litrs v1.0.1
+   Compiling linebender_resource_handle v0.1.1
+   Compiling serde_core v1.0.229
+   Compiling color v0.3.3
+   Compiling half v2.7.1
+   Compiling peniko v0.6.1
+   Compiling document-features v0.2.12
+   Compiling guillotiere v0.7.0
+   Compiling miniz_oxide v0.9.1
+   Compiling wgpu v30.0.1
+   Compiling zmij v1.0.23
+   Compiling flate2 v1.1.11
+   Compiling miniz_oxide v0.8.9
+   Compiling skrifa v0.44.0
+   Compiling fdeflate v0.3.7
+   Compiling gpu-allocator v0.28.0
+   Compiling serde v1.0.229
+   Compiling futures-core v0.3.34
+   Compiling serde_json v1.0.154
+   Compiling futures-intrusive v0.5.0
+   Compiling png v0.18.1
+   Compiling vello_encoding v0.11.0
+   Compiling serde_derive v1.0.229
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.19
+   Compiling pollster v1.0.1
+   Compiling vello_shaders v0.11.0
+   Compiling wgpu-naga-bridge v30.0.1
+   Compiling wgpu-core-deps-windows-linux-android v30.0.1
+   Compiling vello v0.11.0
+   Compiling ncel-vello v0.1.0 (/home/dev/northcel-vello/native/vello)
+    Finished `release` profile [optimized + debuginfo] target(s) in 1m 52s
+	Command being timed: "cargo build --release --locked"
+	User time (seconds): 431.00
+	System time (seconds): 88.34
+	Percent of CPU this job got: 461%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:52.63
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1257924
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 1243
+	Minor (reclaiming a frame) page faults: 6251900
+	Voluntary context switches: 22260
+	Involuntary context switches: 180087
+	Swaps: 0
+	File system inputs: 151048
+	File system outputs: 3608912
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

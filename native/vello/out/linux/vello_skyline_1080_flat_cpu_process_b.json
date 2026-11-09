@@ -1,0 +1,92 @@
+{
+  "adapter": {
+    "backend": "Vulkan",
+    "device": 0,
+    "device_type": "Cpu",
+    "driver": "llvmpipe",
+    "driver_info": "Mesa 25.2.8-0ubuntu0.24.04.2 (LLVM 20.1.2)",
+    "name": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "vendor": 65541
+  },
+  "clip_points": 102,
+  "cpu_stages": true,
+  "deterministic_in_process": true,
+  "fixture": "/home/dev/northcel-vello/native/vello/fixtures/skyline_1080_flat.paintlist.json",
+  "fixture_notes": [
+    "Flattened paint list exported from python/northcel/renderer.py frame_paint_list().",
+    "Rings are already resolved (boil, transform, warp, nudge, stroke and ribbon expansion applied).",
+    "clip_shapes contains the resolved rings of every clip target; the reference treats their spans as a union.",
+    "This is not NCIR: NCIR v1 stores band-partitioned edges and does not carry ring topology, opacity, group scopes or clips."
+  ],
+  "frame_index": 0,
+  "height": 1080,
+  "layers": 26,
+  "notes": [
+    "nested group opacity is emulated with nested Vello blend layers",
+    "1 invisible paint(s) skipped exactly like the reference paint loop",
+    "2 paint(s) clipped by resolved clip shapes",
+    "render_passes measures CPU encoding/submission, not GPU completion; add readback_passes for completed render+readback wall time",
+    "Vello uses analytic area AA; the reference integrates a 4x4 subpixel grid.",
+    "RendererOptions::use_cpu = true (coarse stages on CPU; fine raster still GPU)"
+  ],
+  "pass_diff_from_first": [
+    {
+      "differing_bytes": 0,
+      "differing_pixels": 0,
+      "max_channel_delta": 0,
+      "pass": 1
+    }
+  ],
+  "passes": [
+    {
+      "fnv1a64": "0x5d6cbd9e37cfffd4",
+      "index": 0,
+      "path": "out/linux/vello_skyline_1080_flat_cpu_process_b.png",
+      "png_bytes": 81991
+    },
+    {
+      "fnv1a64": "0x5d6cbd9e37cfffd4",
+      "index": 1,
+      "path": "out/linux/vello_skyline_1080_flat_cpu_process_b.png",
+      "png_bytes": 0
+    }
+  ],
+  "points": 2427,
+  "repeat": 2,
+  "rings": 40,
+  "source": "skyline_1080_flat.ncel",
+  "status": "prototype",
+  "timing_ms": {
+    "grain_passes": [
+      0.00019,
+      0.000161
+    ],
+    "init": 163.850582,
+    "png_passes": [
+      41.505616,
+      0.001372
+    ],
+    "readback_passes": [
+      154.979596,
+      76.59038699999999
+    ],
+    "render_including_readback_passes": [
+      265.359736,
+      211.785278
+    ],
+    "render_passes": [
+      110.38014,
+      135.194891
+    ],
+    "scene_build": 0.162745,
+    "total": 703.8164350000001
+  },
+  "tool": "ncel-vello",
+  "width": 1920,
+  "command": "/home/dev/northcel-vello/native/vello/target/release/ncel-vello --fixture /home/dev/northcel-vello/native/vello/fixtures/skyline_1080_flat.paintlist.json --out out/linux/vello_skyline_1080_flat_cpu_process_b.png --repeat 2 --no-pass-files --json --cpu",
+  "process_wall_ms": 823.750059818849,
+  "stderr": "",
+  "png_sha256": "3f090f41fc2ca9c9282af0483d809868e29ea217f250af87b98bc03abf56e6be",
+  "rgba_sha256": "4b95ef4205f9f5b3a2c0942a4831c869df9b918cbe7632b470cca820d8295b35",
+  "completed_render_readback_ms_median_excluding_first": 211.785278
+}
