@@ -2,8 +2,9 @@
 
 ## 0.5.0 — published 2026-11-09 — spec 0.4.0-draft (tools only)
 
-Only the tools move: `northcel` (PyPI) 0.5.0, `northcel` (npm) 0.5.0 and the
-deprecated `ncel` PyPI alias 0.5.0 (`northcel==0.5.0`). The native runtime is not
+PyPI and Homebrew ship `northcel` 0.5.0 and the deprecated `ncel` PyPI alias
+0.5.0 (`northcel==0.5.0`). npm still serves 0.4.0; the 0.5.0 launcher is
+prepared but not published. The native runtime is not
 rebuilt: `northcel-native`, `ncel-native`, `northcel-linux-x64`,
 `native/toolchain.lock` and `python/northcel/data/pins.json` stay at 0.4.0 /
 spec 0.3, and the 0.5.0 packages keep depending on `northcel-native==0.4.0` and
@@ -53,7 +54,7 @@ set of artifacts at one version, in a fixed order, plus optional deprecated alia
 | PyPI | `northcel-native` | **0.4.0** | the Linux x86_64 platform wheel `northcel` depends on; unchanged for 0.5.0 |
 | PyPI | `ncel` | **0.5.0** (deprecated) | alias that depends on `northcel` |
 | PyPI | `ncel-native` | 0.4.0 (deprecated) | alias that depends on `northcel-native`; unchanged |
-| npm | `northcel` | **0.5.0** | the launcher + partial pre-check (after the npm publish) |
+| npm | `northcel` | **0.4.0** | the launcher + partial pre-check; 0.5.0 is not published on npm |
 | npm | `northcel-linux-x64` | **0.4.0** | the native bundle; unchanged |
 | npm | `@ncel/linux-x64` | 0.2.1 (deprecated) | alias for the bundle; do not publish |
 

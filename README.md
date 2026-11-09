@@ -51,14 +51,17 @@ same bytes, independent of frame order or thread count.
 same binary — it is never a separate package.
 
 ```console
-$ pip install northcel
-$ npm install -g northcel
+$ pip install northcel          # or: pipx install northcel
 $ brew tap syver777/northcel && brew install northcel
 $ curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh | bash
 ```
 
-All four install the same CLI, which uses the native runtime where it can and the
-labelled Python reference everywhere else.
+These install the current 0.5.0 CLI, which uses the native runtime where it can
+and the labelled Python reference everywhere else.
+
+**npm:** the npm package currently ships the older **0.4.0** launcher. For 0.5.0,
+install from PyPI or Homebrew; npm is not the recommended install for this
+version.
 
 ## First steps
 

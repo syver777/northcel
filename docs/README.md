@@ -80,14 +80,17 @@ build. See [architecture](architecture.md#the-docs-check).
 
 ## One command, two implementations
 
-`pip install northcel` and `npm install -g northcel` install the same CLI. It runs
-the **native runtime** where it can (Linux x86_64: MoonBit typed AST, Bend/HVM2
+`pip install northcel` (or Homebrew) installs the current 0.5.0 CLI. It runs the
+**native runtime** where it can (Linux x86_64: MoonBit typed AST, Bend/HVM2
 swarms, GLSL 4.30 on Mesa/EGL) and the **Python reference implementation**
 elsewhere, always labelled `python-reference` — never called native.
 
-The npm package can also answer `check` with a zero-dependency **structural
-pre-check**. That answer is always marked `PARTIAL`; it never claims a document is
-valid. See the [validation contract](reference.md#validation-contract) and
+**npm:** the npm package currently ships the older **0.4.0** launcher. For 0.5.0,
+use PyPI or Homebrew; npm is not the recommended install for this version. The npm
+launcher can also answer `check` with a zero-dependency **structural pre-check**.
+
+That npm pre-check answer is always marked `PARTIAL`; it never claims a document
+is valid. See the [validation contract](reference.md#validation-contract) and
 [the npm package README](../js/northcel/README.md).
 
 North Noir (the studio that uses NorthCel) is a separate product: no hosted

@@ -38,7 +38,7 @@ calling native; `check` falls back to the PARTIAL JS pre-check instead.
 
 ## Validation contract
 
-**Tools 0.5.0, spec 0.4.0-draft** (contract as of 0.4.0; 0.5.0 adds the polishing API). The `northcel` distribution is the reference
+**Tools 0.5.0, spec 0.4.0-draft** (contract as of 0.4.0; 0.5.0 adds the polishing API). The npm package currently ships the older **0.4.0** launcher; use PyPI or Homebrew for 0.5.0. The `northcel` distribution is the reference
 parser, validator, formatter and CPU renderer *and* the launcher that runs the
 native runtime. The npm `northcel` package runs the same launcher and adds a
 zero-dependency structural JS pre-check, the embedded guide and a Python bridge;

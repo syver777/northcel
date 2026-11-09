@@ -15,7 +15,7 @@ same binary.
 | You have | Run | Native runtime? |
 | --- | --- | --- |
 | Python 3.10–3.13 | `pip install northcel` (or `pipx install northcel`) | Yes on Linux x86_64; the labelled reference renderer elsewhere |
-| Node 20+ | `npm install -g northcel` | Yes on Linux x86_64; an honest error elsewhere |
+| Node 20+ | `npm install -g northcel` | **0.4.0 launcher only** — older than 0.5.0; use PyPI or Homebrew for the current version |
 | Homebrew on Linux | `brew tap syver777/northcel && brew install northcel` | Yes |
 | A shell + curl | `curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh \| bash` | Yes on Linux x86_64 |
 
