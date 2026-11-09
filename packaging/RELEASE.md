@@ -38,7 +38,7 @@ in the environment, never printed or written to artifacts.
 launcher; `northcel-linux-x64` stays at 0.4.0. The old `publish_0_3_1.sh` is
 historical and publishes npm; it MUST NOT be used for this task.
 
-Homebrew must pin the actual published 0.4.0 sdist/native-wheel URLs and SHA-256,
+Homebrew must pin the actual published 0.5.0 sdist (and 0.4.0 native-wheel) URLs and SHA-256,
 and the tap mirror must match. Do not claim a brew install was tested merely
 because the same wheels passed in a fresh venv.
 
@@ -49,11 +49,11 @@ set of artifacts at one version, in a fixed order, plus optional deprecated alia
 
 | Registry | Name | Latest | Notes |
 | --- | --- | --- | --- |
-| PyPI | `northcel` | **0.4.0** | the one package a user installs: reference + launcher, scripts `northcel` and `ncel` |
+| PyPI | `northcel` | **0.5.0** | the one package a user installs: reference + launcher, scripts `northcel` and `ncel` |
 | PyPI | `northcel-native` | **0.4.0** | the Linux x86_64 platform wheel `northcel` depends on; unchanged for 0.5.0 |
-| PyPI | `ncel` | 0.4.0 (deprecated) | alias that depends on `northcel`; publish 0.5.0 with this release |
+| PyPI | `ncel` | **0.5.0** (deprecated) | alias that depends on `northcel` |
 | PyPI | `ncel-native` | 0.4.0 (deprecated) | alias that depends on `northcel-native`; unchanged |
-| npm | `northcel` | **0.4.0** | the launcher + partial pre-check; 0.5.0 is the tools release |
+| npm | `northcel` | **0.5.0** | the launcher + partial pre-check (after the npm publish) |
 | npm | `northcel-linux-x64` | **0.4.0** | the native bundle; unchanged |
 | npm | `@ncel/linux-x64` | 0.2.1 (deprecated) | alias for the bundle; do not publish |
 
