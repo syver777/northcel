@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "northcel"
-version = "0.4.0"
+version = "0.5.0"
 description = "NorthCel (.ncel) — the open drawing language for AI-drawn video: reference parser, validator, formatter and CPU renderer, plus the one-command CLI that runs the native MoonBit + Bend/HVM2 + GLSL runtime when the platform supports it."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -53,7 +53,7 @@ Documentation = "https://github.com/syver777/northcel/tree/main/docs"
 Repository = "https://github.com/syver777/northcel"
 Changelog = "https://github.com/syver777/northcel/blob/main/CHANGELOG.md"
 Issues = "https://github.com/syver777/northcel/issues"
-"Language specification" = "https://github.com/syver777/northcel/blob/main/docs/spec/SPEC-0.3.0-draft.md"
+"Language specification" = "https://github.com/syver777/northcel/blob/main/docs/spec/SPEC-0.4.0-draft.md"
 
 [project.scripts]
 # One install, one implementation switch. Both names reach the launcher, which

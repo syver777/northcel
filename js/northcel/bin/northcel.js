@@ -42,7 +42,9 @@ usage: northcel <command> [options]
   version, --version                   versions (launcher, native runtime, spec)
 
 Not available from npm (use pip for these): fmt, fit, tween — Python authoring
-tools (\`pip install 'northcel[fit]'\`). All resulting .ncel files render natively.
+tools (\`pip install 'northcel[fit]'\`). Spec 0.3 files render natively; files that
+use spec 0.4 (morph, mix, opacity, frame A..B — e.g. \`tween --match\` output)
+need the Python reference (\`pip install northcel\`).
 Platform: the native runtime is Linux x86_64 only, glibc >= 2.39, Mesa EGL/llvmpipe.
 macOS and Windows are not supported natively in this release; \`northcel doctor\`
 explains exactly what is missing.
@@ -87,6 +89,31 @@ function passthrough(command, args) {
   child.on('error', (err) => fail('northcel: failed to run the native runtime: ' + err.message, 1));
 }
 
+/**
+ * The native runtime 0.4.0 implements spec 0.3. A document that uses a spec 0.4
+ * construct must not be handed to it (it would be rejected, or worse, partly
+ * understood). Returns the feature list, or [] when the file is fine for native.
+ */
+function spec04In(args) {
+  const file = args.find((a) => !a.startsWith('-'));
+  if (!file) return [];
+  try {
+    return require('../index.cjs').spec04Features(fs.readFileSync(file, 'utf8'));
+  } catch (err) {
+    return [];
+  }
+}
+
+function refuseNative(command, features) {
+  fail(
+    `northcel: this document uses spec 0.4 (${features.join(', ')}); the native runtime ` +
+      `${locate.NATIVE_RUNTIME_VERSION} implements spec 0.3 only and is not used for it.\n` +
+      'northcel: install the Python reference (`pip install northcel`) to ' + command + ' it; ' +
+      'its results are labelled python-reference.',
+    locate.EXIT_NO_NATIVE
+  );
+}
+
 function sha256(file) {
   return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 }
@@ -126,7 +153,7 @@ function doctor(jsonOut) {
     native: {
       available: !!native && !!native.ok,
       runtime_version: (native && native.version) || locate.NATIVE_RUNTIME_VERSION,
-      spec_version: (native && native.spec_version) || locate.SPEC_VERSION,
+      spec_version: (native && native.spec_version) || locate.NATIVE_SPEC_VERSION,
       bundle: locate.bundleDir(),
       checksums: { verified: checks.checked, failed: checks.failed, missing: checks.missing },
       stage: stageState ? 'MoonBit+Bend+GLSL' : null,
@@ -388,7 +415,8 @@ function main() {
     const state = native && native.ok ? 'native' : 'native unavailable';
     process.stdout.write(
       `northcel ${locate.PACKAGE_VERSION} (npm launcher, short alias ncel, native runtime ` +
-        `${(native && native.version) || locate.NATIVE_RUNTIME_VERSION}, spec ${locate.SPEC_VERSION}, ${state})\n`
+        `${(native && native.version) || locate.NATIVE_RUNTIME_VERSION} implements spec ${locate.NATIVE_SPEC_VERSION}, ` +
+        `spec ${locate.SPEC_VERSION}, ${state})\n`
     );
     return;
   }
@@ -413,7 +441,8 @@ function main() {
     const verdict = locate.platformVerdict();
     const binary = locate.nativeBinary();
     const stripped = rest.filter((a) => a !== '--no-native');
-    if (verdict.supported && binary) return passthrough('check', stripped);
+    const newer = spec04In(stripped);
+    if (verdict.supported && binary && !newer.length) return passthrough('check', stripped);
     const viaPython = findPythonBridge(['check', ...stripped]);
     if (viaPython !== null) process.exit(viaPython);
     return precheck(rest);
@@ -422,6 +451,8 @@ function main() {
     const stripped = rest.filter((a) => a !== '--no-native');
     const viaPython = findPythonBridge([command, ...stripped]);
     if (viaPython !== null) process.exit(viaPython);
+    const newer = spec04In(stripped);
+    if (newer.length) return refuseNative(command, newer);
     return passthrough(command, stripped);
   }
 

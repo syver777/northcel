@@ -1,4 +1,4 @@
-"""Typed AST nodes for NorthCel (.ncel) v0.2."""
+"""Typed AST nodes for NorthCel (.ncel) up to spec 0.4."""
 
 from __future__ import annotations
 
@@ -53,6 +53,30 @@ class ColorValue:
 
 
 @dataclass(frozen=True)
+class ColorMix:
+    """Spec 0.4 colour expression `mix(a, b, u)`: evaluated per frame, sRGB, u clamped to 0..1.
+
+    `a` and `b` are colours (`ColorValue`) or nested mixes. Each channel is
+    `floor(a + (b - a) * u + 0.5)`, so the evaluated colour is an 8-bit RGB value.
+    """
+
+    a: "ColorValue | ColorMix"
+    b: "ColorValue | ColorMix"
+    u: Any
+
+    def describe(self) -> str:
+        def side(c: "ColorValue | ColorMix") -> str:
+            if isinstance(c, ColorMix):
+                return c.describe()
+            return f"${c.palette_ref}" if c.palette_ref else c.to_hex()
+        return f"mix({side(self.a)}, {side(self.b)}, …)"
+
+
+#: A colour attribute value: a static colour or a per-frame colour expression.
+ColorSpec = ColorValue | ColorMix
+
+
+@dataclass(frozen=True)
 class BoilSpec:
     amplitude_px: float = 0.0
     frequency: float = 1.0
@@ -61,7 +85,7 @@ class BoilSpec:
 
 @dataclass(frozen=True)
 class PaperSpec:
-    color: ColorValue = field(default_factory=lambda: ColorValue.from_tone(239))
+    color: ColorSpec = field(default_factory=lambda: ColorValue.from_tone(239))
     antialias_grid: int = 4
     grain: float = 0.0
     span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
@@ -75,39 +99,66 @@ class LayerNode:
     payload: str
     boil: BoilSpec | None = None
     translate_expr: tuple[Any, Any] = (0.0, 0.0)
-    outline_color: ColorValue | None = None
+    outline_color: ColorSpec | None = None
     outline_width: float = 0.0
     span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
+    opacity: Any = None  # spec 0.4: None means opaque (attribute absent)
 
 
 @dataclass(frozen=True)
 class SwarmNode:
     name: str
     agents: int
-    color: ColorValue
+    color: ColorSpec
     payload: str
     boil: BoilSpec | None = None
     translate_expr: tuple[Any, Any] = (0.0, 0.0)
     span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
+    opacity: Any = None
 
 
 @dataclass(frozen=True)
 class StrokeNode:
     name: str
-    color: ColorValue
+    color: ColorSpec
     width_start: float
     width_end: float
     points: list[tuple[Any, Any]]
     boil: BoilSpec | None = None
     span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
+    opacity: Any = None
 
 
 @dataclass(frozen=True)
 class RibbonNode:
     name: str
-    color: ColorValue
+    color: ColorSpec
     points: list[tuple[Any, Any, float]]
     boil: BoilSpec | None = None
+    span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
+    opacity: Any = None
+
+
+@dataclass(frozen=True)
+class MorphNode:
+    """Spec 0.4 `morph name(color: ..., u: expr[, samples: N, outline: ..., opacity: ...]) { "A" => "B" }`.
+
+    Ring i of payload A is paired with ring i of payload B. Each pair is resampled
+    by arclength to `samples` points (default: the larger vertex count, at least 8),
+    winding-normalised, start-aligned by the cyclic shift with least squared
+    distance about the centroids, then linearly interpolated at u (clamped 0..1).
+    u <= 0 paints A's decoded rings exactly; u >= 1 paints B's exactly.
+    """
+
+    name: str
+    color: ColorSpec
+    u: Any
+    payload_a: str
+    payload_b: str
+    samples: int | None = None
+    outline_color: ColorSpec | None = None
+    outline_width: float = 0.0
+    opacity: Any = None
     span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
 
 
@@ -133,7 +184,7 @@ class TransformNode:
 class DefBlock:
     name: str
     params: dict[str, float]
-    items: list[LayerNode | SwarmNode | StrokeNode | RibbonNode | TransformNode]
+    items: list[LayerNode | SwarmNode | StrokeNode | RibbonNode | MorphNode | TransformNode]
     span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
 
 
@@ -142,9 +193,11 @@ class UseNode:
     def_name: str
     args: dict[str, Any]
     span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
+    # Spec 0.4: `opacity` in a use's arguments is group opacity (see renderer).
+    # It is also kept in `args`, so a def may still read it as a parameter.
 
 
-SceneItem = LayerNode | SwarmNode | StrokeNode | RibbonNode | UseNode | DropNode | TransformNode
+SceneItem = LayerNode | SwarmNode | StrokeNode | RibbonNode | MorphNode | UseNode | DropNode | TransformNode
 
 
 @dataclass(frozen=True)
@@ -177,6 +230,18 @@ class FilmNode:
     items: list[SceneItem] = field(default_factory=list)
     frame_overrides: dict[int, SceneNode] = field(default_factory=dict)
     span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
+    #: Spec 0.4 `frame A..B { ... }` blocks, inclusive, in source order.
+    #: An exact `frame N` wins over every range; among ranges the last one wins.
+    frame_ranges: list[tuple[int, int, SceneNode]] = field(default_factory=list)
+
+    def override_for(self, frame_index: int) -> SceneNode | None:
+        """The single override block that applies to `frame_index`, or None."""
+        if frame_index in self.frame_overrides:
+            return self.frame_overrides[frame_index]
+        for lo, hi, scene in reversed(self.frame_ranges):
+            if lo <= frame_index <= hi:
+                return scene
+        return None
 
 
 @dataclass(frozen=True)

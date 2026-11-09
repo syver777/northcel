@@ -1,4 +1,4 @@
-"""Lexer and recursive-descent parser for NorthCel (.ncel) v0.2 with line:column diagnostics."""
+"""Lexer and recursive-descent parser for NorthCel (.ncel) up to spec 0.4 with line:column diagnostics."""
 
 from __future__ import annotations
 
@@ -9,12 +9,14 @@ from typing import Any
 
 from .ast_nodes import (
     BoilSpec,
+    ColorMix,
     ColorValue,
     DefBlock,
     DocumentNode,
     DropNode,
     FilmNode,
     LayerNode,
+    MorphNode,
     PaperSpec,
     RibbonNode,
     SceneItem,
@@ -107,6 +109,8 @@ _TOKEN_SPEC = re.compile(
     (?P<UNIT_NUM>-?(?:\d+\.\d+|\d+)(?:px-b63|px|deg)\b)|
     (?P<NUMBER>-?(?:\d+\.\d+|\d+))|
     (?P<IDENT>[A-Za-z_][A-Za-z0-9_]*)|
+    (?P<RANGE>\.\.)|
+    (?P<ARROW>=>)|
     (?P<PUNCT>[{}()\[\]:,;+\-*/=$])
     """,
     re.VERBOSE,
@@ -252,6 +256,8 @@ class _Parser:
                 items.append(self.parse_stroke())
             elif tok.kind == "IDENT" and tok.value == "ribbon":
                 items.append(self.parse_ribbon())
+            elif tok.kind == "IDENT" and tok.value == "morph":
+                items.append(self.parse_morph())
             else:
                 raise NorthCelSyntaxError(
                     f"Unknown scene statement '{tok.value}'", tok.line, tok.column
@@ -291,6 +297,7 @@ class _Parser:
         defs: dict[str, DefBlock] = {}
         items: list[SceneItem] = []
         frame_overrides: dict[int, SceneNode] = {}
+        frame_ranges: list[tuple[int, int, SceneNode]] = []
 
         while not (self.cur().kind == "PUNCT" and self.cur().value == "}"):
             if self.cur().kind == "EOF":
@@ -317,9 +324,14 @@ class _Parser:
                 items.append(self.parse_stroke())
             elif tok.kind == "IDENT" and tok.value == "ribbon":
                 items.append(self.parse_ribbon())
+            elif tok.kind == "IDENT" and tok.value == "morph":
+                items.append(self.parse_morph())
             elif tok.kind == "IDENT" and tok.value == "frame":
-                f_idx, f_scene = self.parse_frame_override(width, height, fps, precision, seed, paper, palette)
-                frame_overrides[f_idx] = f_scene
+                f_lo, f_hi, f_scene = self.parse_frame_override(width, height, fps, precision, seed, paper, palette)
+                if f_hi is None:
+                    frame_overrides[f_lo] = f_scene
+                else:
+                    frame_ranges.append((f_lo, f_hi, f_scene))
             else:
                 raise NorthCelSyntaxError(
                     f"Unknown film statement '{tok.value}'", tok.line, tok.column
@@ -340,6 +352,7 @@ class _Parser:
             items=items,
             frame_overrides=frame_overrides,
             span=SourceSpan(kw.line, kw.column),
+            frame_ranges=frame_ranges,
         )
 
     def parse_frame_override(
@@ -351,10 +364,21 @@ class _Parser:
         seed: int,
         default_paper: PaperSpec,
         parent_palette: dict[str, ColorValue],
-    ) -> tuple[int, SceneNode]:
+    ) -> tuple[int, int | None, SceneNode]:
         kw = self.expect("IDENT", "frame")
         idx_tok = self.expect("NUMBER")
         f_idx = int(float(idx_tok.value))
+        f_hi: int | None = None
+        if self.match("RANGE"):
+            # Spec 0.4: `frame A..B { ... }` applies to every frame A..B inclusive.
+            hi_tok = self.expect("NUMBER")
+            if "." in idx_tok.value or "." in hi_tok.value:
+                raise NorthCelSyntaxError("Frame range bounds must be integers", idx_tok.line, idx_tok.column)
+            f_hi = int(hi_tok.value)
+            if f_hi < f_idx:
+                raise NorthCelSyntaxError(
+                    f"Frame range {f_idx}..{f_hi} is reversed; write {f_hi}..{f_idx}", idx_tok.line, idx_tok.column
+                )
         self.expect("PUNCT", "{")
         paper = default_paper
         local_palette = dict(parent_palette)
@@ -387,14 +411,17 @@ class _Parser:
                 items.append(self.parse_stroke())
             elif tok.kind == "IDENT" and tok.value == "ribbon":
                 items.append(self.parse_ribbon())
+            elif tok.kind == "IDENT" and tok.value == "morph":
+                items.append(self.parse_morph())
             else:
                 raise NorthCelSyntaxError(f"Unknown frame statement '{tok.value}'", tok.line, tok.column)
         self.expect("PUNCT", "}")
         self.active_palette = prev_palette
         return (
             f_idx,
+            f_hi,
             SceneNode(
-                name=f"frame_{f_idx}",
+                name=f"frame_{f_idx}" if f_hi is None else f"frames_{f_idx}_{f_hi}",
                 width=width,
                 height=height,
                 fps=fps,
@@ -409,10 +436,14 @@ class _Parser:
         )
 
     def parse_palette(self) -> dict[str, ColorValue]:
-        self.expect("IDENT", "palette")
+        kw = self.expect("IDENT", "palette")
         raw = self.parse_kv_brace_or_paren()
         out: dict[str, ColorValue] = {}
         for k, v in raw.items():
+            if isinstance(v, ColorMix):
+                raise NorthCelSyntaxError(
+                    f"Palette entry '{k}' cannot be a mix(); palette colours are static", kw.line, kw.column
+                )
             if isinstance(v, ColorValue):
                 out[k] = v
             elif isinstance(v, (int, float, ExprValue)):
@@ -438,7 +469,7 @@ class _Parser:
             for k, v in raw_attrs.items():
                 params[k] = float(self._eval_const(v))
         self.expect("PUNCT", "{")
-        items: list[LayerNode | SwarmNode | StrokeNode | RibbonNode | TransformNode] = []
+        items: list[LayerNode | SwarmNode | StrokeNode | RibbonNode | MorphNode | TransformNode] = []
         while not (self.cur().kind == "PUNCT" and self.cur().value == "}"):
             if self.cur().kind == "EOF":
                 raise NorthCelSyntaxError(f"Unclosed 'def {name_tok.value}' block", kw.line, kw.column)
@@ -453,6 +484,8 @@ class _Parser:
                 items.append(self.parse_ribbon())
             elif tok.kind == "IDENT" and tok.value == "transform":
                 items.append(self.parse_transform())
+            elif tok.kind == "IDENT" and tok.value == "morph":
+                items.append(self.parse_morph())
             else:
                 raise NorthCelSyntaxError(
                     f"Unsupported statement '{tok.value}' inside def block", tok.line, tok.column
@@ -522,6 +555,7 @@ class _Parser:
             outline_color=outline_col,
             outline_width=outline_w,
             span=SourceSpan(kw.line, kw.column),
+            opacity=self._extract_opacity(attrs, SourceSpan(kw.line, kw.column)),
         )
 
     def parse_swarm(self) -> SwarmNode:
@@ -543,6 +577,7 @@ class _Parser:
             boil=boil,
             translate_expr=tx,
             span=SourceSpan(kw.line, kw.column),
+            opacity=self._extract_opacity(attrs, SourceSpan(kw.line, kw.column)),
         )
 
     def parse_stroke(self) -> StrokeNode:
@@ -576,6 +611,7 @@ class _Parser:
             points=points,
             boil=boil,
             span=SourceSpan(kw.line, kw.column),
+            opacity=self._extract_opacity(attrs, SourceSpan(kw.line, kw.column)),
         )
 
     def parse_ribbon(self) -> RibbonNode:
@@ -603,6 +639,50 @@ class _Parser:
             points=points,
             boil=boil,
             span=SourceSpan(kw.line, kw.column),
+            opacity=self._extract_opacity(attrs, SourceSpan(kw.line, kw.column)),
+        )
+
+    def parse_morph(self) -> MorphNode:
+        kw = self.expect("IDENT", "morph")
+        name_tok = self.expect("IDENT")
+        span = SourceSpan(kw.line, kw.column)
+        attrs = self.parse_attr_list()
+        self.expect("PUNCT", "{")
+        a_tok = self.expect("STRING")
+        self.expect("ARROW")
+        b_tok = self.expect("STRING")
+        self.expect("PUNCT", "}")
+        for key in attrs:
+            if key not in _MORPH_ATTRS:
+                raise NorthCelSyntaxError(f"Unknown morph attribute '{key}'", kw.line, kw.column)
+        if "u" not in attrs:
+            raise NorthCelSyntaxError(f"morph '{name_tok.value}' requires a u: expression", kw.line, kw.column)
+        u = attrs["u"]
+        if isinstance(u, str):
+            u = ExprValue("const", (self._eval_const(u),))
+        if not isinstance(u, ExprValue):
+            raise NorthCelSyntaxError("morph u must be a number or expression", kw.line, kw.column)
+        samples = None
+        if "samples" in attrs:
+            raw = attrs["samples"]
+            if not isinstance(raw, (int, float, ExprValue)):
+                raise NorthCelSyntaxError("morph samples must be an integer", kw.line, kw.column)
+            value = self._eval_const(raw)
+            if value != int(value):
+                raise NorthCelSyntaxError("morph samples must be an integer", kw.line, kw.column)
+            samples = int(value)
+        outline_col, outline_w = self._extract_outline(attrs, False, span)
+        return MorphNode(
+            name=name_tok.value,
+            color=self._extract_color(attrs, default_tone=14, span=span),
+            u=u,
+            payload_a=a_tok.value[1:-1],
+            payload_b=b_tok.value[1:-1],
+            samples=samples,
+            outline_color=outline_col,
+            outline_width=outline_w,
+            opacity=self._extract_opacity(attrs, span),
+            span=span,
         )
 
     def parse_kv_brace_or_paren(self) -> dict[str, Any]:
@@ -649,6 +729,8 @@ class _Parser:
             return self.advance().value[1:-1]
         if tok.kind == "UNIT_NUM":
             return self.advance().value
+        if tok.kind == "IDENT" and tok.value == "mix" and self.peek().value == "(":
+            return self.parse_mix()
         if tok.kind == "IDENT" and tok.value == "rgb" and self.peek().value == "(":
             self.advance()
             self.expect("PUNCT", "(")
@@ -667,6 +749,30 @@ class _Parser:
             self.expect("PUNCT", ")")
             return tuple(items)
         return self.parse_expr()
+
+    def parse_mix(self) -> ColorMix:
+        """`mix(colourA, colourB, u)`; colours may be literals, $refs or nested mixes."""
+        kw = self.expect("IDENT", "mix")
+        self.expect("PUNCT", "(")
+        sides = []
+        for _ in range(2):
+            at = self.cur()
+            value = self.parse_attr_value()
+            if isinstance(value, str) and value.startswith("#"):
+                value = ColorValue.from_hex(value)
+            elif isinstance(value, ExprValue) and value.op == "var" and str(value.args[0]) in self.active_palette:
+                name = str(value.args[0])
+                value = ColorValue.from_palette_ref(name, self.active_palette[name])
+            if not isinstance(value, (ColorValue, ColorMix)):
+                raise NorthCelSyntaxError("mix() expects two colours and a number: mix(#RRGGBB, $name, u)",
+                                          at.line, at.column)
+            sides.append(value)
+            self.expect("PUNCT", ",")
+        u = self.parse_expr()
+        if not (self.cur().kind == "PUNCT" and self.cur().value == ")"):
+            raise NorthCelSyntaxError("mix() takes exactly 3 arguments", kw.line, kw.column)
+        self.expect("PUNCT", ")")
+        return ColorMix(sides[0], sides[1], u)
 
     def _tuple_ahead(self) -> bool:
         depth = 0
@@ -743,8 +849,8 @@ class _Parser:
             return val.eval({"t": 0.0, "f": 0.0, "seed": 42.0})
         raise ValueError(f"Cannot evaluate constant from {val!r}")
 
-    def _resolve_color_val(self, c: Any, span: SourceSpan) -> ColorValue:
-        if isinstance(c, ColorValue):
+    def _resolve_color_val(self, c: Any, span: SourceSpan) -> ColorValue | ColorMix:
+        if isinstance(c, (ColorValue, ColorMix)):
             return c
         if isinstance(c, str) and c.startswith("#"):
             return ColorValue.from_hex(c)
@@ -753,7 +859,7 @@ class _Parser:
             return ColorValue.from_palette_ref(nm, self.active_palette[nm])
         raise NorthCelSyntaxError("Invalid color attribute value", span.line, span.column)
 
-    def _extract_color(self, attrs: dict[str, Any], default_tone: int, span: SourceSpan) -> ColorValue:
+    def _extract_color(self, attrs: dict[str, Any], default_tone: int, span: SourceSpan) -> ColorValue | ColorMix:
         for key in ("color", "fill"):
             if key in attrs:
                 return self._resolve_color_val(attrs[key], span)
@@ -782,6 +888,17 @@ class _Parser:
             return (col, w)
         return (None, 0.0)
 
+    def _extract_opacity(self, attrs: dict[str, Any], span: SourceSpan) -> ExprValue | None:
+        """Spec 0.4 `opacity: expr`, clamped to 0..1 at render time. Absent means opaque."""
+        if "opacity" not in attrs:
+            return None
+        value = attrs["opacity"]
+        if isinstance(value, (int, float)):
+            return ExprValue("const", (float(value),))
+        if isinstance(value, ExprValue):
+            return value
+        raise NorthCelSyntaxError("opacity must be a number or expression in 0..1", span.line, span.column)
+
     def _extract_boil(self, attrs: dict[str, Any]) -> BoilSpec | None:
         if "boil" not in attrs:
             return None
@@ -799,6 +916,9 @@ class _Parser:
         dx = attrs.get("dx", ExprValue("const", (0.0,)))
         dy = attrs.get("dy", ExprValue("const", (0.0,)))
         return (dx, dy)
+
+
+_MORPH_ATTRS = ("color", "fill", "tone", "u", "samples", "outline", "ink", "ink_width", "opacity")
 
 
 def parse_ncel(source: str) -> DocumentNode:

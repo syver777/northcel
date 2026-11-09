@@ -11,7 +11,7 @@ from typing import Sequence
 
 from PIL import Image
 
-from .ast_nodes import FilmNode, LayerNode, RibbonNode, StrokeNode, SwarmNode
+from .ast_nodes import ColorMix, FilmNode, LayerNode, MorphNode, RibbonNode, StrokeNode, SwarmNode
 from .config import CLI_COMMAND, FILE_EXTENSION, LANGUAGE_NAME, PACKAGE_VERSION, SPEC_VERSION
 from .formatter import format_document
 from .parser import NorthCelSyntaxError, parse_ncel
@@ -125,9 +125,23 @@ def cmd_info(args: argparse.Namespace) -> int:
                     {
                         "kind": "layer" if isinstance(it, LayerNode) else "bend_swarm",
                         "name": it.name,
-                        "color": it.color.to_hex(),
+                        "color": _color_text(it.color),
                         "rings": len(rings),
                         "vertices": v_cnt,
+                    }
+                )
+            elif isinstance(it, MorphNode):
+                rings_a = decode_rings_payload(it.payload_a, precision=precision)
+                rings_b = decode_rings_payload(it.payload_b, precision=precision)
+                total_rings += len(rings_a)
+                total_vertices += sum(len(r) for r in rings_a) + sum(len(r) for r in rings_b)
+                layers_summary.append(
+                    {
+                        "kind": "morph",
+                        "name": it.name,
+                        "color": _color_text(it.color),
+                        "rings": len(rings_a),
+                        "vertices": [sum(len(r) for r in rings_a), sum(len(r) for r in rings_b)],
                     }
                 )
             elif isinstance(it, StrokeNode):
@@ -137,7 +151,7 @@ def cmd_info(args: argparse.Namespace) -> int:
                     {
                         "kind": "stroke",
                         "name": it.name,
-                        "color": it.color.to_hex(),
+                        "color": _color_text(it.color),
                         "points": len(it.points),
                     }
                 )
@@ -148,7 +162,7 @@ def cmd_info(args: argparse.Namespace) -> int:
                     {
                         "kind": "ribbon",
                         "name": it.name,
-                        "color": it.color.to_hex(),
+                        "color": _color_text(it.color),
                         "points": len(it.points),
                     }
                 )
@@ -156,6 +170,8 @@ def cmd_info(args: argparse.Namespace) -> int:
     inspect_items(root.items, root.precision)
     if isinstance(root, FilmNode):
         for f_scene in root.frame_overrides.values():
+            inspect_items(f_scene.items, f_scene.precision)
+        for _lo, _hi, f_scene in root.frame_ranges:
             inspect_items(f_scene.items, f_scene.precision)
 
     info = {
@@ -177,6 +193,10 @@ def cmd_info(args: argparse.Namespace) -> int:
     }
     print(json.dumps(info, indent=2))
     return 0
+
+
+def _color_text(c) -> str:
+    return c.describe() if isinstance(c, ColorMix) else c.to_hex()
 
 
 def cmd_render(args: argparse.Namespace) -> int:

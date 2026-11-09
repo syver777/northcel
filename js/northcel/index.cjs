@@ -78,7 +78,7 @@ class PrecheckError extends Error {
 
 // Same token classes/order as the reference lexer, without evaluation or ASTs.
 function tokenize(source) {
-  const re = /(?:[ \t\r]+)|(?:\n)|(?:\/\/[^\n]*)|(?:"(?:\\[\s\S]|[^"\\])*")|(?:#[0-9A-Fa-f]{3,6}\b)|(?:-?(?:\d+\.\d+|\d+)(?:px-b63|px|deg)\b)|(?:-?(?:\d+\.\d+|\d+))|(?:[A-Za-z_][A-Za-z0-9_]*)|(?:[{}()\[\]:,;+\-*/=$])/y;
+  const re = /(?:[ \t\r]+)|(?:\n)|(?:\/\/[^\n]*)|(?:"(?:\\[\s\S]|[^"\\])*")|(?:#[0-9A-Fa-f]{3,6}\b)|(?:-?(?:\d+\.\d+|\d+)(?:px-b63|px|deg)\b)|(?:-?(?:\d+\.\d+|\d+))|(?:[A-Za-z_][A-Za-z0-9_]*)|(?:\.\.)|(?:=>)|(?:[{}()\[\]:,;+\-*/=$])/y;
   const out = [];
   let pos = 0, line = 1, column = 1;
   while (pos < source.length) {
@@ -139,7 +139,12 @@ class Precheck {
         const attrs = this.attrs(palette, true);
         if (t.value === "palette") for (const name of Object.keys(attrs)) palette.add(name);
       } else if (t.value === "frame") {
-        this.kind("number");
+        const lo = this.kind("number");
+        if (this.match("..")) {
+          // Spec 0.4 inclusive frame range `frame A..B { ... }`.
+          const hi = this.kind("number");
+          if (Number(hi.value) < Number(lo.value)) this.fail(`Frame range ${lo.value}..${hi.value} is reversed`, lo);
+        }
         this.body("frame", new Set(palette), precision);
       } else if (t.value === "use" || t.value === "drop" || t.value === "transform") {
         this.kind("ident");
@@ -156,7 +161,20 @@ class Precheck {
         names.add(name.value);
         if (this.cur().value === "(" || t.value !== "ribbon") this.attrs(palette);
         this.expect("{");
-        if (["layer", "wash", "cel", "bend_swarm", "swarm"].includes(t.value)) {
+        if (t.value === "morph") {
+          // Spec 0.4 `morph name(...) { "ringsA" => "ringsB" }`: ring i pairs with ring i.
+          const a = this.kind("string");
+          this.expect("=>");
+          const b = this.kind("string");
+          let ra, rb;
+          try {
+            ra = decodeRingsPayload(a.value.slice(1, -1), precision.replaceAll('"', ""));
+            rb = decodeRingsPayload(b.value.slice(1, -1), precision.replaceAll('"', ""));
+          } catch (err) { this.fail(`Block '${name.value}' invalid ring payload: ${err.message}`, a); }
+          if (!ra.length || ra.length !== rb.length) {
+            this.fail(`Morph '${name.value}' pairs ring i with ring i, but its sides have ${ra.length} and ${rb.length} rings`, a);
+          }
+        } else if (["layer", "wash", "cel", "bend_swarm", "swarm"].includes(t.value)) {
           const payload = this.kind("string");
           try { decodeRingsPayload(payload.value.slice(1, -1), precision.replaceAll('"', "")); }
           catch (err) { this.fail(`Block '${name.value}' invalid ring payload: ${err.message}`, payload); }
@@ -189,6 +207,10 @@ class Precheck {
       this.value(palette);
       while (this.match(",")) this.value(palette);
       this.expect(")");
+    } else if (this.cur().value === "mix" && this.tokens[this.i + 1].value === "(") {
+      // Spec 0.4 colour expression mix(colourA, colourB, u).
+      this.take(); this.expect("(");
+      this.value(palette); this.expect(","); this.value(palette); this.expect(","); this.expr(); this.expect(")");
     } else if (this.cur().value === "rgb") {
       this.take(); this.expect("(");
       this.expr(); this.expect(","); this.expr(); this.expect(","); this.expr(); this.expect(")");
@@ -226,6 +248,26 @@ class Precheck {
   }
 }
 
+/**
+ * Spec 0.4 constructs in a source, by token shape only: `morph`, `mix(`,
+ * `opacity:`, `frame A..B` and a 0.4 version header. The native runtime 0.4.0
+ * implements spec 0.3, so the launcher must not hand such a file to it.
+ */
+function spec04Features(source) {
+  let tokens;
+  try { tokens = tokenize(source); } catch (err) { return []; }
+  const found = new Set();
+  tokens.forEach((t, i) => {
+    const next = tokens[i + 1] || {};
+    if (t.kind === "ident" && t.value === "morph" && next.kind === "ident") found.add("morph");
+    if (t.kind === "ident" && t.value === "mix" && next.value === "(") found.add("mix");
+    if (t.kind === "ident" && t.value === "opacity" && (next.value === ":" || next.value === "=")) found.add("opacity");
+    if (t.value === "..") found.add("frame-range");
+    if (i === 1 && tokens[0].value === "northcel" && /^"?0\.(?:[4-9]|\d\d)/.test(t.value)) found.add("spec-0.4-header");
+  });
+  return [...found].sort();
+}
+
 function checkNcelSource(source) {
   const result = {
     ok: false, partial: true, validator: "js", specVersion: CONFIG.SPEC_VERSION,
@@ -248,4 +290,5 @@ module.exports = {
   decodeRingB63,
   decodeRingsPayload,
   checkNcelSource,
+  spec04Features,
 };

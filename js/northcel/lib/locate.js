@@ -15,9 +15,11 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const PACKAGE_VERSION = '0.4.0';
+const PACKAGE_VERSION = '0.5.0';
 const NATIVE_RUNTIME_VERSION = '0.4.0';
-const SPEC_VERSION = '0.3.0-draft';
+const SPEC_VERSION = '0.4.0-draft';
+// The bundled native runtime 0.4.0 implements spec 0.3; spec 0.4 documents use the Python reference.
+const NATIVE_SPEC_VERSION = '0.3.0-draft';
 const EXIT_NO_NATIVE = 3;
 
 // Mirrors the Python launcher (northcel/launcher/platform_info.py): the loader
@@ -201,6 +203,7 @@ module.exports = {
   PACKAGE_VERSION,
   NATIVE_RUNTIME_VERSION,
   SPEC_VERSION,
+  NATIVE_SPEC_VERSION,
   EXIT_NO_NATIVE,
   bundleDir,
   nativeBinary,

@@ -113,7 +113,7 @@ class TestEglDiscovery(unittest.TestCase):
             with mock.patch.dict(os.environ, {"PATH": "", "HOME": tmp}, clear=True):
                 with mock.patch.object(
                     platform_info, "find_egl_runtime", return_value=None
-                ):
+                ), mock.patch.object(platform_info.sys, "platform", "linux"):
                     with mock.patch.object(platform_info, "machine", return_value="x86_64"):
                         with mock.patch.object(
                             platform_info, "glibc_version", return_value="2.39"

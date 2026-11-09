@@ -60,7 +60,7 @@ test("Node-only invalid arguments, I/O errors and missing renderer never pass", 
   for (const command of ["render", "film"]) assert.equal(run([command, valid]).status, 3);
   assert.equal(run(["fmt", valid]).status, 1);
   assert.equal(run(["--version"]).status, 0);
-  assert.match(run(["--version"]).stdout, /^northcel 0\.4\.0 \(npm launcher/);
+  assert.match(run(["--version"]).stdout, /^northcel 0\.5\.0 \(npm launcher/);
   assert.equal(run(["check", "--help"]).status, 0);
 });
 

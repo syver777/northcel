@@ -1,6 +1,6 @@
 {
   "name": "northcel",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "NorthCel (.ncel) — the open drawing language for AI-drawn video. This package runs the native MoonBit + Bend/HVM2 + GLSL runtime on Linux x86_64, ships a zero-dependency partial JS pre-check, and says plainly when a platform cannot render natively.",
   "license": "MIT OR Apache-2.0",
   "author": "NorthCel contributors",
