@@ -165,6 +165,54 @@ class MorphNode:
 
 
 @dataclass(frozen=True)
+class GroupNode:
+    """Spec 0.6 named group: a paint unit with a pivot, optional clip/parent and opacity.
+
+    Groups may contain primitives, `use`, transforms, warps, nudges and nested
+    groups. The group name addresses all its paints for transforms/warps and for
+    clipping. `clip` names another entry (or group) whose coverage limits this
+    group. `parent` is an optional rigging link: the child group joins the
+    parent's transform path.
+    """
+
+    name: str
+    items: list["SceneItem"]
+    pivot: tuple[Any, Any] = (0.0, 0.0)
+    clip: str | None = None
+    parent: str | None = None
+    opacity: Any = None
+    span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
+
+
+@dataclass(frozen=True)
+class WarpNode:
+    """Spec 0.6 handle-based free-form deformation.
+
+    `handles` is a tuple of (x, y, dx, dy). Each point inside `radius` of a
+    handle receives the weighted average of the handle offsets, with a smooth
+    falloff `(1 - (d/r)^2)^2`. Handles may be expressions, so an AI can animate
+    a petal, cloth or squash with a few numbers.
+    """
+
+    target_name: str
+    handles: tuple[tuple[Any, Any, Any, Any], ...]
+    radius: Any = 120.0
+    span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
+
+
+@dataclass(frozen=True)
+class NudgeNode:
+    """Spec 0.6 per-vertex offset on a named shape (ring/vertex indices)."""
+
+    target_name: str
+    vertex: int
+    dx: Any
+    dy: Any
+    ring: int = 0
+    span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
+
+
+@dataclass(frozen=True)
 class DropNode:
     """v0.2 Frame Delta primitive: removes a named layer/item inherited from the base film."""
 
@@ -179,6 +227,7 @@ class TransformNode:
     rotate: Any = 0.0
     anchor: tuple[Any, Any] = (0.0, 0.0)
     translate: tuple[Any, Any] = (0.0, 0.0)
+    anchor_explicit: bool = False
     span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
 
 
@@ -186,7 +235,7 @@ class TransformNode:
 class DefBlock:
     name: str
     params: dict[str, float]
-    items: list[LayerNode | SwarmNode | StrokeNode | RibbonNode | MorphNode | TransformNode]
+    items: list["SceneItem"]
     span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
 
 
@@ -199,7 +248,8 @@ class UseNode:
     # It is also kept in `args`, so a def may still read it as a parameter.
 
 
-SceneItem = LayerNode | SwarmNode | StrokeNode | RibbonNode | MorphNode | UseNode | DropNode | TransformNode
+SceneItem = (LayerNode | SwarmNode | StrokeNode | RibbonNode | MorphNode | UseNode | DropNode
+             | TransformNode | GroupNode | WarpNode | NudgeNode)
 
 
 @dataclass(frozen=True)

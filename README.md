@@ -56,16 +56,28 @@ $ brew tap syver777/northcel && brew install northcel
 $ curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh | bash
 ```
 
-These install the current 0.5.0 CLI, which uses the native runtime where it can
-and the labelled Python reference everywhere else.
+These install the current 0.6.0 CLI, which uses the native runtime where it can
+and the labelled Python reference everywhere else. **Homebrew is for Linux
+x86_64 only** (the formula pins the manylinux native wheel); on macOS use
+`pipx install northcel` or `pip install northcel`, which run the labelled Python
+reference. The one-line installer is also Linux x86_64 only.
 
-**npm:** the npm package currently ships the older **0.4.0** launcher. For 0.5.0,
+**npm:** the npm package currently ships the older **0.4.0** launcher. For 0.6.0,
 install from PyPI or Homebrew; npm is not the recommended install for this
 version.
 
 ## First steps
 
-**New in 0.5.0 (spec 0.4):** `mix(a, b, u)` colour expressions, a `morph`
+**New in 0.6.0 (spec 0.5):** addressable drawings — named `group` blocks with
+pivots, opacity, clipping and optional parenting; group-wide `transform`; a
+handle-based smooth `warp` for petals, cloth and squash; per-vertex `nudge`; and
+cheap `use` + delta frame blocks. `fit --stacked` now gives every shape a stable
+id and a `shape_manifest` receipt, and `northcel shapes` queries by id, colour,
+area, location, parent or mask. Spec 0.5 is Python-reference only; the native
+runtime stays at spec 0.3 and the launchers route honestly. See the
+[spec](docs/spec/SPEC-0.5.0-draft.md).
+
+**0.5.0 (spec 0.4):** `mix(a, b, u)` colour expressions, a `morph`
 primitive, inclusive `frame A..B` blocks and layer/group `opacity`; `fit --stacked`
 writes painter's-order shapes and `tween --match` fills the gaps between
 independently drawn keys with one compact film, falling back to an explicit cut or
@@ -115,7 +127,7 @@ through the labelled Python reference.
 - **[Documentation index](docs/README.md)** — the full map.
 - [Format & tooling reference](docs/reference.md) — the CLI and the validation
   contract.
-- [Specification](docs/spec/SPEC-0.4.0-draft.md) · [changelog](CHANGELOG.md) ·
+- [Specification](docs/spec/SPEC-0.5.0-draft.md) · [changelog](CHANGELOG.md) ·
   [decision log](docs/DECISIONS.md).
 
 ## Contributing

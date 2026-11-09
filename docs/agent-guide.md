@@ -23,6 +23,40 @@ This guide instructs AI coding agents (Claude Code, OpenCode, Codex, Cursor, Gem
 If a request is about a still, use `scene`; if it is about timing, use `film`.
 If you are unsure, read the diagnostic — it gives an exact `line:column`.
 
+## Spec 0.5: edit a part, not the whole drawing
+
+`fit --stacked` returns stable ids (`s<sha1>`) and a `shape_manifest`; inspect
+one with `northcel shapes file.ncel --ids s…` or query by colour/area/bbox/mask.
+Turn a set of shapes into a named unit and change only that unit:
+
+```ncel
+northcel "0.5.0-draft"
+film Edit(width: 640, height: 360, fps: 24, frames: 3) {
+  paper { color: #FFF8EC }
+  def Face {
+    group face(pivot: (320, 160)) {
+      layer head(color: #F2C6A0) { "240,100 160,0 0,160 -160,0" }
+      layer eye_l(color: #202830) { "280,150 12,0 0,12 -12,0" }
+      layer cheek(color: #E8A0B8) { "360,190 40,0 0,40 -40,0" }
+    }
+  }
+  frame 0 { use Face }
+  frame 1 { use Face; transform face(rotate: 2) }
+  frame 2 {
+    use Face
+    nudge eye_l(vertex: 2, dx: 3px, dy: -1px)
+    warp cheek(handles: ((300, 200, 2, -1),), radius: 60)
+  }
+}
+```
+
+The blocks are general: a `group` may contain any primitives, nested groups,
+`use`, `transform`, `warp` and `nudge`; a group can be clipped by another entry
+(`clip: mask`) and can opt into a parent (`parent: arm`). There is no head,
+flower or cloud preset. `transform` is for rigid moves; `warp` is for non-rigid
+squash/sway/cloth. The full contract is
+[SPEC-0.5.0-draft](spec/SPEC-0.5.0-draft.md).
+
 ## Verify a frame, not just the exit code
 
 ```console
@@ -59,7 +93,7 @@ reproduced by CI. The [architecture page](architecture.md) explains why the
 reference and native renderers can differ by a handful of edge pixels.
 
 <!-- npm-guide:start -->
-# NorthCel quick agent guide — tools 0.5.0, spec 0.4.0-draft
+# NorthCel quick agent guide — tools 0.6.0, spec 0.5.0-draft
 
 Discover this guide offline with `northcel guide` (or `npx northcel guide`). The
 npm package runs the native runtime on Linux x86_64 and otherwise falls back to the

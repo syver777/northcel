@@ -285,6 +285,11 @@ def _samples(sa: Shape, sb: Shape, opt: FilmOptions) -> int:
     return int(min(opt.max_samples, max(24, max(sa.perimeter, sb.perimeter) / opt.samples_per_px)))
 
 
+def _paint_order(shape: Shape) -> float:
+    """Use the explicit stacking order (gap/underpaint) when present."""
+    return shape.z if shape.z is not None else shape.area
+
+
 def film_from_keys(keys: Sequence[Key], transitions: Sequence[Transition | str] | None = None,
                    options: FilmOptions | None = None) -> tuple[str, dict]:
     """Write one spec 0.4 `film` from ordered keys. Returns (source, receipt).
@@ -415,22 +420,22 @@ def film_from_keys(keys: Sequence[Key], transitions: Sequence[Transition | str] 
                 continue
             if sa.color == sb.color and (max(sa.area, sb.area) > big_area or
                                          (sa.color == ink and max(sa.area, sb.area) > ink_area)):
-                items.append((sa.area, seq, f'    layer t{i}_{seq}a(color: ${names[sa.color]}, opacity: 1 - step(0.5, u)) {{ "{ta}" }}'))
-                items.append((sb.area, seq, f'    layer t{i}_{seq}b(color: ${names[sb.color]}, opacity: step(0.5, u)) {{ "{tb}" }}'))
+                items.append((_paint_order(sa), seq, f'    layer t{i}_{seq}a(color: ${names[sa.color]}, opacity: 1 - step(0.5, u)) {{ "{ta}" }}'))
+                items.append((_paint_order(sb), seq, f'    layer t{i}_{seq}b(color: ${names[sb.color]}, opacity: step(0.5, u)) {{ "{tb}" }}'))
                 continue
             colour = f"${names[sa.color]}" if sa.color == sb.color else f"mix(${names[sa.color]}, ${names[sb.color]}, u)"
-            items.append(((sa.area + sb.area) / 2.0, seq,
+            items.append(((_paint_order(sa) + _paint_order(sb)) / 2.0, seq,
                           f'    morph t{i}_{seq}(color: {colour}, u: u, samples: {_samples(sa, sb, opt)}) {{ "{ta}" => "{tb}" }}'))
         base = len(match.pairs)
         for n_o, pi in enumerate(match.only_a):
             text = encode_ring(A[pi].ring)
             if text:
-                items.append((A[pi].area, base + n_o, f'    layer t{i}_a{pi}(color: ${names[A[pi].color]}, opacity: 1 - step(0.5, u)) {{ "{text}" }}'))
+                items.append((_paint_order(A[pi]), base + n_o, f'    layer t{i}_a{pi}(color: ${names[A[pi].color]}, opacity: 1 - step(0.5, u)) {{ "{text}" }}'))
         base += len(match.only_a)
         for n_o, pj in enumerate(match.only_b):
             text = encode_ring(B[pj].ring)
             if text:
-                items.append((B[pj].area, base + n_o, f'    layer t{i}_b{pj}(color: ${names[B[pj].color]}, opacity: step(0.5, u)) {{ "{text}" }}'))
+                items.append((_paint_order(B[pj]), base + n_o, f'    layer t{i}_b{pj}(color: ${names[B[pj].color]}, opacity: step(0.5, u)) {{ "{text}" }}'))
         items.sort(key=lambda it: (-it[0], it[1]))
         lines.append(f"  def T{i}(u: 0) {{")
         lines.extend(line for _area, _seq, line in items)

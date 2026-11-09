@@ -22,6 +22,8 @@ These are the message templates raised by `parser.py`, `validator.py` and `rings
 
 | File | Level | Template | Reachable from `check` |
 | --- | --- | --- | --- |
+| `parser.py` | error | `{…} must name an entry` | yes |
+| `parser.py` | error | `Unsupported group statement '{…}'` | yes |
 | `parser.py` | error | `Expected expression, got '{…}'` | yes |
 | `parser.py` | error | `Invalid color attribute value` | yes |
 | `parser.py` | error | `opacity must be a number or expression in 0..1` | yes |
@@ -29,6 +31,9 @@ These are the message templates raised by `parser.py`, `validator.py` and `rings
 | `parser.py` | error | `Expected {…}, got {…}` | yes |
 | `parser.py` | error | `Unexpected trailing token '{…}'` | yes |
 | `parser.py` | error | `Frame index must be an integer` | yes |
+| `parser.py` | error | `{…} requires 2 components` | yes |
+| `parser.py` | error | `warp needs handles: ((x, y, dx, dy), ...)` | yes |
+| `parser.py` | error | `nudge needs vertex:` | yes |
 | `parser.py` | error | `morph '{…}' requires a u: expression` | yes |
 | `parser.py` | error | `morph u must be a number or expression` | yes |
 | `parser.py` | error | `mix() takes exactly 3 arguments` | yes |
@@ -43,6 +48,11 @@ These are the message templates raised by `parser.py`, `validator.py` and `rings
 | `parser.py` | error | `Unknown transform attribute '{…}'` | yes |
 | `parser.py` | error | `Expected a numeric transform component` | yes |
 | `parser.py` | error | `transform.{…} requires 2 components` | yes |
+| `parser.py` | error | `Unknown group attribute '{…}'` | yes |
+| `parser.py` | error | `Unclosed 'group {…}' block` | yes |
+| `parser.py` | error | `Unknown warp attribute '{…}'` | yes |
+| `parser.py` | error | `each warp handle needs 4 components (x, y, dx, dy)` | yes |
+| `parser.py` | error | `Unknown nudge attribute '{…}'` | yes |
 | `parser.py` | error | `Unknown morph attribute '{…}'` | yes |
 | `parser.py` | error | `morph samples must be an integer` | yes |
 | `parser.py` | error | `Expected ':' after attribute '{…}'` | yes |
@@ -56,6 +66,7 @@ These are the message templates raised by `parser.py`, `validator.py` and `rings
 | `parser.py` | error | `Unknown scene statement '{…}'` | yes |
 | `parser.py` | error | `Unknown frame statement '{…}'` | yes |
 | `parser.py` | error | `Unknown film statement '{…}'` | yes |
+| `validator.py` | error | `{…} requires northcel "0.5.0-draft" (this document declares '{…}')` | yes |
 | `validator.py` | error | `Unsupported NorthCel version '{…}'. Supported: {…}` | yes |
 | `validator.py` | error | `Canvas dimensions {…}x{…} out of valid range [1..8192]` | yes |
 | `validator.py` | error | `FPS {…} out of valid range [1..240]` | yes |
@@ -79,6 +90,10 @@ These are the message templates raised by `parser.py`, `validator.py` and `rings
 | `validator.py` | error | `Morph '{…}' samples must be {…}..{…} (got {…})` | yes |
 | `validator.py` | error | `Morph '{…}' has invalid ring payload: {…}` | yes |
 | `validator.py` | error | `Morph '{…}' pairs ring i with ring i, but its sides have {…} and {…} rings` | yes |
+| `validator.py` | error | `Group '{…}' target '{…}' must be a name` | yes |
+| `validator.py` | error | `Warp '{…}' needs at least one handle` | yes |
+| `validator.py` | error | `Warp '{…}' handles need (x, y, dx, dy)` | yes |
+| `validator.py` | error | `Nudge '{…}' ring/vertex must be >= 0` | yes |
 | `validator.py` | error | `Use of undefined def block '{…}'` | yes |
 | `rings.py` | error | `A polygon ring requires at least 3 vertices.` | no (encoder-only or unreachable through a document) |
 | `rings.py` | error | `Ring collapses to fewer than 3 distinct quarter-pixel vertices.` | no (encoder-only or unreachable through a document) |
@@ -800,7 +815,7 @@ scene Bad(width: 320, height: 180) {
 
 ```console
 $ northcel check broken.ncel
-broken.ncel:1:1: error: Unsupported NorthCel version '9.9.0'. Supported: ('0.1', '0.1.0', '0.1.0-draft', '0.2', '0.2.0', '0.2.0-draft', '0.3', '0.3.0', '0.3.0-draft', '0.4', '0.4.0', '0.4.0-draft')
+broken.ncel:1:1: error: Unsupported NorthCel version '9.9.0'. Supported: ('0.1', '0.1.0', '0.1.0-draft', '0.2', '0.2.0', '0.2.0-draft', '0.3', '0.3.0', '0.3.0-draft', '0.4', '0.4.0', '0.4.0-draft', '0.5', '0.5.0', '0.5.0-draft')
 # exit 1
 ```
 

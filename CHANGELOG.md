@@ -12,6 +12,24 @@ move for packaging-only releases.
 
 ## [Unreleased]
 
+## [0.6.0] — Spec 0.5: addressable groups, warp, nudge and frame deltas (2026-11-09)
+
+### Added
+- Spec **0.5.0-draft** (`docs/spec/SPEC-0.5.0-draft.md`): named `group` blocks with
+  pivot/opacity/clip/parent, group-wide `transform`, handle-based smooth `warp`,
+  per-vertex `nudge`, and cheap key deltas via `use` plus nudges/transforms.
+- `fit --stacked` gives every shape a stable `s<sha1>` id and a `shape_manifest`
+  receipt (colour, area, kind, bbox, centroid, parent, children, neighbours).
+- `northcel shapes FILE` region queries by id/colour/area/bbox/centroid/parent/mask.
+- Groups, warps and nudges are Python-reference features; the native runtime stays
+  at spec 0.3 and 0.4/0.5 documents are routed to the labelled reference.
+
+### Compatibility
+- 0.1–0.4 documents keep their pixels. Headerless documents are now
+  `0.5.0-draft`; 0.5 constructs in an older header are located validation errors.
+
+
+
 ## [0.5.0] — Spec 0.4: colour expressions, morph, frame ranges, opacity; polishing tools (2026-11-09)
 
 ### Added

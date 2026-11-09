@@ -1,5 +1,5 @@
 {
-  "spec_version": "0.4.0-draft",
+  "spec_version": "0.5.0-draft",
   "tolerance_mae": 1.0,
   "cases": [
     {
@@ -290,6 +290,54 @@
           }
         ]
       }
+    },
+    {
+      "name": "06_spec05_groups_warp_nudge",
+      "file": "06_spec05_groups_warp_nudge.ncel",
+      "reference_only": true,
+      "reference_only_reason": "spec 0.5: group/clip/warp/nudge; the native runtime 0.4.0 implements spec 0.3 and the launchers route this document to the Python reference",
+      "probes": [
+        {
+          "x": 50,
+          "y": 60,
+          "rgb": [
+            255,
+            0,
+            0
+          ],
+          "note": "group clip + 45 degree pivot transform: red diamond"
+        },
+        {
+          "x": 60,
+          "y": 45,
+          "rgb": [
+            0,
+            255,
+            0
+          ],
+          "note": "nested group moved by warp"
+        },
+        {
+          "x": 50,
+          "y": 50,
+          "rgb": [
+            255,
+            255,
+            255
+          ],
+          "note": "nudged top vertex opens the pivot point"
+        },
+        {
+          "x": 20,
+          "y": 20,
+          "rgb": [
+            255,
+            255,
+            255
+          ],
+          "note": "paper outside the clip"
+        }
+      ]
     }
   ]
 }

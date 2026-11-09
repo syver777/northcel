@@ -1,4 +1,4 @@
-# NorthCel quick agent guide — tools 0.5.0, spec 0.4.0-draft
+# NorthCel quick agent guide — tools 0.6.0, spec 0.5.0-draft
 
 Discover this guide offline with `northcel guide` (or `npx northcel guide`). The
 npm package runs the native runtime on Linux x86_64 and otherwise falls back to the

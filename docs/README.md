@@ -8,7 +8,7 @@ the frames.
 - **Commands:** `northcel` (short alias `ncel`)
 - **Packages:** `northcel` on PyPI and npm (plus the `northcel-native` /
   `northcel-linux-x64` platform artifacts)
-- **Version:** tools `0.5.0`; specification `0.4.0-draft` (the native runtime 0.4.0
+- **Version:** tools `0.6.0`; specification `0.5.0-draft` (the native runtime 0.4.0
   implements `0.3.0-draft`; spec 0.4 documents use the Python reference). Earlier
   history: tools `0.4.0` / spec `0.3.0-draft`, then tools `0.3.1` / spec
   `0.2.0-draft` (backward compatible with `0.1.0-draft`)
@@ -25,7 +25,7 @@ the frames.
 | understand the runtime | **[Architecture](architecture.md)** — grammar → swarms → pixels, determinism, platforms |
 | have an AI agent author `.ncel` | **[AI-agent guide](agent-guide.md)** |
 | look up a CLI flag or the check contract | **[Format & tooling reference](reference.md)** |
-| read the normative grammar | [Specification `0.4.0-draft`](spec/SPEC-0.4.0-draft.md) (complete; archival [`0.3.0-draft`](spec/SPEC-0.3.0-draft.md), [`0.2.0-draft`](spec/SPEC-0.2.0-draft.md), [`0.1.0-draft`](spec/SPEC-0.1.0-draft.md)) |
+| read the normative grammar | [Specification `0.5.0-draft`](spec/SPEC-0.5.0-draft.md) (complete; archival [`0.4.0-draft`](spec/SPEC-0.4.0-draft.md), [`0.3.0-draft`](spec/SPEC-0.3.0-draft.md), [`0.2.0-draft`](spec/SPEC-0.2.0-draft.md), [`0.1.0-draft`](spec/SPEC-0.1.0-draft.md)) |
 | see what the examples measure | [Examples & measurements](examples.md) |
 | understand why it is built this way | [Decision log](DECISIONS.md) |
 | get a short answer | [FAQ](faq.md) |
@@ -80,12 +80,15 @@ build. See [architecture](architecture.md#the-docs-check).
 
 ## One command, two implementations
 
-`pip install northcel` (or Homebrew) installs the current 0.5.0 CLI. It runs the
+`pip install northcel` (or, on Linux x86_64, Homebrew) installs the current
+0.6.0 CLI. **Homebrew is not a macOS path**: the formula requires Linux x86_64;
+macOS users should use `pipx install northcel` or `pip install northcel` and get
+the labelled Python reference. The installation runs the
 **native runtime** where it can (Linux x86_64: MoonBit typed AST, Bend/HVM2
 swarms, GLSL 4.30 on Mesa/EGL) and the **Python reference implementation**
 elsewhere, always labelled `python-reference` — never called native.
 
-**npm:** the npm package currently ships the older **0.4.0** launcher. For 0.5.0,
+**npm:** the npm package currently ships the older **0.4.0** launcher. For 0.6.0,
 use PyPI or Homebrew; npm is not the recommended install for this version. The npm
 launcher can also answer `check` with a zero-dependency **structural pre-check**.
 

@@ -32,6 +32,8 @@ usage: northcel <command> [options]        (short alias: ncel)
   verify  [--json] [--keep DIR]        render the bundled fixtures with the native runtime
   check   FILE [--json]                parse + validate (native when available)
   info    FILE [--json]                scene/film metadata, layers, rings, vertices
+  shapes  FILE [--frame N] [--ids …] [--color …] [--area-min …]
+                                       list/query evaluated shapes with stable ids
   render  FILE [-o OUT.png] [--frame N] [--seed N] [--json]
   film    FILE -o OUTDIR [--frames 0..5] [--mp4 OUT.mp4] [--json]
   fmt     FILE [-w|--write] [--check]  canonical formatting (Python reference)
@@ -45,8 +47,8 @@ usage: northcel <command> [options]        (short alias: ncel)
   version, --version                   versions (native runtime + spec)
 
 Global: --no-native  force the labelled Python reference path (never called "native")
-Spec 0.4 documents (mix, morph, opacity, frame A..B) always use the labelled Python
-reference: the native runtime 0.4.0 implements spec 0.3.
+Spec 0.4/0.5 documents (mix, morph, opacity, frame A..B, groups, warp, nudge) always
+use the labelled Python reference: the native runtime 0.4.0 implements spec 0.3.
 Platform: Linux x86_64, glibc >= 2.39, Mesa EGL/llvmpipe. macOS/Windows are not
 supported natively in this release; `northcel doctor` explains exactly what is
 missing and every render there is labelled `python-reference`.
@@ -108,17 +110,19 @@ def spec04_reason(args: list[str]) -> str | None:
         from pathlib import Path
 
         from ..parser import NorthCelSyntaxError, parse_ncel, tokenize
-        from ..validator import spec04_features, spec_minor
+        from ..validator import spec04_features, spec05_features, spec_minor
 
         source = Path(files[0]).read_text(encoding="utf-8")
         doc = parse_ncel(source)
         declared = tokenize(source)[0].value == "northcel"
     except (OSError, UnicodeDecodeError, NorthCelSyntaxError, ValueError):
         return None
-    features = sorted({name for name, _line, _col in spec04_features(doc)})
+    features = sorted({name for name, _line, _col in spec04_features(doc)}
+                      | {name for name, _line, _col in spec05_features(doc)})
     if features:
+        label = "spec 0.4/0.5 features" if any(f in ("group", "warp", "nudge") for f in features) else "spec 0.4 features"
         return (
-            f"{files[0]} uses spec 0.4 features ({', '.join(features)}); the native runtime "
+            f"{files[0]} uses {label} ({', '.join(features)}); the native runtime "
             f"{NATIVE_RUNTIME_VERSION} implements spec 0.3 only"
         )
     if declared and spec_minor(doc.spec_version) > NATIVE_SPEC_MINOR:
@@ -238,6 +242,8 @@ def main(argv: list[str] | None = None) -> int:
         return _passthrough("check", rest)
     if command == "info":
         return _passthrough("info", rest)
+    if command == "shapes":
+        return fallback.delegate(["shapes", *rest])
 
     if command == "fmt":
         # The native runtime has no formatter; formatting is the Python reference.

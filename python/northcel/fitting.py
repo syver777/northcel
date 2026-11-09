@@ -149,7 +149,7 @@ def fit_stacked(image: Image.Image, colors: int = 32, tolerance: float = 0.6,
     Use `northcel.shapes.stacked_source` to write the drawing as `.ncel`.
     """
     from .rings import decode_ring_b63_q25
-    from .shapes import shape_summary, stack_planar
+    from .shapes import shape_manifest, shape_summary, stack_planar
 
     image, indices, rgb_palette, order, bg, mask, t0 = _quantize(image, colors, tolerance, min_area, palette, mask)
     labels = indices.astype(np.int32)
@@ -183,6 +183,7 @@ def fit_stacked(image: Image.Image, colors: int = 32, tolerance: float = 0.6,
                "gap_fraction": gap_fraction, "underpaint_min_area_px2": underpaint_min_area,
                "ink_rgb": list(ink) if ink else None, "hole_min_area_px2": hole_min_area,
                **shape_summary(drawing),
+               "shape_manifest": shape_manifest(drawing),
                "seconds": time.monotonic()-t0, "raster_embedded": False, "quality": "unreviewed"}
     return drawing, receipt
 

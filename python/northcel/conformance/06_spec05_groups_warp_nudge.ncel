@@ -1,0 +1,12 @@
+northcel "0.5.0-draft"
+scene Groups(width: 100, height: 100) {
+  paper { color: #FFFFFF }
+  layer mask(color: #000000, opacity: 0) { "40,40 320,0 0,320 -320,0" }
+  group box(pivot: (50, 50), clip: mask) {
+    layer a(color: #FF0000) { "200,200 80,0 0,80 -80,0" }
+    group inner { layer b(color: #00FF00) { "200,160 16,0 0,16 -16,0" } }
+  }
+  transform box(rotate: 45)
+  warp inner(handles: ((50, 50, 8, 0), (30, 30, -4, 0)), radius: 80)
+  nudge a(vertex: 0, dx: 2px, dy: 0)
+}

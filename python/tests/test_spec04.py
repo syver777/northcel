@@ -341,8 +341,7 @@ def test_fit_stacked_on_a_synthetic_drawing():
     image = _figure()
     drawing, receipt = fit_stacked(image, palette=PALETTE, underpaint_min_area=50, name="Fig")
     kinds = [s.kind for s in drawing.shapes]
-    areas = [s.area for s in drawing.shapes]
-    assert areas == sorted(areas, reverse=True)
+    assert [s.z if s.z is not None else s.area for s in drawing.shapes] == sorted([s.z if s.z is not None else s.area for s in drawing.shapes], reverse=True)
     assert kinds.count("gap") == 1 and kinds.count("underpaint") == 1
     gap = next(s for s in drawing.shapes if s.kind == "gap")
     under = next(s for s in drawing.shapes if s.kind == "underpaint")
@@ -370,7 +369,7 @@ def test_fit_cli_stacked(tmp_path):
     pal.write_text(json.dumps(PALETTE))
     out = tmp_path / "fig.ncel"
     assert main([str(img), "-o", str(out), "--stacked", "--palette", str(pal), "--ink", "#0A0A0A"]) == 0
-    assert errors(out.read_text()) == [] and "layer s000(" in out.read_text()
+    assert errors(out.read_text()) == [] and "layer s" in out.read_text()
 
 
 def _stacked(image, name):

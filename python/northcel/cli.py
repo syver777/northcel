@@ -15,7 +15,7 @@ from .ast_nodes import ColorMix, FilmNode, LayerNode, MorphNode, RibbonNode, Str
 from .config import CLI_COMMAND, FILE_EXTENSION, LANGUAGE_NAME, PACKAGE_VERSION, SPEC_VERSION
 from .formatter import format_document
 from .parser import NorthCelSyntaxError, parse_ncel
-from .renderer import NorthCelEvaluationError, render_document_frame, render_film_frames
+from .renderer import NorthCelEvaluationError, frame_paint_list, render_document_frame, render_film_frames
 from .rings import decode_rings_payload
 from .validator import validate_document
 
@@ -281,6 +281,94 @@ def evaluation_error(path: Path, exc: NorthCelEvaluationError, as_json: bool) ->
     return 1
 
 
+def _parse_csv_floats(text: str, n: int, name: str) -> list[float]:
+    parts = [p.strip() for p in text.split(",")]
+    if len(parts) != n:
+        raise ValueError(f"{name} needs {n} comma-separated numbers")
+    return [float(p) for p in parts]
+
+
+def cmd_shapes(args: argparse.Namespace) -> int:
+    """List/query evaluated shapes of one frame with stable names and geometry."""
+    path = Path(args.file)
+    _, doc, diags = _load_and_validate(path)
+    if doc is None:
+        for e in diags:
+            print(f"{path}:{e}", file=sys.stderr)
+        return 1
+    errors = [d for d in diags if d.level == "error"]
+    if errors:
+        for e in errors:
+            print(f"{path}:{e.format()}", file=sys.stderr)
+        return 1
+    _paper, _color, paints = frame_paint_list(doc, args.frame)
+    rows = []
+    for paint in paints:
+        pts = [p for ring in paint.rings for p in ring]
+        if not pts:
+            continue
+        lo = [min(p[0] for p in pts), min(p[1] for p in pts)]
+        hi = [max(p[0] for p in pts), max(p[1] for p in pts)]
+        area = sum(abs(0.5 * sum(r[i][0] * r[(i+1) % len(r)][1] - r[(i+1) % len(r)][0] * r[i][1]
+                                 for i in range(len(r)))) for r in paint.rings if len(r) >= 3)
+        cx = (lo[0] + hi[0]) / 2
+        cy = (lo[1] + hi[1]) / 2
+        rows.append({"id": paint.name, "color": paint.color.to_hex(),
+                     "area": round(area, 2), "bbox": [round(lo[0], 2), round(lo[1], 2),
+                                                      round(hi[0], 2), round(hi[1], 2)],
+                     "centroid": [round(cx, 2), round(cy, 2)]})
+    # Parent by bbox containment; children and neighbours from the full list.
+    for rec in rows:
+        cx, cy = rec["centroid"]
+        parent, best = None, None
+        for other in rows:
+            if other is rec or other["area"] <= rec["area"]:
+                continue
+            x0, y0, x1, y1 = other["bbox"]
+            if x0 <= cx <= x1 and y0 <= cy <= y1 and (best is None or other["area"] < best):
+                parent, best = other["id"], other["area"]
+        rec["parent"] = parent
+    for rec in rows:
+        rec["children"] = [o["id"] for o in rows if o.get("parent") == rec["id"]]
+        cx, cy = rec["centroid"]
+        near = sorted(((abs(o["centroid"][0]-cx)+abs(o["centroid"][1]-cy), o["id"])
+                       for o in rows if o["id"] != rec["id"]))[:3]
+        rec["neighbours"] = [n for _d, n in near]
+
+    selected = rows
+    if args.ids:
+        wanted = {x.strip() for x in args.ids.split(",") if x.strip()}
+        selected = [r for r in selected if r["id"] in wanted]
+    if args.color:
+        col = args.color.upper()
+        if not col.startswith("#"):
+            col = "#" + col
+        selected = [r for r in selected if r["color"].upper() == col]
+    if args.area_min is not None:
+        selected = [r for r in selected if r["area"] >= args.area_min]
+    if args.area_max is not None:
+        selected = [r for r in selected if r["area"] <= args.area_max]
+    if args.bbox:
+        x0, y0, x1, y1 = _parse_csv_floats(args.bbox, 4, "--bbox")
+        selected = [r for r in selected
+                    if not (r["bbox"][2] < x0 or r["bbox"][0] > x1 or r["bbox"][3] < y0 or r["bbox"][1] > y1)]
+    if args.centroid:
+        cx, cy, rad = _parse_csv_floats(args.centroid, 3, "--centroid")
+        selected = [r for r in selected
+                    if (r["centroid"][0]-cx) ** 2 + (r["centroid"][1]-cy) ** 2 <= rad * rad]
+    if args.parent:
+        selected = [r for r in selected if r.get("parent") == args.parent]
+    if args.mask:
+        mask = Image.open(args.mask).convert("L")
+        mw, mh = mask.size
+        selected = [r for r in selected
+                    if 0 <= int(r["centroid"][0]) < mw and 0 <= int(r["centroid"][1]) < mh
+                    and mask.getpixel((int(r["centroid"][0]), int(r["centroid"][1]))) > 127]
+    print(json.dumps({"file": str(path), "frame": args.frame, "count": len(selected),
+                      "shapes": selected}, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog=CLI_COMMAND,
@@ -312,6 +400,20 @@ def build_parser() -> argparse.ArgumentParser:
     # one implementation has to keep working against the other.
     p_info.add_argument("--json", action="store_true", help="Output JSON (always on; accepted for CLI parity)")
     p_info.set_defaults(func=cmd_info)
+
+    p_shapes = sub.add_parser("shapes", help="List or query evaluated shapes by id, colour, area, location, or parent.")
+    p_shapes.add_argument("file", help="Path to .ncel file")
+    p_shapes.add_argument("--frame", type=int, default=0, help="Frame index (default: 0)")
+    p_shapes.add_argument("--ids", help="Comma list of shape ids")
+    p_shapes.add_argument("--color", help="Exact #RRGGBB colour")
+    p_shapes.add_argument("--area-min", type=float)
+    p_shapes.add_argument("--area-max", type=float)
+    p_shapes.add_argument("--bbox", help="x0,y0,x1,y1 intersection")
+    p_shapes.add_argument("--centroid", help="x,y,radius")
+    p_shapes.add_argument("--parent", help="Parent shape id")
+    p_shapes.add_argument("--mask", help="Only shapes whose centroid lies in this image mask")
+    p_shapes.add_argument("--json", action="store_true", help="Output JSON (always on)")
+    p_shapes.set_defaults(func=cmd_shapes)
 
     p_render = sub.add_parser("render", help="Render a single frame of a .ncel scene or film to PNG.")
     p_render.add_argument("file", help="Path to .ncel file")

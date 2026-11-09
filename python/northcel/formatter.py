@@ -12,8 +12,10 @@ from .ast_nodes import (
     DefBlock,
     DocumentNode,
     DropNode,
+    GroupNode,
     LayerNode,
     MorphNode,
+    NudgeNode,
     PaperSpec,
     RibbonNode,
     SceneItem,
@@ -22,6 +24,7 @@ from .ast_nodes import (
     SwarmNode,
     TransformNode,
     UseNode,
+    WarpNode,
 )
 from .parser import ExprValue
 
@@ -138,7 +141,8 @@ def _fmt_item(item: SceneItem, indent: str = "  ", palette: dict[str, ColorValue
     if isinstance(item, TransformNode):
         def pair(v):
             return f"({_fmt_expr(v[0])}, {_fmt_expr(v[1])})"
-        return [f"{indent}transform {item.target_name}(scale: {pair(item.scale)}, rotate: {_fmt_expr(item.rotate)}, anchor: {pair(item.anchor)}, translate: {pair(item.translate)})"]
+        anchor = f", anchor: {pair(item.anchor)}" if item.anchor_explicit else ""
+        return [f"{indent}transform {item.target_name}(scale: {pair(item.scale)}, rotate: {_fmt_expr(item.rotate)}{anchor}, translate: {pair(item.translate)})"]
     if isinstance(item, LayerNode):
         rings_part = f", rings: {item.rings_count}" if item.rings_count is not None else ""
         extra = (
@@ -175,6 +179,30 @@ def _fmt_item(item: SceneItem, indent: str = "  ", palette: dict[str, ColorValue
             f'{indent}morph {item.name}({_fmt_color_kv(item.color, palette)}, u: {_fmt_expr(item.u)}{samples}{extra}) '
             f'{{ "{item.payload_a}" => "{item.payload_b}" }}'
         ]
+    if isinstance(item, GroupNode):
+        attrs = []
+        if tuple(item.pivot) != (0.0, 0.0):
+            attrs.append(f"pivot: ({_fmt_expr(item.pivot[0])}, {_fmt_expr(item.pivot[1])})")
+        if item.clip:
+            attrs.append(f"clip: {item.clip}")
+        if item.parent:
+            attrs.append(f"parent: {item.parent}")
+        if item.opacity is not None:
+            attrs.append(f"opacity: {_fmt_expr(item.opacity)}")
+        head = f"{indent}group {item.name}" + (f"({', '.join(attrs)})" if attrs else "") + " {"
+        lines = [head]
+        for child in item.items:
+            lines.extend(_fmt_item(child, indent + "  ", palette))
+        lines.append(f"{indent}}}")
+        return lines
+    if isinstance(item, WarpNode):
+        handles = ", ".join(
+            f"({_fmt_expr(x)}, {_fmt_expr(y)}, {_fmt_expr(dx)}, {_fmt_expr(dy)})"
+            for x, y, dx, dy in item.handles)
+        return [f"{indent}warp {item.target_name}(handles: ({handles}), radius: {_fmt_expr(item.radius)})"]
+    if isinstance(item, NudgeNode):
+        return [f"{indent}nudge {item.target_name}(vertex: {item.vertex}, ring: {item.ring}, "
+                f"dx: {_fmt_expr(item.dx)}, dy: {_fmt_expr(item.dy)})"]
     if isinstance(item, UseNode):
         args_s = ", ".join(f"{k}: {_fmt_expr(v)}" for k, v in item.args.items())
         return [f"{indent}use {item.def_name}({args_s})"]

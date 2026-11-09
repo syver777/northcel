@@ -19,6 +19,7 @@ Implements the exact rendering semantics of the NorthCel 0.1.0-draft specificati
 from __future__ import annotations
 
 import math
+import re
 from pathlib import Path
 from typing import Any
 
@@ -33,8 +34,10 @@ from .ast_nodes import (
     DocumentNode,
     DropNode,
     FilmNode,
+    GroupNode,
     LayerNode,
     MorphNode,
+    NudgeNode,
     PaperSpec,
     RibbonNode,
     SceneItem,
@@ -43,6 +46,7 @@ from .ast_nodes import (
     SwarmNode,
     TransformNode,
     UseNode,
+    WarpNode,
 )
 from .parser import ExprValue
 from .rings import decode_rings_payload
@@ -94,6 +98,8 @@ def boil_offset(
 def _eval_num(val: Any, env: dict[str, float]) -> float:
     if isinstance(val, (int, float)):
         return float(val)
+    if isinstance(val, str):
+        return float(re.sub(r"(px-b63|px|deg)$", "", val))
     if isinstance(val, ExprValue):
         return val.eval(env)
     return float(val)
@@ -254,14 +260,19 @@ class _Paint:
     opened by `use ...(opacity: ...)` in spec 0.4 documents.
     """
 
-    __slots__ = ("name", "color", "rings", "opacity", "groups")
+    __slots__ = ("name", "color", "rings", "opacity", "groups", "path", "pivots", "clip_names", "clip_shapes")
 
-    def __init__(self, name, color, rings, opacity=1.0, groups=()):
+    def __init__(self, name, color, rings, opacity=1.0, groups=(), path=(), pivots=None,
+                 clip_names=(), clip_shapes=None):
         self.name = name
         self.color = color
         self.rings = rings
         self.opacity = opacity
         self.groups = groups
+        self.path = path
+        self.pivots = pivots or {}
+        self.clip_names = clip_names
+        self.clip_shapes = clip_shapes
 
     def as_tuple(self):
         return (self.name, self.color, self.rings)
@@ -280,14 +291,45 @@ def _expand_paint(
     layers_out: list[_Paint] = []
     named_index: dict[str, int] = {}
     group_counter = [0]
+    group_pivots: dict[str, tuple[float, float]] = {}
 
-    def upsert_layer(name, color, rings, opacity, groups) -> None:
-        paint = _Paint(name, color, rings, opacity, groups)
+    def upsert_layer(name, color, rings, opacity, groups, path=(), pivots=None, clip_names=()) -> None:
+        paint = _Paint(name, color, rings, opacity, groups, path, pivots, clip_names)
         if name in named_index:
             layers_out[named_index[name]] = paint
         else:
             named_index[name] = len(layers_out)
             layers_out.append(paint)
+
+    def target_paints(target: str):
+        if target == "all":
+            return list(layers_out)
+        return [p for p in layers_out
+                if p.name in (target, target + "__outline") or target in p.path]
+
+    def apply_warp(paint, handles, radius, local_env):
+        hs = [(_eval_num(hx, local_env), _eval_num(hy, local_env),
+               _eval_num(hdx, local_env), _eval_num(hdy, local_env)) for hx, hy, hdx, hdy in handles]
+        r = max(1e-6, _eval_num(radius, local_env))
+        out = []
+        for ring in paint.rings:
+            pts = []
+            for x, y in ring:
+                sw = 0.0
+                sx = sy = 0.0
+                for hx, hy, hdx, hdy in hs:
+                    d = math.hypot(x - hx, y - hy)
+                    if d < r:
+                        w = (1.0 - (d / r) ** 2) ** 2
+                        sw += w
+                        sx += w * hdx
+                        sy += w * hdy
+                if sw > 1e-12:
+                    pts.append((x + sx / sw, y + sy / sw))
+                else:
+                    pts.append((x, y))
+            out.append(pts)
+        paint.rings = out
 
     def opacity_of(item, local_env) -> float:
         expr = getattr(item, "opacity", None)
@@ -295,7 +337,8 @@ def _expand_paint(
             return 1.0
         return _clamp01(_eval_num(expr, local_env))
 
-    def add_outline(name, rings, outline_color, outline_width, opacity, groups, local_env) -> None:
+    def add_outline(name, rings, outline_color, outline_width, opacity, groups, local_env,
+                    path=(), pivots=None, clip_names=()) -> None:
         if outline_color is None or outline_width <= 0.0:
             return
         stroke_rings: list[list[tuple[float, float]]] = []
@@ -306,32 +349,85 @@ def _expand_paint(
                 if len(sr) >= 3:
                     stroke_rings.append(sr)
         if stroke_rings:
-            upsert_layer(f"{name}__outline", resolve_color(outline_color, local_env), stroke_rings, opacity, groups)
+            upsert_layer(f"{name}__outline", resolve_color(outline_color, local_env), stroke_rings, opacity, groups,
+                         path, pivots, clip_names)
 
-    def process_list(seq: list[SceneItem], local_env: dict[str, float], groups: tuple) -> None:
+    def process_list(seq: list[SceneItem], local_env: dict[str, float], groups: tuple,
+                     path: tuple[str, ...] = (), pivots: dict | None = None,
+                     clip_names: tuple[str, ...] = ()) -> None:
+        pivots = pivots or {}
         for item_idx, item in enumerate(seq):
+            if isinstance(item, GroupNode):
+                pivot = (_eval_num(item.pivot[0], local_env), _eval_num(item.pivot[1], local_env))
+                group_pivots[item.name] = pivot
+                child_path = path
+                if item.parent:
+                    child_path = child_path + (item.parent,)
+                child_path = child_path + (item.name,)
+                child_pivots = dict(pivots)
+                if item.parent and item.parent in group_pivots:
+                    child_pivots[item.parent] = group_pivots[item.parent]
+                child_pivots[item.name] = pivot
+                child_groups = groups
+                if spec04 and item.opacity is not None:
+                    gop = _clamp01(_eval_num(item.opacity, local_env))
+                    if gop < 1.0:
+                        group_counter[0] += 1
+                        child_groups = groups + ((group_counter[0], gop),)
+                child_clip = clip_names + ((item.clip,) if item.clip else ())
+                process_list(item.items, local_env, child_groups, child_path, child_pivots, child_clip)
+                continue
+            if isinstance(item, WarpNode):
+                targets = target_paints(item.target_name)
+                if not targets:
+                    raise NorthCelEvaluationError(f"Warp target '{item.target_name}' has not been painted",
+                                                  item.span.line, item.span.column)
+                for paint in targets:
+                    apply_warp(paint, item.handles, item.radius, local_env)
+                continue
+            if isinstance(item, NudgeNode):
+                targets = [p for p in layers_out if p.name == item.target_name]
+                if not targets:
+                    raise NorthCelEvaluationError(f"Nudge target '{item.target_name}' has not been painted",
+                                                  item.span.line, item.span.column)
+                dx = _eval_num(item.dx, local_env)
+                dy = _eval_num(item.dy, local_env)
+                for paint in targets:
+                    if item.ring < 0 or item.ring >= len(paint.rings):
+                        raise NorthCelEvaluationError(
+                            f"Nudge ring {item.ring} is out of range for '{item.target_name}'",
+                            item.span.line, item.span.column)
+                    ring = list(paint.rings[item.ring])
+                    if item.vertex < 0 or item.vertex >= len(ring):
+                        raise NorthCelEvaluationError(
+                            f"Nudge vertex {item.vertex} is out of range for '{item.target_name}'",
+                            item.span.line, item.span.column)
+                    x, y = ring[item.vertex]
+                    ring[item.vertex] = (x + dx, y + dy)
+                    paint.rings[item.ring] = ring
+                continue
             if isinstance(item, TransformNode):
                 sx, sy = (_eval_num(v, local_env) for v in item.scale)
                 ax, ay = (_eval_num(v, local_env) for v in item.anchor)
                 dx, dy = (_eval_num(v, local_env) for v in item.translate)
                 angle = _eval_num(item.rotate, local_env) * math.pi / 180.0
                 c, s = math.cos(angle), math.sin(angle)
-                found = item.target_name == "all"
-                for paint in layers_out:
-                    nm = paint.name
-                    if item.target_name != "all" and nm not in (item.target_name, item.target_name+"__outline"):
-                        continue
-                    found = True
+                targets = target_paints(item.target_name)
+                if not targets:
+                    raise NorthCelEvaluationError(f"Transform target '{item.target_name}' has not been painted", item.span.line, item.span.column)
+                for paint in targets:
+                    if not item.anchor_explicit and item.target_name in paint.pivots:
+                        gax, gay = paint.pivots[item.target_name]
+                    else:
+                        gax, gay = ax, ay
                     transformed = []
                     for ring in paint.rings:
                         pts = []
                         for x, y in ring:
-                            u, v = (x-ax)*sx, (y-ay)*sy
-                            pts.append((ax+u*c-v*s+dx, ay+u*s+v*c+dy))
+                            u, v = (x-gax)*sx, (y-gay)*sy
+                            pts.append((gax+u*c-v*s+dx, gay+u*s+v*c+dy))
                         transformed.append(pts)
                     paint.rings = transformed
-                if not found:
-                    raise NorthCelEvaluationError(f"Transform target '{item.target_name}' has not been painted", item.span.line, item.span.column)
                 continue
             if isinstance(item, DropNode):
                 if item.target_name in named_index:
@@ -356,7 +452,7 @@ def _expand_paint(
                         group_counter[0] += 1
                         child_groups = groups + ((group_counter[0], group_opacity),)
                 before_len = len(layers_out)
-                process_list(list(d.items), child_env, child_groups)
+                process_list(list(d.items), child_env, child_groups, path, pivots, clip_names)
                 if abs(dx) > 1e-9 or abs(dy) > 1e-9:
                     for paint in layers_out[before_len:]:
                         paint.rings = [[(x + dx, y + dy) for x, y in r] for r in paint.rings]
@@ -374,14 +470,18 @@ def _expand_paint(
                         pts.append((x + tx + bx, y + ty + by))
                     final_rings.append(pts)
                 opacity = opacity_of(item, local_env)
-                upsert_layer(item.name, resolve_color(item.color, local_env), final_rings, opacity, groups)
-                add_outline(item.name, final_rings, item.outline_color, item.outline_width, opacity, groups, local_env)
+                upsert_layer(item.name, resolve_color(item.color, local_env), final_rings, opacity, groups,
+                             path, pivots, clip_names)
+                add_outline(item.name, final_rings, item.outline_color, item.outline_width, opacity, groups, local_env,
+                            path, pivots, clip_names)
 
             elif isinstance(item, MorphNode):
                 rings = morph_rings(item, precision, local_env)
                 opacity = opacity_of(item, local_env)
-                upsert_layer(item.name, resolve_color(item.color, local_env), rings, opacity, groups)
-                add_outline(item.name, rings, item.outline_color, item.outline_width, opacity, groups, local_env)
+                upsert_layer(item.name, resolve_color(item.color, local_env), rings, opacity, groups,
+                             path, pivots, clip_names)
+                add_outline(item.name, rings, item.outline_color, item.outline_width, opacity, groups, local_env,
+                            path, pivots, clip_names)
 
             elif isinstance(item, SwarmNode):
                 raw_rings = decode_rings_payload(item.payload, precision=precision)
@@ -404,7 +504,7 @@ def _expand_paint(
                     layers_out[named_index["ink_contours"]].rings.extend(final_rings)
                 else:
                     layers_out.append(_Paint(item.name, resolve_color(item.color, local_env), final_rings,
-                                             opacity_of(item, local_env), groups))
+                                             opacity_of(item, local_env), groups, path, pivots, clip_names))
 
             elif isinstance(item, StrokeNode):
                 pts_eval: list[tuple[float, float]] = []
@@ -416,7 +516,7 @@ def _expand_paint(
                 ring = _stroke_to_ring(pts_eval, item.width_start, item.width_end)
                 if len(ring) >= 3:
                     layers_out.append(_Paint(item.name, resolve_color(item.color, local_env), [ring],
-                                             opacity_of(item, local_env), groups))
+                                             opacity_of(item, local_env), groups, path, pivots, clip_names))
 
             elif isinstance(item, RibbonNode):
                 pts_w: list[tuple[float, float, float]] = []
@@ -428,9 +528,26 @@ def _expand_paint(
                 ring = _ribbon_to_ring(pts_w)
                 if len(ring) >= 3:
                     layers_out.append(_Paint(item.name, resolve_color(item.color, local_env), [ring],
-                                             opacity_of(item, local_env), groups))
+                                             opacity_of(item, local_env), groups, path, pivots, clip_names))
 
     process_list(items, env, ())
+    # Resolve clip targets after the whole paint list exists (a mask may be
+    # declared after the group it clips).
+    by_name = {p.name: p for p in layers_out}
+    by_group: dict[str, list[_Paint]] = {}
+    for p in layers_out:
+        for g in p.path:
+            by_group.setdefault(g, []).append(p)
+    for p in layers_out:
+        if not p.clip_names:
+            continue
+        shapes = []
+        for name in p.clip_names:
+            targets = [by_name[name]] if name in by_name else by_group.get(name, [])
+            if not targets:
+                raise NorthCelEvaluationError(f"Clip target '{name}' has not been painted", 1, 1)
+            shapes.extend(t.rings for t in targets)
+        p.clip_shapes = shapes
     return layers_out
 
 
@@ -547,6 +664,42 @@ def _span_indices(rows: np.ndarray, a: np.ndarray, b: np.ndarray, sw: int):
         i = j
 
 
+def _clip_spans(spans, clip_shapes, aa: int, sh: int, sw: int):
+    """Intersect paint spans with the union of one or more clip shapes."""
+    rows, x0s, x1s = spans
+    intervals: dict[int, list[tuple[int, int]]] = {}
+    for shape in clip_shapes:
+        csp = _layer_spans(shape, aa, sh, sw)
+        if csp is None:
+            continue
+        for r, a, b in zip(*(v.tolist() for v in csp)):
+            if a < b:
+                intervals.setdefault(int(r), []).append((int(a), int(b)))
+    if not intervals:
+        return None
+    for r, vals in intervals.items():
+        vals.sort()
+        merged = []
+        for a, b in vals:
+            if merged and a <= merged[-1][1]:
+                merged[-1] = (merged[-1][0], max(merged[-1][1], b))
+            else:
+                merged.append((a, b))
+        intervals[r] = merged
+    out_r, out_a, out_b = [], [], []
+    for r, a, b in zip(rows.tolist(), x0s.tolist(), x1s.tolist()):
+        for ca, cb in intervals.get(int(r), ()):
+            lo, hi = max(a, ca), min(b, cb)
+            if lo < hi:
+                out_r.append(r)
+                out_a.append(lo)
+                out_b.append(hi)
+    if not out_r:
+        return None
+    return (np.asarray(out_r, dtype=np.int64), np.asarray(out_a, dtype=np.int64),
+            np.asarray(out_b, dtype=np.int64))
+
+
 def _paint_spans(flat: np.ndarray, spans, color: ColorValue, opacity: float, grey: bool, sw: int) -> None:
     rows, a, b = spans
     if grey:
@@ -655,6 +808,10 @@ def _rasterize_paint(
         spans = _layer_spans(paint.rings, aa, sh, sw)
         if spans is None:
             continue
+        if paint.clip_shapes:
+            spans = _clip_spans(spans, paint.clip_shapes, aa, sh, sw)
+            if spans is None:
+                continue
         _paint_spans(flat, spans, paint.color, paint.opacity, all_grey, sw)
     while stack:
         close_group()
