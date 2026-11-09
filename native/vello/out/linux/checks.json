@@ -1,0 +1,61 @@
+{
+  "cargo_fmt_check": {
+    "command": "cargo fmt --check",
+    "exit_code": 0
+  },
+  "commands": {
+    "build-initial": {
+      "command": "cargo build --release --locked",
+      "wall_time": "1:52.63",
+      "max_rss_kib": 1257924,
+      "exit_code": 0
+    },
+    "build": {
+      "command": "cargo build --release --locked",
+      "wall_time": "0:04.76",
+      "max_rss_kib": 629824,
+      "exit_code": 0
+    },
+    "cargo-test": {
+      "command": "cargo test --release --locked",
+      "wall_time": "0:02.41",
+      "max_rss_kib": 269460,
+      "exit_code": 0
+    },
+    "clippy": {
+      "command": "cargo clippy --release --locked --all-targets -- -D warnings",
+      "wall_time": "0:00.69",
+      "max_rss_kib": 213680,
+      "exit_code": 0
+    },
+    "python-tests": {
+      "command": "python3 -m unittest discover -s scripts -p test_*.py -v",
+      "wall_time": "0:00.26",
+      "max_rss_kib": 35880,
+      "exit_code": 0
+    },
+    "verify": {
+      "command": "python3 scripts/verify.py --out out/linux",
+      "wall_time": "0:38.07",
+      "max_rss_kib": 1424304,
+      "exit_code": 0
+    }
+  },
+  "tests": {
+    "rust_passed": 9,
+    "python_passed": 3,
+    "cli_smoke_passed": 6,
+    "semantic_regression_passed": true,
+    "full_size_preview_cases_passed": 3
+  },
+  "toolchain": {
+    "cargo": "1.99.1 (5f94df478 2026-08-27)",
+    "rustc": "1.99.1 (58cf8f9c3 2026-10-13)",
+    "python": "3.12.3"
+  },
+  "mesa_package": {
+    "version": "25.2.8-0ubuntu0.24.04.2",
+    "sha256": "b3be471db0ec27eb28c1ea75a4d2e6bb3207c5904bdc3823dbba9ce530026939",
+    "installed_system_wide": false
+  }
+}

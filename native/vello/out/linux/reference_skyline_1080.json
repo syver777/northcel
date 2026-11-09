@@ -1,0 +1,15 @@
+{
+  "parse_ms": 1.5878737904131413,
+  "render_ms": [
+    4269.125038990751,
+    2719.1302578430623
+  ],
+  "png_ms": 165.01024295575917,
+  "raw_rgb_identical": true,
+  "raw_rgb_sha256": [
+    "6b1eb49142cd2e47114bf2cd3fdac2590296eda2896509958f09d9627ae4484f",
+    "6b1eb49142cd2e47114bf2cd3fdac2590296eda2896509958f09d9627ae4484f"
+  ],
+  "png_sha256": "2b0f6454929550882ebe26efc4d5cf8ba6d4b2b77d470db09a5cce2c2b6be4ce",
+  "rgba_sha256": "9e406e82086cb714fd2ba45ebc8be460160f333b524ba7d693dc52333a28cac1"
+}

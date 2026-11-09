@@ -1,0 +1,4 @@
+/target/
+# Copied Mac WIP evidence is retained locally, but is not Linux verification.
+/out/*
+!/out/linux/

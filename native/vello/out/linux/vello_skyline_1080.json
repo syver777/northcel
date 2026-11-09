@@ -1,0 +1,194 @@
+{
+  "adapter": {
+    "backend": "Vulkan",
+    "device": 0,
+    "device_type": "Cpu",
+    "driver": "llvmpipe",
+    "driver_info": "Mesa 25.2.8-0ubuntu0.24.04.2 (LLVM 20.1.2)",
+    "name": "llvmpipe (LLVM 20.1.2, 256 bits)",
+    "vendor": 65541
+  },
+  "clip_points": 102,
+  "cpu_stages": false,
+  "deterministic_in_process": true,
+  "fixture": "/home/dev/northcel-vello/native/vello/fixtures/skyline_1080.paintlist.json",
+  "fixture_notes": [
+    "Flattened paint list exported from python/northcel/renderer.py frame_paint_list().",
+    "Rings are already resolved (boil, transform, warp, nudge, stroke and ribbon expansion applied).",
+    "clip_shapes contains the resolved rings of every clip target; the reference treats their spans as a union.",
+    "This is not NCIR: NCIR v1 stores band-partitioned edges and does not carry ring topology, opacity, group scopes or clips."
+  ],
+  "frame_index": 0,
+  "height": 1080,
+  "layers": 26,
+  "notes": [
+    "paper grain is applied on the CPU after render using the reference formula",
+    "nested group opacity is emulated with nested Vello blend layers",
+    "1 invisible paint(s) skipped exactly like the reference paint loop",
+    "2 paint(s) clipped by resolved clip shapes",
+    "render_passes measures CPU encoding/submission, not GPU completion; add readback_passes for completed render+readback wall time",
+    "Vello uses analytic area AA; the reference integrates a 4x4 subpixel grid."
+  ],
+  "pass_diff_from_first": [
+    {
+      "differing_bytes": 0,
+      "differing_pixels": 0,
+      "max_channel_delta": 0,
+      "pass": 1
+    },
+    {
+      "differing_bytes": 0,
+      "differing_pixels": 0,
+      "max_channel_delta": 0,
+      "pass": 2
+    },
+    {
+      "differing_bytes": 0,
+      "differing_pixels": 0,
+      "max_channel_delta": 0,
+      "pass": 3
+    },
+    {
+      "differing_bytes": 0,
+      "differing_pixels": 0,
+      "max_channel_delta": 0,
+      "pass": 4
+    },
+    {
+      "differing_bytes": 0,
+      "differing_pixels": 0,
+      "max_channel_delta": 0,
+      "pass": 5
+    },
+    {
+      "differing_bytes": 0,
+      "differing_pixels": 0,
+      "max_channel_delta": 0,
+      "pass": 6
+    },
+    {
+      "differing_bytes": 0,
+      "differing_pixels": 0,
+      "max_channel_delta": 0,
+      "pass": 7
+    }
+  ],
+  "passes": [
+    {
+      "fnv1a64": "0xeb1d22a7c455295b",
+      "index": 0,
+      "path": "out/linux/vello_skyline_1080.png",
+      "png_bytes": 516245
+    },
+    {
+      "fnv1a64": "0xeb1d22a7c455295b",
+      "index": 1,
+      "path": "out/linux/vello_skyline_1080.png",
+      "png_bytes": 0
+    },
+    {
+      "fnv1a64": "0xeb1d22a7c455295b",
+      "index": 2,
+      "path": "out/linux/vello_skyline_1080.png",
+      "png_bytes": 0
+    },
+    {
+      "fnv1a64": "0xeb1d22a7c455295b",
+      "index": 3,
+      "path": "out/linux/vello_skyline_1080.png",
+      "png_bytes": 0
+    },
+    {
+      "fnv1a64": "0xeb1d22a7c455295b",
+      "index": 4,
+      "path": "out/linux/vello_skyline_1080.png",
+      "png_bytes": 0
+    },
+    {
+      "fnv1a64": "0xeb1d22a7c455295b",
+      "index": 5,
+      "path": "out/linux/vello_skyline_1080.png",
+      "png_bytes": 0
+    },
+    {
+      "fnv1a64": "0xeb1d22a7c455295b",
+      "index": 6,
+      "path": "out/linux/vello_skyline_1080.png",
+      "png_bytes": 0
+    },
+    {
+      "fnv1a64": "0xeb1d22a7c455295b",
+      "index": 7,
+      "path": "out/linux/vello_skyline_1080.png",
+      "png_bytes": 0
+    }
+  ],
+  "points": 2427,
+  "repeat": 8,
+  "rings": 40,
+  "source": "skyline_1080.ncel",
+  "status": "prototype",
+  "timing_ms": {
+    "grain_passes": [
+      51.262853,
+      48.466542000000004,
+      63.949142,
+      109.143879,
+      54.609581,
+      60.215243,
+      77.65977000000001,
+      53.769529000000006
+    ],
+    "init": 889.081181,
+    "png_passes": [
+      170.403049,
+      0.003476,
+      0.003124,
+      0.0036959999999999996,
+      0.003346,
+      0.003555,
+      0.0034549999999999997,
+      0.0038959999999999997
+    ],
+    "readback_passes": [
+      9277.357758999999,
+      51.833029,
+      66.138711,
+      59.166115999999995,
+      261.39288500000004,
+      58.466876,
+      193.253197,
+      150.369814
+    ],
+    "render_including_readback_passes": [
+      9278.521187999999,
+      52.804880000000004,
+      67.047407,
+      59.956332999999994,
+      264.782347,
+      59.584786,
+      194.087731,
+      153.56026799999998
+    ],
+    "render_passes": [
+      1.1634289999999998,
+      0.971851,
+      0.908696,
+      0.790217,
+      3.3894620000000004,
+      1.11791,
+      0.834534,
+      3.190454
+    ],
+    "scene_build": 0.16316599999999998,
+    "total": 11868.105532
+  },
+  "tool": "ncel-vello",
+  "width": 1920,
+  "command": "/home/dev/northcel-vello/native/vello/target/release/ncel-vello --fixture /home/dev/northcel-vello/native/vello/fixtures/skyline_1080.paintlist.json --out out/linux/vello_skyline_1080.png --repeat 8 --no-pass-files --json",
+  "process_wall_ms": 12111.75314988941,
+  "stderr": "",
+  "png_sha256": "83f7208cabc31852cf782396c68b8d01a8fb22c5f9fb171f27111a71dbc80c6b",
+  "rgba_sha256": "4fda16955f5151f26f8f447f74acf170daff4578ea71d6eefb3a3d48f2ae16fa",
+  "completed_render_readback_ms_median_excluding_first": 67.047407
+}

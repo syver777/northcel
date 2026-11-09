@@ -1,0 +1,45 @@
+{
+  "cases": [
+    {
+      "command": "target/release/ncel-vello --repeat 0",
+      "exit_code": 1,
+      "stderr": "ncel-vello: --repeat must be at least 1\n",
+      "passed": true
+    },
+    {
+      "command": "target/release/ncel-vello --fixture /nonexistent/phase4.json",
+      "exit_code": 1,
+      "stderr": "ncel-vello: cannot read fixture /nonexistent/phase4.json: No such file or directory (os error 2)\n",
+      "passed": true
+    },
+    {
+      "command": "target/release/ncel-vello --unknown",
+      "exit_code": 1,
+      "stderr": "ncel-vello: unknown argument \"--unknown\"; try --help\n",
+      "passed": true
+    },
+    {
+      "command": "target/release/ncel-vello --fixture",
+      "exit_code": 1,
+      "stderr": "ncel-vello: --fixture needs a path\n",
+      "passed": true
+    },
+    {
+      "command": "target/release/ncel-vello --help",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": "target/release/ncel-vello --fixture fixtures/skyline_1080_flat.paintlist.json --out out/linux/no-adapter-should-not-exist.png --json",
+      "environment": {
+        "WGPU_BACKEND": "vulkan",
+        "VK_ICD_FILENAMES": "/tmp/opencode/phase4-no-such-icd.json",
+        "XDG_RUNTIME_DIR": "/tmp/opencode/phase4-xdg"
+      },
+      "exit_code": 1,
+      "stderr": "ncel-vello: no wgpu adapter: No suitable graphics adapter found; noop not requested, vulkan drivers/libraries could not be loaded, metal not requested, dx12 not requested, gl not requested, webgpu not requested\n",
+      "passed": true
+    }
+  ],
+  "passed": 6
+}
