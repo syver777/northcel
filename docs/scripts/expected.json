@@ -304,6 +304,31 @@
       "page": "docs/guide/15-fitting-transforms-and-inbetweens.md",
       "pixel_sha256": "87b08d07f11146a455563d8f0804f1b561bc43727d85022480473153bbf067f9",
       "width": 984
+    },
+    "assets/guide/16-mix-morph-opacity.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "c2f5671a0dbf9232f99a5dc7f04994b80384d9112c8f9637b4990554ced2db52"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "973c4025139cb2fbe24287862a82231b0d6e835b8cde5d8c36fe70a65ac27187"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "cecae68a1cc1acff46a2a9ef1f18c72f06b8692c94ba109cbf6b2f5495aa3caf"
+        },
+        {
+          "index": 6,
+          "pixel_sha256": "12aeffc226b3fd8ec2dea9f5866e30390920f741a7bb0b877e8627772d21866b"
+        }
+      ],
+      "height": 192,
+      "page": "docs/guide/16-colour-morph-ranges-opacity.md",
+      "pixel_sha256": "06e99b74049c9b9c70fddc2c7399850571f045dbaf087a5814a0d175046093ec",
+      "width": 1310
     }
   },
   "patterns": {
@@ -808,8 +833,50 @@
       "sheet_pixel_sha256": "eb99c1f9b5a89948f057e86a641f70128475c1e8a4accb01b5d4115fcd08c065",
       "sheet_width": 1310,
       "width": 320
+    },
+    "12-polishing-ai-frames": {
+      "bytes": 2472,
+      "file": "examples/patterns/12-polishing-ai-frames.ncel",
+      "fps": 12,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "8b3774f02c281a1c9c5d05f1712a25f3253867f6c7ed0f357bed7268bf09c9e9"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "cecd5849790eef909226871ea28a29885a148029270e61581b5231de1a768b6e"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "f085a7b1c7ec78198b26b213d8ba3f17f36ae270cc4c599ed4a8a4ab59f6cc1e"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "aa5d654ae1f61ab783c01204c172d9ddd5451bd2bf0e24ca66786fc22bfc22f4"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "3df2ac0e2691db15d593d180023f9c613704a1ab4b70f6aa32455d60f1e97bde"
+        },
+        {
+          "index": 5,
+          "pixel_sha256": "4528c6d975c7f4581c2b12edfc933e8ff96edb3ce4794d8bba95bfb87fa2d6e7"
+        },
+        {
+          "index": 6,
+          "pixel_sha256": "e94ffdd1f6b3ff57328a5880d0ead880f5a69589f4256e09afb62aece76dcaaf"
+        }
+      ],
+      "height": 128,
+      "kind": "film",
+      "sheet": "docs/assets/patterns/12-polishing-ai-frames.png",
+      "sheet_height": 274,
+      "sheet_pixel_sha256": "38ec0acc2e791a62eea7a08a6c6111041d6f21f8b0aa0bbace0cb7a53051fc5a",
+      "sheet_width": 798,
+      "width": 192
     }
   },
   "renderer": "python-reference",
-  "tool": "northcel 0.4.0"
+  "tool": "northcel 0.5.0"
 }

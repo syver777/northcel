@@ -12,6 +12,67 @@ move for packaging-only releases.
 
 ## [Unreleased]
 
+## [0.5.0] — Spec 0.4: colour expressions, morph, frame ranges, opacity; polishing tools (2026-11-09)
+
+### Added
+- Spec **0.4.0-draft** (complete document, `docs/spec/SPEC-0.4.0-draft.md`):
+  - `mix(colourA, colourB, u)` wherever a colour is accepted (primitive colours,
+    outline colours, paper); sRGB channels, `u` clamped, `floor(a + (b−a)u + 0.5)`.
+  - `morph name(color, u[, samples, outline, opacity]) { "A" => "B" }`: ring i pairs
+    with ring i; unequal vertex counts are resampled by arclength, winding is
+    normalised and the start aligned by the least-squares cyclic shift; exact
+    endpoints at `u ≤ 0` and `u ≥ 1`. Allowed in scenes, films, frame blocks and defs.
+  - `frame A..B { ... }` inclusive ranges: an exact `frame N` wins, otherwise the
+    last range in source order; blocks never merge; overlaps warn.
+  - `opacity: expr` on layer/wash/cel/swarm/stroke/ribbon/morph and group opacity on
+    `use D(opacity: expr)`, composited per 8-bit subpixel; a dissolve is
+    `use A` then `use B(opacity: u)`.
+- `northcel fit --stacked` (+ `--gap-fraction`, `--underpaint-min-area`, `--ink`):
+  painter's-order solid shapes, see-through gaps checked against the source pixels
+  kept as paper-coloured shapes, optional underpaint of large ink holes. Output is
+  spec 0.3. The default planar output is byte-identical to 0.4.0.
+- `northcel tween --match`: colour-aware Hungarian shape matching across topology
+  mismatch, allowed colour changes (`--colour-changes`), motion propagation for
+  unmatched shapes inside matched ones, huge-shape switching, a confidence report
+  (matched fraction, weighted displacement) and an explicit cut/dissolve fallback
+  (`--mode`, `--fallback`, `--min-match`, `--max-displacement`). Writes one
+  spec 0.4 film (keys once as `def`s, `frame A..B` holds, `morph`/`mix`/`opacity`
+  in-betweens).
+- Python API `northcel.correspond` (`match_drawings`, `film_from_keys`, `Key`,
+  `Transition`, `FilmOptions`, `MatchOptions`, `linear_assignment`),
+  `northcel.shapes` (`StackedDrawing`, `Shape`, `drawing_from_source`,
+  `stack_planar`, `stacked_source`) and `northcel.fitting.fit_stacked`; documented
+  in `docs/reference.md`.
+- Guide chapter 16, pattern 12 (polishing AI frames), conformance case
+  `05_spec04_mix_morph_opacity` (reference-only), eight new reproduced diagnostics,
+  Decision 9.
+- JS pre-check accepts `mix(...)`, `morph ... { "A" => "B" }` (equal ring counts) and
+  `frame A..B`; `spec04Features()` is exported.
+
+### Changed
+- The launchers never hand a spec 0.4 document (any 0.4 construct, or a 0.4
+  header) to the native runtime 0.4.0, which implements spec 0.3: the Python
+  launcher renders it with the labelled reference and says why; the npm launcher
+  uses its Python bridge or exits 3 naming the features. `--version` states the
+  native runtime's spec.
+- Python reference fill vectorised (per-layer crossings at once, span painting)
+  and a faster exact box filter: 1920×1080 fitted frames 0.75–1.93 s → 0.21–0.52 s
+  on an Apple M1, pixels byte-identical.
+- Headerless documents are spec `0.4.0-draft`.
+
+### Fixed
+- `test_platform_reason_names_the_places_that_were_searched` now pins
+  `sys.platform`, so it also passes on macOS.
+
+### Compatibility
+- Valid 0.1–0.3 documents render with identical pixels; golden images, docs images
+  and conformance probes are unchanged. `opacity` in a document declaring an older
+  spec is still ignored (with a warning). `mix`, `morph` and frame ranges in such a
+  document are validation errors that name the header to use.
+- The native runtime, `northcel-native`, `northcel-linux-x64`, the toolchain lock
+  and `pins.json` stay at 0.4.0 / spec 0.3; only the tools move to 0.5.0. Spec 0.4
+  documents are Python-reference only until a native release passes case `05`.
+
 ## [0.4.0] — Intact drawing edits and offline fitting (2026-11-05)
 
 ### Added

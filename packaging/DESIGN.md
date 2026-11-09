@@ -1,6 +1,13 @@
 # NorthCel install graph — design
 
-## Current extension: 0.4.0 / spec 0.3
+## Tools 0.5.0 / spec 0.4
+
+The install graph is unchanged. Only the Python and npm tools move to 0.5.0; they
+still depend on the 0.4.0 native packages, which implement spec 0.3. Spec 0.4
+(`mix`, `morph`, frame ranges, opacity) is implemented in the Python reference,
+and both launchers route spec 0.4 documents there with the usual label.
+
+## Previous extension: 0.4.0 / spec 0.3
 
 The install graph is unchanged. Both tools and bundled runtime are now 0.4.0;
 MoonBit parses/evaluates anchored transforms and easing, Bend/HVM2 still handles

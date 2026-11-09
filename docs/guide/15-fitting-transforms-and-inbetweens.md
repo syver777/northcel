@@ -98,6 +98,12 @@ author explicitly requests `--fallback hold`; the JSON receipt says `mode:
 The tool is Python preprocessing; every resulting frame can run through the
 native MoonBit → Bend/HVM2 → GLSL pipeline. It does not replace a native stage.
 
+Independently drawn keys almost never share topology. Tools 0.5 adds
+`tween --match` for them: it matches stacked shapes instead of pairing rings by
+order and writes a spec 0.4 film (Python reference only). See
+[guide 16](16-colour-morph-ranges-opacity.md) and
+[pattern 12](../patterns/12-polishing-ai-frames.md).
+
 ## What goes wrong
 
 <!-- expect-error: 3:3: error: transform.anchor requires 2 components -->

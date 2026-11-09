@@ -2,7 +2,7 @@
 
 This page is the short lookup. The language itself is taught in the
 [writing guide](guide/README.md); the normative grammar is
-[SPEC-0.2.0-draft](spec/SPEC-0.2.0-draft.md).
+[SPEC-0.4.0-draft](spec/SPEC-0.4.0-draft.md).
 
 ## CLI (`northcel` / `ncel`)
 
@@ -14,7 +14,10 @@ This page is the short lookup. The language itself is taught in the
 | `northcel info FILE [--json]` | metadata: bytes, kind, size, frames, fps, layers, rings, vertices |
 | `northcel render FILE [-o OUT.png] [--frame N] [--seed N] [--json]` | one frame to PNG |
 | `northcel film FILE -o OUTDIR [--frames 0..N] [--mp4 OUT.mp4] [--json]` | frame sequence and optional MP4 |
-| `northcel fmt FILE [-w] [--check]` | canonical formatting (reference only) |
+| `northcel fmt FILE [-w] [--check]` | canonical formatting (reference only); round-trips every spec 0.4 construct |
+| `northcel fit IMAGE -o FILE [--palette P.json] [--stacked] [--receipt R.json]` | offline contour fitting (`pip install 'northcel[fit]'`). Default: a planar map. `--stacked`: painter's-order solid shapes with `--gap-fraction` (0.5), `--underpaint-min-area` (300 px², 0 = off), `--ink #RRGGBB` |
+| `northcel tween A B -o FILE [--steps N] [--fallback error\|hold]` | ordered-ring in-betweens; identical topology required |
+| `northcel tween A B -o FILE --match [--steps N] [--fps N] [--mode auto\|morph\|cut\|dissolve\|hold] [--fallback cut\|dissolve] [--min-match 0.5] [--max-displacement 32] [--colour-changes C.json] [--image-a A.png --image-b B.png] [--receipt R.json]` | shape matching across topology mismatch; writes one spec 0.4 film; below the thresholds an explicit cut or dissolve |
 | `northcel guide` | the compact offline agent guide |
 | `northcel toolchain <status\|install>` | the optional MoonBit compiler for rebuilding the native tree |
 
@@ -22,9 +25,17 @@ Global `--no-native` forces the labelled Python reference path. On a platform
 without a native bundle, the launcher prints one line and labels the receipt
 `"renderer": "python-reference"`; it never claims a native render.
 
+**Spec 0.4 routing.** The native runtime 0.4.0 implements spec 0.3. When a
+document uses `mix`, `morph`, `frame A..B` or `opacity`, or declares a 0.4
+header, `check`, `info`, `render` and `film` use the Python reference even where
+native is available, print why (`… uses spec 0.4 features (morph); the native
+runtime 0.4.0 implements spec 0.3 only`) and label the receipt
+`python-reference`. The npm launcher does the same through its Python bridge and,
+without Python, exits `3` naming the features instead of calling native.
+
 ## Validation contract
 
-**Tools 0.3.1, spec 0.2.0-draft.** The `northcel` distribution is the reference
+**Tools 0.5.0, spec 0.4.0-draft** (contract unchanged since 0.3.1). The `northcel` distribution is the reference
 parser, validator, formatter and CPU renderer *and* the launcher that runs the
 native runtime. The npm `northcel` package runs the same launcher and adds a
 zero-dependency structural JS pre-check, the embedded guide and a Python bridge;
@@ -71,6 +82,7 @@ partial marker; never treat `ok` alone as full success.
 | Unknown `$palette` names | Error; declaration order and frame-local scope followed | Palette value types/colour range |
 | Width/height/fps/frame ranges, agents, stroke widths, undefined def | Not checked | Python semantic validator |
 | Variable binding, time-dependent arithmetic, rendered quality | Not checked | Real renders and visual review |
+| Spec 0.4: `mix(…)` shape, `morph … { "A" => "B" }`, `frame A..B` (reversed bounds), equal ring counts on both morph sides | Error with line:column | `u`/`opacity` values, `samples` range, overlapping-range warning, header/feature agreement |
 
 The structural scanner is intentionally not advertised as a complete JS parser.
 An invalid file can pass the pre-check (e.g. `film F(fps: 0) { use Missing }`).
@@ -79,6 +91,65 @@ alphabet from Python. The compact packaged guide is extracted verbatim from
 marked text in [agent-guide.md](agent-guide.md); `scripts/sync-assets.py --check`
 and package tests prevent stale copies at release time. Run
 `python3 js/northcel/scripts/sync-assets.py` after editing the marked section.
+
+## Python API for polishing
+
+`northcel tween --match` is a thin CLI over three modules that other tools may
+import. They are part of the tools release (semantic versioning applies to these
+names and signatures from 0.5.0). Everything is offline NumPy arithmetic; `cv2`
+and `scikit-image` (`northcel[fit]`) are only needed to trace images.
+
+```python
+from northcel.fitting import fit_stacked
+from northcel.shapes import StackedDrawing, Shape, drawing_from_source, stack_planar, stacked_source
+from northcel.correspond import (Key, Transition, FilmOptions, MatchOptions, Match,
+                                 match_drawings, film_from_keys, linear_assignment)
+```
+
+| Function | Signature (keyword defaults) | Returns |
+| --- | --- | --- |
+| `fit_stacked` | `fit_stacked(image, colors=32, tolerance=0.6, min_area=2.0, palette=None, name="StackedDrawing", cell_edges=False, mask=None, *, gap_fraction=0.5, underpaint_min_area=300.0, ink=None, hole_min_area=30.0, min_shape_area=4.0)` | `(StackedDrawing, receipt dict)` — tracing as `fit`, then stacking with the gap test on the image's own palette labels |
+| `drawing_from_source` | `drawing_from_source(source, image=None, *, stack="auto", gap_fraction=0.5, underpaint_min_area=300.0, ink=None)` | `StackedDrawing` from a plain scene (planar fit or already stacked); `image` (path or PIL image) supplies source pixels for the gap test |
+| `stack_planar` | `stack_planar(layers, paper, width, height, labels=None, label_colors=None, *, gap_fraction=0.5, underpaint_min_area=300.0, ink=None, min_shape_area=4.0, hole_min_area=30.0, name="Drawing")` | `StackedDrawing`; `layers` is `[(rgb, [ring arrays])]` in paint order |
+| `stacked_source` | `stacked_source(drawing, *, spec="0.3.0-draft", antialias_grid=4, fps=24)` | `.ncel` scene text, one `layer` per shape |
+| `match_drawings` | `match_drawings(a, b, options=MatchOptions())` | `Match(pairs, only_a, only_b, displacement, matched_fraction)`; `match.confident(min_match, max_displacement)` |
+| `film_from_keys` | `film_from_keys(keys, transitions=None, options=FilmOptions())` | `(film source, receipt dict)` |
+| `linear_assignment` | `linear_assignment(cost)` | `(rows, cols)` minimum-cost assignment, deterministic |
+
+Data types: `Shape(color, ring, area, kind)` (`kind` is `region`, `gap` or
+`underpaint`); `StackedDrawing(width, height, paper, shapes, name)`;
+`Key(drawing, time, name=None)` (time in seconds);
+`Transition(mode="auto", seconds=None)` with `mode` one of `auto`, `morph`,
+`cut`, `dissolve`, `hold`; `MatchOptions(colour_changes=(), match_cost=2.0,
+background_fraction=0.35)`; `FilmOptions(fps=20, frames=None, width=None,
+height=None, antialias_grid=4, transition_seconds=1/3, easing="smooth",
+min_match=0.5, max_displacement=32.0, fallback="cut", switch_area_fraction=0.095,
+ink_switch_area_fraction=0.0127, ink=None, samples_per_px=3.5, max_samples=480,
+name="Polished", match=MatchOptions())`. Colours are `(r, g, b)` tuples.
+
+A minimal film from a list of drawings:
+
+```python
+from pathlib import Path
+from northcel.correspond import FilmOptions, Key, film_from_keys
+from northcel.shapes import drawing_from_source
+
+times = {"d01": 0.0, "d03": 0.333, "d04": 0.5}
+keys = [Key(drawing_from_source(Path(f"fit/{n}.ncel").read_text(), f"cels/{n}.png"), t, n)
+        for n, t in times.items()]
+source, receipt = film_from_keys(keys, ["auto", "cut"], FilmOptions(fps=20, frames=20))
+Path("polished.ncel").write_text(source)
+for t in receipt["transitions"]:
+    print(t["from"], t["to"], t["mode"], t["reason"], t.get("matched_fraction"))
+```
+
+Timing: key `i` is on frame `round(time × fps)`; each transition uses at most
+`seconds` (default `transition_seconds`) before the next key, and earlier frames
+hold. `cut` switches half-way through that window, `hold` on the next key's
+frame. `auto` morphs when `match.confident(min_match, max_displacement)` and
+otherwise uses `fallback`. Keys of a different size from the canvas are fitted
+inside it with `transform all`. The receipt's `quality` is always
+`"unreviewed"`: the API proves geometry, not that the in-betweens look right.
 
 ## Editor support, GitHub Linguist and Tree-sitter
 

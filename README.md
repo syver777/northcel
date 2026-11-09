@@ -62,7 +62,16 @@ labelled Python reference everywhere else.
 
 ## First steps
 
-**New in 0.4.0 (spec 0.3):** fit existing drawings to vector contours with
+**New in 0.5.0 (spec 0.4):** `mix(a, b, u)` colour expressions, a `morph`
+primitive, inclusive `frame A..B` blocks and layer/group `opacity`; `fit --stacked`
+writes painter's-order shapes and `tween --match` fills the gaps between
+independently drawn keys with one compact film, falling back to an explicit cut or
+dissolve when the match is weak. Spec 0.4 documents render with the labelled Python
+reference (the native runtime implements spec 0.3); the reference fill is also
+about three times faster. See [guide 16](docs/guide/16-colour-morph-ranges-opacity.md)
+and [pattern 12](docs/patterns/12-polishing-ai-frames.md).
+
+**0.4.0 (spec 0.3):** fit existing drawings to vector contours with
 `northcel fit`, move a named drawing or whole stage with anchored scale/rotation,
 and author bounded easing and explicit contour-tween experiments. No image model
 or raster embedding. [The look-and-fix workflow](docs/guide/15-fitting-transforms-and-inbetweens.md)

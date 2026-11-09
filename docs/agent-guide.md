@@ -45,10 +45,11 @@ two renders of the same frame is a bug in your edit, not "randomness".
 | Trap | What you will see | What to do |
 | --- | --- | --- |
 | **Inherited strokes** | A `frame k` override that adds a `stroke` leaves the base stroke visible too, because strokes append rather than replace | Use a new name only when you want both; otherwise replace the geometry (a `cel`) or add the stroke to the base with a time expression |
-| **Frame overrides are one frame** | The change disappears on frame `k+1` | Declare the override for each frame, or move the change into the base timeline |
+| **Frame overrides are one frame** | The change disappears on frame `k+1` | Use `frame A..B { ... }` (spec 0.4), or move the change into the base timeline |
+| **Overlapping ranges do not merge** | Only the later range's statements appear | One block applies per frame: exact `frame N`, else the last range containing it |
 | **A replacement loses `translate:`** | The replaced layer jumps to its raw coordinates | Repeat the position/translate expression in the override |
 | **Palette scope** | `Undefined palette color '$x'` | Declare the palette before the first `$x`, including before a `def` that uses it; frame-local palettes are local |
-| **Attributes are parse-time** | A `def` parameter in `taper:`, `width:` or `color:` raises `Undefined parameter or variable` | Parameters work in point coordinates and `translate:` only; widths/colours are constants |
+| **Attributes are parse-time** | A `def` parameter in `taper:` or `width:` raises `Undefined parameter or variable` | Parameters work in point coordinates, `translate:`, `opacity:`, morph `u:` and inside `mix(a, b, u)`; widths are constants |
 | **`agents:` is a declaration** | A swarm with `agents: 8` and one ring draws one ring | Put one ring per agent in the payload and declare the same count |
 | **Two-shot layers with one name** | The second replaces the first | Name each shot's layers distinctly |
 | **`frames:` in the body** | `Unknown scene/film statement 'frames'` | It is a header attribute |
@@ -58,7 +59,7 @@ reproduced by CI. The [architecture page](architecture.md) explains why the
 reference and native renderers can differ by a handful of edge pixels.
 
 <!-- npm-guide:start -->
-# NorthCel quick agent guide — tools 0.4.0, spec 0.3.0-draft
+# NorthCel quick agent guide — tools 0.5.0, spec 0.4.0-draft
 
 Discover this guide offline with `northcel guide` (or `npx northcel guide`). The
 npm package runs the native runtime on Linux x86_64 and otherwise falls back to the
@@ -169,6 +170,22 @@ linear instead of stopping at every key.
 experiment, not an anatomy judge. Topology mismatch errors unless `--fallback
 hold` is requested; inspect every inserted frame and reject doubled/folded lines.
 Matching topology alone proves nothing. Source endpoints remain original geometry.
+
+## In-betweens for independently drawn keys (spec 0.4, Python reference)
+
+Spec 0.4 adds `color: mix($a, $b, u)` (also outlines and paper; u clamped),
+`morph name(color: $c, u: expr) { "ringsA" => "ringsB" }` (ring i pairs ring i,
+vertex counts may differ, exact A at u<=0 and B at u>=1), `frame 12..18 { ... }`
+(exact `frame N` wins, else the last range) and `opacity: expr` on primitives or
+`use D(opacity: u)` for a group (dissolve: `use A` then `use B(opacity: u)`).
+They need `northcel "0.4.0-draft"` and render with the labelled Python reference;
+the native runtime implements spec 0.3, and the npm launcher without Python
+refuses them (exit 3). `northcel fit img.png -o key.ncel --stacked --palette p.json`
+writes painter's-order shapes; `northcel tween a.ncel b.ncel -o t.ncel --match
+--steps 6` matches shapes across topology mismatch and writes one film. Read the
+receipt: below `--min-match`/`--max-displacement` it cuts (or `--fallback
+dissolve`). A match proves no anatomy: a crouch→jump needs a drawn key. Inspect
+every in-between; unmatched shapes pop at u = 0.5.
 <!-- npm-guide:end -->
 
 ---
@@ -176,7 +193,9 @@ Matching topology alone proves nothing. Source endpoints remain original geometr
 ## 1. The Golden Rules of Authoring `.ncel`
 
 1. **Always Start with the Version Header:**
-   Start new files with `northcel "0.2.0-draft"` (`0.1.0-draft` remains supported).
+   Start new files with `northcel "0.3.0-draft"` so they also render natively; use
+   `northcel "0.4.0-draft"` only when you need `mix`, `morph`, `frame A..B` or
+   `opacity` (Python reference only). `0.1.0-draft` and `0.2.0-draft` remain supported.
 2. **Separate Washes, Ink Ribbons, and Parallel Swarms by Name:**
    - Use `layer` / `wash` for broad silhouette envelopes (`tile_wall`, `skin_envelope`, `hair_dome`).
    - Use `stroke` or `ribbon` for variable-width anatomical contours and props (`brow_eye`, `ear_loop`, `post_ink`).

@@ -8,7 +8,9 @@ the frames.
 - **Commands:** `northcel` (short alias `ncel`)
 - **Packages:** `northcel` on PyPI and npm (plus the `northcel-native` /
   `northcel-linux-x64` platform artifacts)
-- **Version:** tools `0.3.1`; specification `0.2.0-draft` (backward compatible with
+- **Version:** tools `0.5.0`; specification `0.4.0-draft` (the native runtime 0.4.0
+  implements `0.3.0-draft`; spec 0.4 documents use the Python reference). Earlier
+  history: tools `0.3.1`; specification `0.2.0-draft` (backward compatible with
   `0.1.0-draft`)
 - **Source:** <https://github.com/syver777/northcel>
 
@@ -23,7 +25,7 @@ the frames.
 | understand the runtime | **[Architecture](architecture.md)** — grammar → swarms → pixels, determinism, platforms |
 | have an AI agent author `.ncel` | **[AI-agent guide](agent-guide.md)** |
 | look up a CLI flag or the check contract | **[Format & tooling reference](reference.md)** |
-| read the normative grammar | [Specification `0.2.0-draft`](spec/SPEC-0.2.0-draft.md) (and the archival [`0.1.0-draft`](spec/SPEC-0.1.0-draft.md)) |
+| read the normative grammar | [Specification `0.4.0-draft`](spec/SPEC-0.4.0-draft.md) (complete; archival [`0.3.0-draft`](spec/SPEC-0.3.0-draft.md), [`0.2.0-draft`](spec/SPEC-0.2.0-draft.md), [`0.1.0-draft`](spec/SPEC-0.1.0-draft.md)) |
 | see what the examples measure | [Examples & measurements](examples.md) |
 | understand why it is built this way | [Decision log](DECISIONS.md) |
 | get a short answer | [FAQ](faq.md) |

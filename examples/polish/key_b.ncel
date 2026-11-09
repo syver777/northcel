@@ -1,0 +1,15 @@
+northcel "0.3.0-draft"
+// A key drawing in the stacked form that `northcel fit --stacked` writes:
+// painter's-order solid shapes, biggest first.
+scene KeyB(width: 192, height: 128, fps: 12, precision: 0.25px) {
+  palette { sky: #BFE6F4, white: #FEFEFE, ink: #111416, skin: #FCC89E, red: #EE2C2C }
+  paper { color: $sky, antialias_grid: 4 }
+  layer s000(color: $ink) { "320,224 176,0 0,176 -176,0" }
+  layer s001(color: $red) { "332,236 152,0 0,152 -152,0" }
+  layer s002(color: $ink) { "476,144 -3,21 -10,19 -15,15 -19,10 -21,3 -21,-3 -19,-10 -15,-15 -10,-19 -3,-21 3,-21 10,-19 15,-15 19,-10 21,-3 21,3 19,10 15,15 10,19" }
+  layer s003(color: $white) { "57,120 200,-16 40,56 -224,16" }
+  layer s004(color: $skin) { "464,144 -3,17 -8,16 -12,12 -16,8 -17,3 -17,-3 -16,-8 -12,-12 -8,-16 -3,-17 3,-17 8,-16 12,-12 16,-8 17,-3 17,3 16,8 12,12 8,16" }
+  layer s005(color: $ink) { "488,240 88,-96 24,16 -40,48 -56,56" }
+  layer s006(color: $ink) { "392,136 -2,6 -6,2 -6,-2 -2,-6 2,-6 6,-2 6,2" }
+  layer s007(color: $ink) { "440,136 -2,6 -6,2 -6,-2 -2,-6 2,-6 6,-2 6,2" }
+}

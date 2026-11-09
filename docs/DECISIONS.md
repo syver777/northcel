@@ -2,6 +2,72 @@
 
 This document records the key architectural, experimental, and naming decisions behind **NorthCel** (`.ncel`), including the evidence and rejected alternatives.
 
+## Decision 9 · 2026-11-09: Spec 0.4 (mix, morph, frame ranges, opacity) lands in the reference first; native routes away
+
+- **Context:** A 15-second film whose 90 frames were separate AI-drawn images
+  (6 fps, traced with `fit`) was polished to 20 fps by contour correspondence
+  outside NorthCel. It hit seven gaps: `tween` needs identical topology, which
+  independent drawings never have (it always fell back to hold); a planar fit
+  leaks paper through every gap once it moves; colour was static, so every
+  in-between baked `rgb()` literals; there was no interpolation primitive, so the
+  film became 300 baked scenes (15 MB); `frame N` was exact-frame only; cuts were
+  the only fallback; and the reference renderer took 0.8–1.9 s per 1080p frame on
+  an M1 (2.5–4 s with eight workers competing).
+- **Decision:** Spec 0.4.0-draft adds `mix(a, b, u)` colours (sRGB,
+  `floor(a + (b−a)u + 0.5)`, u clamped), `morph name(u: …) { "A" => "B" }`
+  (ring i ↔ ring i; winding normalised, arclength resampled, start aligned by the
+  least-squares cyclic shift; exact endpoints), inclusive `frame A..B` blocks (an
+  exact `frame N` wins, then the last range in source order; one block per frame,
+  never merged) and `opacity` on primitives and on `use` (group opacity),
+  composited per 8-bit subpixel as `floor(c + (s−c)α + 0.5)`. Tools 0.5.0 adds
+  `fit --stacked`, `tween --match` and the `northcel.correspond` API, ported from
+  the working prototype with its thresholds as documented defaults.
+- **Why the reference first, against "two implementations, one truth":** the
+  MoonBit/Bend/GLSL runtime cannot be built or verified on the machine where this
+  was done, and shipping an unverified native change would break the rule worse
+  than a documented gap. Instead the gap is explicit: the native runtime keeps
+  implementing spec 0.3; both launchers detect spec 0.4 documents and use the
+  labelled Python reference (npm without Python exits 3); the conformance case is
+  `reference_only` and reports SKIP, not PASS, against native. A native release
+  that implements spec 0.4 must pass case `05` forward and reverse before the
+  routing is removed.
+- **Why `frame A..B` and not `frames A..B`:** `frames` is the film header
+  attribute, and `film X { frames: 2 }` is the documented common mistake with its
+  own diagnostic (Decision 6). Extending `frame` keeps one keyword per concept.
+- **Why last-range-wins instead of merging:** one block per frame keeps an
+  override readable on its own and makes the paint list of a frame a function of
+  one block, as for `frame N`. Overlaps are legal (and warned about) so that a
+  short insert can sit inside a long hold.
+- **Why opacity per subpixel on 8 bits:** it keeps the canvas `uint8` (no 4×
+  memory at 1080p×16 subpixels), keeps fully opaque documents byte-identical,
+  and gives a formula a GL host can reproduce on RGBA32F. Group opacity blends a
+  saved canvas, so a dissolve needs no alpha channel.
+- **Why old headers ignore `opacity`:** before 0.4 the attribute was accepted and
+  silently ignored, so applying it to a document that declares 0.3 would change
+  its pixels. It is applied for 0.4 headers and headerless documents (which are
+  0.4 now); old headers get a warning. `mix`, `morph` and ranges were syntax
+  errors before, so in an old-header document they are validation errors naming
+  the header to use.
+- **Matching is evidence, not judgement:** `tween --match` reports the matched
+  area fraction and sqrt-area-weighted displacement and falls back to an explicit
+  cut or dissolve below thresholds (0.5 and 32 px by default). Colour changes are
+  allowed only along author-listed pairs. The receipt is `quality: "unreviewed"`.
+  Big pose changes (crouch, spin, landing) need a drawn key; the prototype needed
+  a hand-written list of forced cuts for exactly those.
+- **Renderer speed without semantic change:** the fill was vectorised (all
+  crossings of a layer at once, per-row pairing, span painting) and the box filter
+  sums rows in `uint16`; the formulas are unchanged and 153 frames from 57
+  documents (repository corpus plus fitted 1080p frames) hash identically before
+  and after. 1080p fitted frames: 0.75–1.93 s → 0.21–0.52 s on an Apple M1. No
+  macOS GPU runtime was attempted.
+- **Rejected:** a native port without a machine to verify it; silently letting
+  `ncel-native` reject (or partly understand) 0.4 files; optical flow or image
+  blending for dissolves (pixels stay vector-derived); a `frames` statement;
+  merging overlapping ranges; float canvases for opacity; Hungarian matching via
+  SciPy (a 60-line deterministic NumPy implementation avoids a new dependency).
+
+---
+
 ## Decision 8 · 2026-11-04: The documentation is part of the product, and CI renders it
 
 - **Context:** The language shipped with a 66-line tutorial, a 35-line reference

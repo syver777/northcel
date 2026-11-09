@@ -1,5 +1,22 @@
 # Releasing NorthCel
 
+## 0.5.0 candidate — spec 0.4.0-draft (tools only)
+
+Only the tools move: `northcel` (PyPI) 0.5.0, `northcel` (npm) 0.5.0 and the
+deprecated `ncel` PyPI alias 0.5.0 (`northcel==0.5.0`). The native runtime is not
+rebuilt: `northcel-native`, `ncel-native`, `northcel-linux-x64`,
+`native/toolchain.lock` and `python/northcel/data/pins.json` stay at 0.4.0 /
+spec 0.3, and the 0.5.0 packages keep depending on `northcel-native==0.4.0` and
+`northcel-linux-x64@0.4.0`. Spec 0.4 documents are routed to the Python reference
+by both launchers (Decision 9).
+
+Before publishing: the Python suite (with `northcel[fit]`), JS tests, conformance,
+docs check, `make lint`, and a fresh-venv install whose `northcel render` of
+`examples/patterns/12-polishing-ai-frames.ncel` prints the spec 0.4 routing reason
+on Linux x86_64 with the native bundle present. Homebrew (`packaging/homebrew`) and
+`packaging/install.sh` still pin 0.4.0; update their URLs/SHA-256 and default
+version only from the published 0.5.0 artifacts.
+
 ## 0.4.0 candidate — spec 0.3.0-draft
 
 Tools and native runtime both move to 0.4.0 for anchored transforms/easing and

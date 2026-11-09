@@ -19,8 +19,10 @@ same binary.
 | Homebrew on Linux | `brew tap syver777/northcel && brew install northcel` | Yes |
 | A shell + curl | `curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh \| bash` | Yes on Linux x86_64 |
 
-Tools version **0.4.0**, specification **0.3.0-draft**. `0.1.0-draft` and `0.2.0-draft` files still
-load.
+Tools version **0.5.0**, specification **0.4.0-draft**. `0.1.0-draft`, `0.2.0-draft` and
+`0.3.0-draft` files still load and render as before. The native runtime 0.4.0 implements spec
+0.3; spec 0.4 documents render with the labelled Python reference (the sample below is from a
+0.4.0 install).
 
 ## Prove the install
 

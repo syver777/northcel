@@ -1,6 +1,6 @@
 # Patterns cookbook
 
-Eleven complete `.ncel` programs for AI-drawn video. Every file compiles, renders
+Twelve complete `.ncel` programs for AI-drawn video. Every file compiles, renders
 and has a contact sheet of all its frames. The point is not to copy these
 drawings; it is to copy the **structure** — when to use a `frame` override, when
 one expression is enough, and where a swarm earns its place.
@@ -24,6 +24,7 @@ check does exactly that in CI.
 | 9 | [A crowd as a swarm of small marks](09-crowd-swarm.md) | two swarms (heads, bodies), one drift, `agents` as declaration | 6 @ 6 fps | 2,346 | 1,339 |
 | 10 | [A two-shot film with a frame override](10-two-shot.md) | both shots in one file, a `step` cut, a one-frame bird | 8 @ 8 fps | 2,151 | 1,004 |
 | 11 | [Intact cel motion](11-intact-cel-motion.md) | one anchored matrix for fill and outline, continuous travel and eased scale/rotation | 9 @ 24 fps | 522 | 233 |
+| 12 | [Polishing AI frames](12-polishing-ai-frames.md) | `fit --stacked` + `tween --match`: keys held once, `morph`/`mix`/`opacity` in-betweens (spec 0.4, Python reference) | 7 @ 12 fps | 2,472 | not measured |
 
 The original ten total **19,821 bytes, 9,616 cl100k tokens** for ten finished,
 animated shots. That is the compactness argument in one line, and every number
@@ -49,6 +50,8 @@ is measured by the docs build rather than copied from a slide.
 | a living line on a still drawing | `boil` | 8 |
 | reused geometry at several sizes | `def`/`use` | guide [7](../guide/07-def-use-and-parameters.md) |
 | move/scale/rotate a drawing without changing its pose | `transform` + `ease` | 11; guide [15](../guide/15-fitting-transforms-and-inbetweens.md) |
+| in-betweens between independently drawn keys | `fit --stacked`, `tween --match` → `morph`, `mix`, `frame A..B` | 12; guide [16](../guide/16-colour-morph-ranges-opacity.md) |
+| a dissolve instead of a cut | `use B(opacity: u)` over `use A` | guide [16](../guide/16-colour-morph-ranges-opacity.md) |
 
 If a pattern needs two constructs that disagree (for example a swarm that must
 move per-agent, or a `cel` whose outline must lag), it is usually a sign that the

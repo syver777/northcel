@@ -551,7 +551,7 @@ def _paint_spans(flat: np.ndarray, spans, color: ColorValue, opacity: float, gre
     rows, a, b = spans
     if grey:
         if opacity >= 1.0:
-            if len(rows) < 64:
+            if len(rows) < 64 or int((b - a).sum()) > 48 * len(rows):
                 for r, x0, x1 in zip(rows.tolist(), a.tolist(), b.tolist()):
                     flat[r * sw + x0 : r * sw + x1] = color.r
                 return
@@ -564,7 +564,8 @@ def _paint_spans(flat: np.ndarray, spans, color: ColorValue, opacity: float, gre
         return
     col = np.asarray(color.as_rgb_tuple(), dtype=np.uint8)
     if opacity >= 1.0:
-        if len(rows) < 64:
+        # Long spans: a slice per span beats building a large index array.
+        if len(rows) < 64 or int((b - a).sum()) > 48 * len(rows):
             for r, x0, x1 in zip(rows.tolist(), a.tolist(), b.tolist()):
                 flat[r * sw + x0 : r * sw + x1] = col
             return
@@ -584,10 +585,12 @@ def _box_mean(canvas: np.ndarray, aa: int) -> np.ndarray:
     integers is exact too, so this equals `reshape(...).mean(axis=(1, 3))` bit for
     bit; it is just several times faster.
     """
-    acc = np.zeros(canvas[::aa, ::aa].shape, dtype=np.uint16)
+    rows = np.zeros(canvas[::aa].shape, dtype=np.uint16)
     for i in range(aa):
-        for j in range(aa):
-            acc += canvas[i::aa, j::aa]
+        rows += canvas[i::aa]          # whole rows: contiguous adds
+    acc = np.zeros(canvas[::aa, ::aa].shape, dtype=np.uint16)
+    for j in range(aa):
+        acc += rows[:, j::aa]
     return acc / float(aa * aa)
 
 

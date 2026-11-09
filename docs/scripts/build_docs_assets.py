@@ -215,7 +215,7 @@ def main() -> int:
         manifest = {
             "generated_by": "docs/scripts/build_docs_assets.py",
             "renderer": "python-reference",
-            "tool": "northcel 0.4.0",
+            "tool": "northcel 0.5.0",
         }
         guide = build_guide(manifest, tmp)
         patterns = build_patterns(manifest, tmp)
