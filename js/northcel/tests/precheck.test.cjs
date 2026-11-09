@@ -5,7 +5,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
-const { checkNcelSource, decodeRingQ25, decodeRingB63, decodeRingsPayload, CONFIG } = require("../index.cjs");
+const { checkNcelSource, decodeRingQ25, decodeRingB63, decodeRingsPayload, CONFIG, spec04Features } = require("../index.cjs");
 const root = path.resolve(__dirname, "..");
 const repo = path.resolve(root, "../..");
 const pythonPkg = path.join(repo, "python");
@@ -195,4 +195,40 @@ test("generated rule/guide freshness and version parity", () => {
   const r = spawnSync("python3", [path.join(root, "scripts/sync-assets.py"), "--check"], { encoding: "utf8" });
   assert.equal(r.status, 0, r.stderr);
   assert.equal(CONFIG.PACKAGE_VERSION, require("../package.json").version);
+});
+
+test("spec 0.4 syntax is accepted by the partial pre-check", () => {
+  const src = `northcel "0.4.0-draft"
+film F(width: 48, height: 40, frames: 9) {
+  palette { sky: #70CCF5, ink: #0D0D0D }
+  paper { color: mix($sky, #FFFFFF, t), antialias_grid: 4 }
+  def Box(k: 0) { layer box(color: mix($sky, $ink, k), opacity: 0.5) { "40,40 80,0 0,80 -80,0" } }
+  morph blob(color: mix(#FFFFFF, mix($sky, $ink, 0.5), t), u: smoothstep(0, 8, f), samples: 32, outline: ($ink, 1.5px)) { "40,40 80,0 0,80 -80,0" => "100,60 40,0 30,30 0,40 -30,30 -40,0" }
+  frame 2..5 { use Box(k: t, opacity: 0.75) }
+  frame 6 { stroke s(color: #00FF00, width: 2, opacity: 1 - t) { (2, 2), (40, 30) } }
+}`;
+  const r = checkNcelSource(src);
+  assert.deepEqual(r.errors, []);
+  assert.equal(r.ok, true);
+  assert.equal(r.partial, true);
+  assert.deepEqual(spec04Features(src), ["frame-range", "mix", "morph", "opacity", "spec-0.4-header"]);
+  assert.deepEqual(spec04Features('northcel "0.3.0-draft" scene S { layer a(tone: 0) { "0,0 4,0 0,4" } }'), []);
+});
+
+test("spec 0.4 structural mistakes are reported with locations", () => {
+  const mismatch = checkNcelSource('scene S { morph m(u: 0) { "0,0 4,0 0,4|0,0 4,0 0,4" => "0,0 4,0 0,4" } }');
+  assert.match(mismatch.errors[0], /pairs ring i with ring i/);
+  assert.match(checkNcelSource('scene S { morph m(u: 0) { "0,0 4,0 0,4" "0,0 4,0 0,4" } }').errors[0], /Expected '=>'/);
+  assert.match(checkNcelSource("film F(frames: 9) { frame 5..2 { } }").errors[0], /1:27: error: Frame range 5\.\.2 is reversed/);
+  assert.match(checkNcelSource("film B { frames: 2 }").errors[0], /Unknown film statement 'frames'/);
+});
+
+test("the npm launcher never hands a spec 0.4 document to the native runtime", () => {
+  const doc = path.join(temp, "morph.ncel");
+  fs.writeFileSync(doc, 'scene S { morph m(u: 0.5) { "0,0 4,0 0,4" => "0,0 8,0 0,8" } }');
+  for (const command of ["render", "film"]) {
+    const r = run([command, doc]);
+    assert.equal(r.status, 3);
+    assert.match(r.stderr, /uses spec 0\.4 \(morph\)/);
+  }
 });

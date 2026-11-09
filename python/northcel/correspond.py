@@ -302,6 +302,10 @@ def film_from_keys(keys: Sequence[Key], transitions: Sequence[Transition | str] 
         raise ValueError("film_from_keys needs at least one key")
     if opt.fallback not in ("cut", "dissolve"):
         raise ValueError("fallback must be cut or dissolve")
+    if opt.antialias_grid not in (1, 2, 4, 8):
+        raise ValueError("antialias_grid must be 1, 2, 4 or 8")
+    if not 1 <= opt.fps <= 240:
+        raise ValueError("fps must be 1..240")
     trans = list(transitions) if transitions is not None else ["auto"] * (len(keys) - 1)
     if len(trans) != len(keys) - 1:
         raise ValueError("need exactly one transition per pair of consecutive keys")

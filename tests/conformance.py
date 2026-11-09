@@ -148,6 +148,10 @@ def check_native(manifest: dict, ref, results: dict, workdir: Path) -> None:
     tolerance = float(manifest.get("tolerance_mae", 1.0))
     cases = []
     for case in manifest["cases"]:
+        if case.get("reference_only"):
+            # Not a pass: the native runtime does not implement this spec version.
+            say(f"  [SKIP] native agreement: {case['name']} ({case.get('reference_only_reason', 'reference only')})")
+            continue
         source = MANIFEST.parent / case["file"]
         frames = sorted(int(f) for f in case.get("probes_by_frame", {"0": []}))
         doc = _load(case["file"], ref)

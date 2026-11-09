@@ -134,7 +134,8 @@ def match_tween(left: str, right: str, steps: int = 4, *, fps: int = 24, mode: s
                 fallback: str = "cut", min_match: float = 0.5, max_displacement: float = 32.0,
                 match_cost: float = 2.0, colour_changes=(), image_a=None, image_b=None,
                 gap_fraction: float = 0.5, underpaint_min_area: float = 300.0,
-                antialias_grid: int = 4, easing: str = "smooth") -> tuple[str, dict]:
+                antialias_grid: int = 4, easing: str = "smooth", switch_area_fraction: float = 0.095,
+                ink_switch_area_fraction: float = 0.0127) -> tuple[str, dict]:
     """Two drawings -> a spec 0.4 film: A at frame 0, B at frame `steps`, in-betweens between."""
     from .correspond import FilmOptions, Key, MatchOptions, Transition, film_from_keys
     from .shapes import drawing_from_source
@@ -148,6 +149,8 @@ def match_tween(left: str, right: str, steps: int = 4, *, fps: int = 24, mode: s
     options = FilmOptions(fps=fps, frames=steps + 1, antialias_grid=antialias_grid,
                           transition_seconds=steps / fps, easing=easing, min_match=min_match,
                           max_displacement=max_displacement, fallback=fallback, name="Tween",
+                          switch_area_fraction=switch_area_fraction,
+                          ink_switch_area_fraction=ink_switch_area_fraction,
                           match=MatchOptions(colour_changes=colour_changes, match_cost=match_cost))
     keys = [Key(a, 0.0, "left"), Key(b, steps / fps, "right")]
     return film_from_keys(keys, [Transition(mode)], options)
@@ -179,6 +182,10 @@ def main(argv=None):
     m.add_argument("--underpaint-min-area", type=float, default=300.0)
     m.add_argument("--easing", choices=("smooth", "linear", "ease"), default="smooth")
     m.add_argument("--antialias-grid", type=int, choices=(1, 2, 4, 8), default=4)
+    m.add_argument("--switch-area-fraction", type=float, default=0.095,
+                   help="same-colour shapes larger than this canvas fraction switch at u=0.5 instead of morphing")
+    m.add_argument("--ink-switch-area-fraction", type=float, default=0.0127,
+                   help="the same for the ink (darkest) colour")
     a = p.parse_args(argv)
     try:
         if a.match:
@@ -191,7 +198,9 @@ def main(argv=None):
                 fallback=fallback, min_match=a.min_match, max_displacement=a.max_displacement,
                 match_cost=a.match_cost, colour_changes=changes, image_a=a.image_a, image_b=a.image_b,
                 gap_fraction=a.gap_fraction, underpaint_min_area=a.underpaint_min_area,
-                antialias_grid=a.antialias_grid, easing=a.easing)
+                antialias_grid=a.antialias_grid, easing=a.easing,
+                switch_area_fraction=a.switch_area_fraction,
+                ink_switch_area_fraction=a.ink_switch_area_fraction)
         else:
             fallback = a.fallback or "error"
             if fallback not in ("error", "hold"):
