@@ -28,6 +28,7 @@ These are the message templates raised by `parser.py`, `validator.py` and `rings
 | `parser.py` | error | `Unexpected character {…}` | yes |
 | `parser.py` | error | `Expected {…}, got {…}` | yes |
 | `parser.py` | error | `Unexpected trailing token '{…}'` | yes |
+| `parser.py` | error | `Frame index must be an integer` | yes |
 | `parser.py` | error | `morph '{…}' requires a u: expression` | yes |
 | `parser.py` | error | `morph u must be a number or expression` | yes |
 | `parser.py` | error | `mix() takes exactly 3 arguments` | yes |
@@ -45,6 +46,7 @@ These are the message templates raised by `parser.py`, `validator.py` and `rings
 | `parser.py` | error | `Unknown morph attribute '{…}'` | yes |
 | `parser.py` | error | `morph samples must be an integer` | yes |
 | `parser.py` | error | `Expected ':' after attribute '{…}'` | yes |
+| `parser.py` | error | `Hex colours must have 3 or 6 digits` | yes |
 | `parser.py` | error | `Undefined palette color '${…}'` | yes |
 | `parser.py` | error | `mix() expects two colours and a number: mix(#RRGGBB, $name, u)` | yes |
 | `parser.py` | error | `Expected version string or number after 'northcel'` | yes |

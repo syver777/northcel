@@ -8,7 +8,7 @@ neither is available. There is no JavaScript renderer.
 ## Start here (a complete 3-second film)
 
 ```ncel
-northcel "0.2.0-draft"
+northcel "0.4.0-draft"
 film Kite(width: 320, height: 180, fps: 12, frames: 36, precision: 0.25px, seed: 42) {
   palette { ink: #202830, red: #D65C52 }
   paper { color: #FFF8EC, antialias_grid: 4 }

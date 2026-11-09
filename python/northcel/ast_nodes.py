@@ -34,6 +34,8 @@ class ColorValue:
     @classmethod
     def from_hex(cls, hex_str: str) -> "ColorValue":
         h = hex_str.lstrip("#")
+        if len(h) not in (3, 6):
+            raise ValueError("hex colours must have 3 or 6 digits")
         if len(h) == 3:
             h = "".join(c * 2 for c in h)
         r = int(h[0:2], 16)

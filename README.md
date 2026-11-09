@@ -13,7 +13,7 @@ frame of timing and re-render only what changed.
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#licence)
 
 ```ncel
-northcel "0.2.0-draft"
+northcel "0.4.0-draft"
 
 scene StarterScene(width: 320, height: 180, fps: 12, precision: 0.25px) {
   paper { color: #F6F1E7, antialias_grid: 4, grain: 0.01 }
@@ -99,7 +99,7 @@ through the labelled Python reference.
 
 - **[The writing guide](docs/guide/README.md)** — start here: install, first file,
   then every construct with a rendered example and its real diagnostic.
-- **[Patterns cookbook](docs/patterns/README.md)** — ten complete animated
+- **[Patterns cookbook](docs/patterns/README.md)** — twelve complete animated
   programs with contact sheets, sizes and pitfalls.
 - **[Common errors](docs/errors.md)** — every diagnostic, generated from the
   source and reproduced in CI.
@@ -112,7 +112,7 @@ through the labelled Python reference.
 - **[Documentation index](docs/README.md)** — the full map.
 - [Format & tooling reference](docs/reference.md) — the CLI and the validation
   contract.
-- [Specification](docs/spec/SPEC-0.3.0-draft.md) · [changelog](CHANGELOG.md) ·
+- [Specification](docs/spec/SPEC-0.4.0-draft.md) · [changelog](CHANGELOG.md) ·
   [decision log](docs/DECISIONS.md).
 
 ## Contributing

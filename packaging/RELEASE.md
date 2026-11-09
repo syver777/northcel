@@ -50,17 +50,17 @@ set of artifacts at one version, in a fixed order, plus optional deprecated alia
 
 | Registry | Name | Latest | Notes |
 | --- | --- | --- | --- |
-| PyPI | `northcel` | **0.3.1** | the one package a user installs: reference + launcher, scripts `northcel` and `ncel` |
-| PyPI | `northcel-native` | **0.3.1** | the Linux x86_64 platform wheel `northcel` depends on |
-| PyPI | `ncel` | 0.3.1 (deprecated) | alias that depends on `northcel` |
-| PyPI | `ncel-native` | 0.3.1 (deprecated) | alias that depends on `northcel-native` |
-| npm | `northcel` | **0.3.1** | the launcher + partial pre-check |
-| npm | `northcel-linux-x64` | **0.3.1** | the native bundle |
-| npm | `@ncel/linux-x64` | 0.2.1 (deprecated) | alias for the bundle |
+| PyPI | `northcel` | **0.4.0** | the one package a user installs: reference + launcher, scripts `northcel` and `ncel` |
+| PyPI | `northcel-native` | **0.4.0** | the Linux x86_64 platform wheel `northcel` depends on; unchanged for 0.5.0 |
+| PyPI | `ncel` | 0.4.0 (deprecated) | alias that depends on `northcel`; publish 0.5.0 with this release |
+| PyPI | `ncel-native` | 0.4.0 (deprecated) | alias that depends on `northcel-native`; unchanged |
+| npm | `northcel` | **0.4.0** | the launcher + partial pre-check; 0.5.0 is the tools release |
+| npm | `northcel-linux-x64` | **0.4.0** | the native bundle; unchanged |
+| npm | `@ncel/linux-x64` | 0.2.1 (deprecated) | alias for the bundle; do not publish |
 
-`0.3.1` was chosen because npm `0.3.0` already exists and cannot be replaced.
+`0.3.1` was chosen for that historical release because npm `0.3.0` already existed. 0.5.0 is the tools-only release described at the top of this file.
 
-## 0.3.1 — published to PyPI on 2026-11-04
+## Historical — 0.3.1, published to PyPI on 2026-11-04
 
 Uploaded, in this order, and verified afterwards:
 
@@ -95,41 +95,34 @@ native build for the pinned runtime). If it is absent it tries to build the nati
 tree, which needs the MoonBit compiler and a C toolchain — see `native/BUILD.md`.
 `build_npm.sh` needs the same artifacts.
 
-Expected artifacts (measured 2026-11-04, Linux x86_64):
+Expected artifacts (fill the sizes/SHA-256 from the actual build before publishing):
 
-| File | Bytes |
-| --- | ---: |
-| `northcel-0.3.1-py3-none-any.whl` | 165,595 |
-| `northcel-0.3.1.tar.gz` | 164,430 |
-| `northcel_native-0.3.1-py3-none-manylinux_2_39_x86_64.whl` | 2,815,158 |
-| `northcel-0.3.1.tgz` (npm, 13 files) | 45,973 |
-| `northcel-linux-x64-0.3.1.tgz` (npm, 18 files) | 2,849,183 |
+| File | Notes |
+| --- | --- |
+| `northcel-0.5.0-py3-none-any.whl` | reference + launcher (tools only) |
+| `northcel-0.5.0.tar.gz` | sdist |
+| `northcel-0.5.0.tgz` (npm) | launcher + pre-check |
+| native artifacts | **do not rebuild**; `northcel-native` / `northcel-linux-x64` stay 0.4.0 |
 
 ## Publish, in this order
 
-A platform artifact must exist before the package whose dependency points at it.
+0.5.0 is tools-only: do not upload `northcel-native` or
+`northcel-linux-x64` again. A platform artifact from 0.4.0 already satisfies the
+dependency; verify it exists first.
 
 ```sh
-# 1. PyPI — the native bundle first
+# 1. PyPI — the reference + launcher (native 0.4.0 is already published)
 python3 -m twine upload --non-interactive \
-  dist/python/northcel_native-0.3.1-py3-none-manylinux_2_39_x86_64.whl
+  dist/python/northcel-0.5.0-py3-none-any.whl dist/python/northcel-0.5.0.tar.gz
 
-# 2. PyPI — the reference + launcher
-python3 -m twine upload --non-interactive \
-  dist/python/northcel-0.3.1-py3-none-any.whl dist/python/northcel-0.3.1.tar.gz
+# 2. npm — the launcher only (northcel-linux-x64 stays 0.4.0)
+npm publish dist/npm/northcel-0.5.0.tgz --access public
 
-# 3. npm — the platform bundle first
-npm publish dist/npm/northcel-linux-x64-0.3.1.tgz --access public
-
-# 4. npm — the launcher
-npm publish dist/npm/northcel-0.3.1.tgz --access public
-
-# 5. optional: the deprecated aliases (they only depend on the real packages)
+# 3. optional: the deprecated PyPI alias (it only depends on northcel==0.5.0)
 python3 -m build --outdir dist/deprecated packaging/deprecated/pypi-ncel
-python3 -m build --outdir dist/deprecated packaging/deprecated/pypi-ncel-native
 python3 -m twine upload --non-interactive dist/deprecated/*
 ( cd packaging/deprecated/npm-ncel-linux-x64 && npm publish --access public )
-npm deprecate "@ncel/linux-x64@0.3.1" "NorthCel is one package now: npm install -g northcel"
+npm deprecate "@ncel/linux-x64@0.2.1" "NorthCel is one package now: npm install -g northcel"
 ```
 
 Credentials: `TWINE_USERNAME=__token__` + `TWINE_PASSWORD` (or `~/.pypirc`) for
@@ -146,17 +139,17 @@ with `--no-cache-dir` a minute later worked. Retry before assuming a bad artifac
 ## After publishing
 
 ```sh
-python3 -m venv /tmp/nc && /tmp/nc/bin/pip install --no-cache-dir northcel==0.3.1
+python3 -m venv /tmp/nc && /tmp/nc/bin/pip install --no-cache-dir northcel==0.5.0
 /tmp/nc/bin/northcel doctor && /tmp/nc/bin/northcel verify   # 5/5, hash be0eb036…
-npm install -g northcel@0.3.1 && northcel verify
+npm install -g northcel@0.5.0 && northcel verify
 
-git tag -a v0.3.1 -m "NorthCel 0.3.1" && git push origin v0.3.1
+git tag -a v0.5.0 -m "NorthCel 0.5.0" && git push origin v0.5.0
 ```
 
 ## Homebrew formula
 
 `packaging/homebrew/Formula/northcel.rb` pins the **published** artifacts: since
-0.3.1 that is two of them — the `northcel` sdist (this formula's `url`) and the
+0.4.0 that is two of them — the `northcel` sdist (this formula's `url`) and the
 `northcel-native` platform wheel. To re-pin, take the `url`/`sha256` pairs from
 `https://pypi.org/pypi/<name>/<version>/json`, bump `version` in `test do`, and run:
 
@@ -174,6 +167,6 @@ same change there.
 
 - The **tools** version moves (`0.3.1`, `0.3.2`, …).
 - The **language specification** moves only when the grammar or rendering
-  semantics change (`0.2.0-draft` today), and an archived draft is never edited.
+  semantics change (`0.4.0-draft` today), and an archived draft is never edited.
 - A packaging-only release keeps `spec_version` and the native runtime build
   identical; `northcel doctor` prints both numbers so they cannot be confused.

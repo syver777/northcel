@@ -208,7 +208,13 @@ def main(argv: list[str] | None = None) -> int:
         print(USAGE, end="")
         return 0
 
-    command, rest = args[0], args[1:]
+    leading = []
+    while args and args[0] in {"--no-native", "--python"}:
+        leading.append(args.pop(0))
+    if not args:
+        print(USAGE, end="")
+        return 0
+    command, rest = args[0], leading + args[1:]
     if command == "fit":
         from ..fitting import main as fit_main
         return fit_main(rest)

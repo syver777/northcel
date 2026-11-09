@@ -12,9 +12,9 @@ This guide instructs AI coding agents (Claude Code, OpenCode, Codex, Cursor, Gem
    `northcel check file.ncel --json` then `northcel render file.ncel -o before.png`.
    Never start from a file you have not rendered.
 3. **Copy a structure, not a drawing.** The
-   [patterns cookbook](patterns/README.md) has ten complete programs; pick the
+   [patterns cookbook](patterns/README.md) has twelve complete programs; pick the
    one whose *motion* matches the request (head turn, blink, jump, colour beat,
-   drift, assembly, walk, boil, crowd, two-shot).
+   drift, assembly, walk, boil, crowd, two-shot, fitting/cel transforms, polishing AI frames).
 4. **Edit one named block.** Find it with `northcel info file.ncel`; change only
    that block; render the edited frame and both neighbours.
 5. **Only then run the full film.** `northcel film file.ncel -o frames/` and look
@@ -69,7 +69,7 @@ neither is available. There is no JavaScript renderer.
 ## Start here (a complete 3-second film)
 
 ```ncel
-northcel "0.2.0-draft"
+northcel "0.4.0-draft"
 film Kite(width: 320, height: 180, fps: 12, frames: 36, precision: 0.25px, seed: 42) {
   palette { ink: #202830, red: #D65C52 }
   paper { color: #FFF8EC, antialias_grid: 4 }

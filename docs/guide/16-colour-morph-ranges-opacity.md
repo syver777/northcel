@@ -35,8 +35,8 @@ morph arm(color: $ink, u: smoothstep(11, 18, f), samples: 64) {
 Ring *i* on the left pairs with ring *i* on the right; the ring counts must be
 equal, the vertex counts need not be. At `u ≤ 0` the morph paints A's rings
 exactly and at `u ≥ 1` B's. In between, each pair is put in the same winding,
-resampled to `samples` points by arclength (default: the larger vertex count,
-at least 8), the start of B is rotated to the cyclic shift closest to A, and the
+resampled to `samples` points by arclength (default:
+`min(1024, max(8, nA, nB))`), the start of B is rotated to the cyclic shift closest to A, and the
 points are interpolated. `outline` and `opacity` work as on a `cel`. A morph
 is a named entry like a layer: `drop`, `transform` and in-place replacement
 apply to it.

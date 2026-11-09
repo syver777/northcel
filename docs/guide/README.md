@@ -31,7 +31,7 @@ animation? Read 8–10 and 14. Writing an AI agent prompt? Read
 
 After the guide:
 
-- [Patterns cookbook](../patterns/README.md) — ten complete, compiling
+- [Patterns cookbook](../patterns/README.md) — twelve complete, compiling
   animations with contact sheets, sizes and pitfalls.
 - [Gallery](../gallery.md) — the shower frames, the lantern film, a 90-frame
   AI-drawn film recreated in `.ncel`, and the pattern examples.

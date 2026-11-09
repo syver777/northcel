@@ -21,21 +21,23 @@ This page is the short lookup. The language itself is taught in the
 | `northcel guide` | the compact offline agent guide |
 | `northcel toolchain <status\|install>` | the optional MoonBit compiler for rebuilding the native tree |
 
-Global `--no-native` forces the labelled Python reference path. On a platform
-without a native bundle, the launcher prints one line and labels the receipt
-`"renderer": "python-reference"`; it never claims a native render.
+Global `--no-native` (before or after the command) forces the labelled Python
+reference path. On a platform without a native bundle, the launcher prints a
+two-line notice and labels the receipt `"renderer": "python-reference"`; it never
+claims a native render.
 
 **Spec 0.4 routing.** The native runtime 0.4.0 implements spec 0.3. When a
 document uses `mix`, `morph`, `frame A..B` or `opacity`, or declares a 0.4
 header, `check`, `info`, `render` and `film` use the Python reference even where
 native is available, print why (`… uses spec 0.4 features (morph); the native
 runtime 0.4.0 implements spec 0.3 only`) and label the receipt
-`python-reference`. The npm launcher does the same through its Python bridge and,
-without Python, exits `3` naming the features instead of calling native.
+`python-reference`. The npm launcher does the same through its Python bridge.
+Without Python, `render`/`film`/`info` exit `3` naming the features instead of
+calling native; `check` falls back to the PARTIAL JS pre-check instead.
 
 ## Validation contract
 
-**Tools 0.5.0, spec 0.4.0-draft** (contract unchanged since 0.3.1). The `northcel` distribution is the reference
+**Tools 0.5.0, spec 0.4.0-draft** (contract as of 0.4.0; 0.5.0 adds the polishing API). The `northcel` distribution is the reference
 parser, validator, formatter and CPU renderer *and* the launcher that runs the
 native runtime. The npm `northcel` package runs the same launcher and adds a
 zero-dependency structural JS pre-check, the embedded guide and a Python bridge;
@@ -60,7 +62,7 @@ pre-check when neither the native bundle nor Python is available.
 | JS detected error or unreadable file | `PARTIAL ... errors found` plus line:column diagnostics | 1 |
 | JS clean with `--require-full` | The partial result plus a full-validator-unavailable diagnostic | 2 |
 | Invalid check arguments / unsupported flags | Usage (not a validation result) | 2 |
-| Node-only `render` / `film` | Install-Python guidance, no render claimed | 1 |
+| Node-only `render` / `film` / `info` | Install-Python guidance, no render claimed | 3 |
 
 Every JS API result and `check --json` result contains `partial: true`,
 `validator: "js"`, `reason`, `next`, `ok`, `errors`, `warnings`. CLI JSON
@@ -112,8 +114,8 @@ from northcel.correspond import (Key, Transition, FilmOptions, MatchOptions, Mat
 | `drawing_from_source` | `drawing_from_source(source, image=None, *, stack="auto", gap_fraction=0.5, underpaint_min_area=300.0, ink=None)` | `StackedDrawing` from a plain scene (planar fit or already stacked); `image` (path or PIL image) supplies source pixels for the gap test |
 | `stack_planar` | `stack_planar(layers, paper, width, height, labels=None, label_colors=None, *, gap_fraction=0.5, underpaint_min_area=300.0, ink=None, min_shape_area=4.0, hole_min_area=30.0, name="Drawing")` | `StackedDrawing`; `layers` is `[(rgb, [ring arrays])]` in paint order |
 | `stacked_source` | `stacked_source(drawing, *, spec="0.3.0-draft", antialias_grid=4, fps=24)` | `.ncel` scene text, one `layer` per shape |
-| `match_drawings` | `match_drawings(a, b, options=MatchOptions())` | `Match(pairs, only_a, only_b, displacement, matched_fraction)`; `match.confident(min_match, max_displacement)` |
-| `film_from_keys` | `film_from_keys(keys, transitions=None, options=FilmOptions())` | `(film source, receipt dict)` |
+| `match_drawings` | `match_drawings(a, b, options=None)` (defaults to `MatchOptions()`) | `Match(pairs, only_a, only_b, displacement, matched_fraction)`; `match.confident(min_match, max_displacement)` |
+| `film_from_keys` | `film_from_keys(keys, transitions=None, options=None)` (defaults to `FilmOptions()`) | `(film source, receipt dict)` |
 | `linear_assignment` | `linear_assignment(cost)` | `(rows, cols)` minimum-cost assignment, deterministic |
 
 Data types: `Shape(color, ring, area, kind)` (`kind` is `region`, `gap` or

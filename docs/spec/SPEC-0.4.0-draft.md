@@ -39,7 +39,7 @@ Whitespace separates tokens and is otherwise insignificant. Tokens:
 
 ```ebnf
 String   = '"' { any character except an unescaped '"' } '"' ;
-Hex      = "#" 3 to 6 hex digits ;                 (* #RGB or #RRGGBB *)
+Hex      = "#" ( 3 | 6 ) hex digits ;              (* #RGB or #RRGGBB *)
 UnitNum  = Number ( "px-b63" | "px" | "deg" ) ;
 Number   = [ "-" ] Digit { Digit } [ "." Digit { Digit } ] ;
 Ident    = ( Letter | "_" ) { Letter | Digit | "_" } ;
@@ -151,7 +151,7 @@ c = floor(a + (b - a) * u + 0.5)
 ```
 
 so the result is again an 8-bit RGB colour. `mix` is accepted for `layer`,
-`wash`, `cel`, `bend_swarm`, `stroke`, `ribbon` and `morph` colours, for the
+`wash`, `cel`, `bend_swarm`/`swarm`, `stroke`, `ribbon` and `morph` colours, for the
 colour of an `outline`, and for `paper`.
 
 ### 5.3 Ring encodings
@@ -283,7 +283,7 @@ ring corresponds to which.
 
 ### 6.5 Opacity (0.4)
 
-`opacity: <expr>` on `layer`, `wash`, `cel` (fill and outline), `bend_swarm`,
+`opacity: <expr>` on `layer`, `wash`, `cel` (fill and outline), `bend_swarm`/`swarm`,
 `stroke`, `ribbon` and `morph` is evaluated per frame and clamped to [0, 1].
 Absent means 1.
 

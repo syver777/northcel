@@ -367,7 +367,9 @@ class _Parser:
     ) -> tuple[int, int | None, SceneNode]:
         kw = self.expect("IDENT", "frame")
         idx_tok = self.expect("NUMBER")
-        f_idx = int(float(idx_tok.value))
+        if "." in idx_tok.value:
+            raise NorthCelSyntaxError("Frame index must be an integer", idx_tok.line, idx_tok.column)
+        f_idx = int(idx_tok.value)
         f_hi: int | None = None
         if self.match("RANGE"):
             # Spec 0.4: `frame A..B { ... }` applies to every frame A..B inclusive.
@@ -716,7 +718,10 @@ class _Parser:
     def parse_attr_value(self) -> Any:
         tok = self.cur()
         if tok.kind == "HEX":
-            return ColorValue.from_hex(self.advance().value)
+            hex_tok = self.advance()
+            if len(hex_tok.value) - 1 not in (3, 6):
+                raise NorthCelSyntaxError("Hex colours must have 3 or 6 digits", hex_tok.line, hex_tok.column)
+            return ColorValue.from_hex(hex_tok.value)
         if tok.kind == "PUNCT" and tok.value == "$":
             self.advance()
             ref_tok = self.expect("IDENT")
