@@ -383,15 +383,46 @@ def stacked_source(drawing: StackedDrawing, *, spec: str = "0.3.0-draft", antial
 
 
 def shape_manifest(drawing: StackedDrawing) -> list[dict]:
-    """Stable ids and inspectable geometry for every fitted shape."""
-    out = []
+    """Stable ids and geometry of the emitted quarter-pixel fitted shapes.
+
+    Use the same encoded rings as stacked_source, not unrounded fitting areas
+    (which can include paint-order offsets for gaps and underpaint).
+    """
+    from .rings import decode_ring_b63_q25
+
+    entries = []
+    kinds = {}
     for shape in drawing.shapes:
-        lo, hi = shape.ring.min(axis=0), shape.ring.max(axis=0)
-        out.append({"id": shape.id, "color": list(shape.color), "area": round(shape.area, 2),
-                    "kind": shape.kind, "bbox": [round(float(lo[0]), 2), round(float(lo[1]), 2),
-                                                 round(float(hi[0]), 2), round(float(hi[1]), 2)],
-                    "centroid": [round(float(ring_centroid(shape.ring)[0]), 2),
-                                 round(float(ring_centroid(shape.ring)[1]), 2)]})
+        text = encode_ring(shape.ring)
+        if text:
+            entries.append((shape.id, list(shape.color), [decode_ring_b63_q25(text)]))
+            kinds[shape.id] = shape.kind
+    rows = shape_rows(entries)
+    for row in rows:
+        row["kind"] = kinds[row["id"]]
+    return rows
+
+
+def shape_rows(entries) -> list[dict]:
+    """Shared evaluated-geometry rows for fit receipts and shape queries.
+
+    Entries are (id, colour, rings). Area and centroid use absolute ring areas;
+    containment is a bbox/centroid heuristic, not semantic parenting or depth.
+    """
+    out = []
+    for sid, color, rings in entries:
+        arrays = [np.asarray(r, dtype=np.float64) for r in rings if len(r) >= 3]
+        if not arrays:
+            continue
+        points = np.concatenate(arrays)
+        lo, hi = points.min(axis=0), points.max(axis=0)
+        areas = np.asarray([abs(ring_area(r)) for r in arrays])
+        area = float(areas.sum())
+        centroid = (sum((ring_centroid(r) * a for r, a in zip(arrays, areas)), np.zeros(2)) / area
+                    if area > 1e-6 else points.mean(axis=0))
+        out.append({"id": sid, "color": color, "area": round(area, 2),
+                    "bbox": [round(float(v), 2) for v in (*lo, *hi)],
+                    "centroid": [round(float(v), 2) for v in centroid]})
     # Parent by containment; children after every parent is known.
     for i, rec in enumerate(out):
         cx, cy = rec["centroid"]

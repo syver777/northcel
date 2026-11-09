@@ -878,5 +878,5 @@
     }
   },
   "renderer": "python-reference",
-  "tool": "northcel 0.5.0"
+  "tool": "northcel 0.6.0"
 }

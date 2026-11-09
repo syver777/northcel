@@ -10,6 +10,11 @@ New to NorthCel? Read 1–3, then jump to the construct you need. Writing an
 animation? Read 8–10 and 14. Writing an AI agent prompt? Read
 [the agent guide](../agent-guide.md) after 1–3.
 
+The numbered guide targets **published tools 0.5.0 / spec 0.4**. Spec 0.5's
+`group`, `warp`, `nudge` and shape queries are in the [source/unreleased spec
+additions](../spec/SPEC-0.5.0-draft.md) and agent guide; they require tools 0.6.0
+from this checkout, not the current published install.
+
 | # | Page | What it covers |
 | ---: | --- | --- |
 | 1 | [Getting started](01-getting-started.md) | install, `doctor`, `verify`, first file, the check/render loop |
@@ -38,6 +43,7 @@ After the guide:
 - [Common errors](../errors.md) — every diagnostic, generated from the source.
 - [Architecture](../architecture.md) — what MoonBit, Bend and GLSL each own.
 
-The current normative grammar is [SPEC-0.4.0-draft](../spec/SPEC-0.4.0-draft.md), a complete restatement. Where
+The published normative grammar is [SPEC-0.4.0-draft](../spec/SPEC-0.4.0-draft.md), a complete restatement;
+the current source adds [SPEC-0.5.0-draft](../spec/SPEC-0.5.0-draft.md). Where
 this guide and the spec disagree, the spec wins and the guide has a bug — please
 open an issue.

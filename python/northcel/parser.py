@@ -1,4 +1,4 @@
-"""Lexer and recursive-descent parser for NorthCel (.ncel) up to spec 0.4 with line:column diagnostics."""
+"""Lexer and recursive-descent parser for NorthCel (.ncel) up to spec 0.5 with line:column diagnostics."""
 
 from __future__ import annotations
 
@@ -492,7 +492,7 @@ class _Parser:
             for k, v in raw_attrs.items():
                 params[k] = float(self._eval_const(v))
         self.expect("PUNCT", "{")
-        items: list[LayerNode | SwarmNode | StrokeNode | RibbonNode | MorphNode | TransformNode] = []
+        items: list[SceneItem] = []
         while not (self.cur().kind == "PUNCT" and self.cur().value == "}"):
             if self.cur().kind == "EOF":
                 raise NorthCelSyntaxError(f"Unclosed 'def {name_tok.value}' block", kw.line, kw.column)
@@ -644,9 +644,18 @@ class _Parser:
         if "vertex" not in attrs:
             raise NorthCelSyntaxError("nudge needs vertex:", kw.line, kw.column)
         self.match("PUNCT", ";")
-        return NudgeNode(target, int(self._eval_const(attrs["vertex"])),
-                         attrs.get("dx", 0.0), attrs.get("dy", 0.0),
-                         int(self._eval_const(attrs.get("ring", 0))),
+        indices = {}
+        for key in ("vertex", "ring"):
+            try:
+                value = self._eval_const(attrs.get(key, 0))
+                if not math.isfinite(value) or not value.is_integer():
+                    raise ValueError
+            except (ValueError, TypeError, KeyError, OverflowError):
+                raise NorthCelSyntaxError(f"nudge {key} must be an integer", kw.line, kw.column) from None
+            indices[key] = int(value)
+        return NudgeNode(target, indices["vertex"],
+                          attrs.get("dx", 0.0), attrs.get("dy", 0.0),
+                          indices["ring"],
                          SourceSpan(kw.line, kw.column))
 
     def parse_drop(self) -> DropNode:

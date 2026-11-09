@@ -1,6 +1,7 @@
 # 16. Colour expressions, morph, frame ranges and opacity
 
-Tools 0.5.0 implements spec [0.4.0-draft](../spec/SPEC-0.4.0-draft.md). These four
+Published tools 0.5.0 implements spec [0.4.0-draft](../spec/SPEC-0.4.0-draft.md).
+These constructs also work in source/unreleased tools 0.6.0 / spec 0.5. These four
 constructs let one film hold each drawing once and describe the frames between
 drawings as expressions, instead of a separate scene per frame.
 

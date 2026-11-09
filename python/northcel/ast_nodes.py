@@ -166,7 +166,7 @@ class MorphNode:
 
 @dataclass(frozen=True)
 class GroupNode:
-    """Spec 0.6 named group: a paint unit with a pivot, optional clip/parent and opacity.
+    """Spec 0.5 named group: a paint unit with a pivot, optional clip/parent and opacity.
 
     Groups may contain primitives, `use`, transforms, warps, nudges and nested
     groups. The group name addresses all its paints for transforms/warps and for
@@ -186,7 +186,7 @@ class GroupNode:
 
 @dataclass(frozen=True)
 class WarpNode:
-    """Spec 0.6 handle-based free-form deformation.
+    """Spec 0.5 handle-based free-form deformation.
 
     `handles` is a tuple of (x, y, dx, dy). Each point inside `radius` of a
     handle receives the weighted average of the handle offsets, with a smooth
@@ -202,7 +202,7 @@ class WarpNode:
 
 @dataclass(frozen=True)
 class NudgeNode:
-    """Spec 0.6 per-vertex offset on a named shape (ring/vertex indices)."""
+    """Spec 0.5 per-vertex offset on a named shape (ring/vertex indices)."""
 
     target_name: str
     vertex: int

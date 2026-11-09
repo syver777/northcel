@@ -288,13 +288,18 @@ def spec05_features(doc: DocumentNode) -> list[tuple[str, int, int]]:
             elif isinstance(it, NudgeNode):
                 found.append(("nudge", it.span.line, it.span.column))
 
+    def scene(node) -> None:
+        for d in node.defs.values():
+            items(d.items)
+        items(node.items)
+
     root = doc.root
-    items(root.items)
+    scene(root)
     if isinstance(root, FilmNode):
         for f_scene in root.frame_overrides.values():
-            items(f_scene.items)
+            scene(f_scene)
         for _lo, _hi, f_scene in root.frame_ranges:
-            items(f_scene.items)
+            scene(f_scene)
     return found
 
 

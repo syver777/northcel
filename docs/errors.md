@@ -4,6 +4,8 @@ This page is **generated** by `docs/scripts/gen_errors.py` from the real parser,
 
 ## How a diagnostic is shaped
 
+**Version scope:** spec 0.5 diagnostics require tools 0.6.0 from this source checkout (unreleased). Published tools 0.5.0 supports spec 0.4; do not run the 0.5-header examples on that install.
+
 ```text
 path.ncel:5:20: error: Unknown function 'oklch'
             │  │   │      └─ what is wrong
@@ -60,6 +62,7 @@ These are the message templates raised by `parser.py`, `validator.py` and `rings
 | `parser.py` | error | `Undefined palette color '${…}'` | yes |
 | `parser.py` | error | `mix() expects two colours and a number: mix(#RRGGBB, $name, u)` | yes |
 | `parser.py` | error | `Expected version string or number after 'northcel'` | yes |
+| `parser.py` | error | `nudge {…} must be an integer` | yes |
 | `parser.py` | error | `Unknown function '{…}'` | yes |
 | `parser.py` | error | `{…} expects {…} arguments` | yes |
 | `parser.py` | error | `Unsupported statement '{…}' inside def block` | yes |
@@ -371,7 +374,97 @@ broken.ncel:4:3: warning: Frame range 4..9 overlaps 0..5 (line 3); the later blo
 
 **Fix.** Make the ranges disjoint, or keep the overlap on purpose: the warning names the frames where the later block wins.
 
-### 13. A number that starts with a dot
+### 13. A fractional nudge vertex index
+
+*Case id:* `p-nudge-vertex-integer`
+
+<!-- case-source -->
+```ncel
+northcel "0.5.0-draft"
+scene S {
+  nudge a(vertex: 1.9, dx: 2px)
+}
+```
+
+```console
+$ northcel check broken.ncel
+broken.ncel:3:3: error: nudge vertex must be an integer
+# exit 1
+```
+
+**Cause.** Nudge vertex and ring indices are integers; fractions are not silently truncated.
+
+**Fix.** Use a zero-based integer vertex index (tools 0.6.0 from source, unreleased).
+
+### 14. A fractional nudge ring index
+
+*Case id:* `p-nudge-ring-integer`
+
+<!-- case-source -->
+```ncel
+northcel "0.5.0-draft"
+scene S {
+  nudge a(vertex: 0, ring: 0.7, dx: 2px)
+}
+```
+
+```console
+$ northcel check broken.ncel
+broken.ncel:3:3: error: nudge ring must be an integer
+# exit 1
+```
+
+**Cause.** A ring index must be a whole integer, not a fractional ring selection.
+
+**Fix.** Use a zero-based integer ring index, normally `ring: 0`.
+
+### 15. A negative nudge index
+
+*Case id:* `v-nudge-negative`
+
+<!-- case-source -->
+```ncel
+northcel "0.5.0-draft"
+scene S {
+  nudge a(vertex: -1)
+}
+```
+
+```console
+$ northcel check broken.ncel
+broken.ncel:3:3: error: Nudge 'a' ring/vertex must be >= 0
+# exit 1
+```
+
+**Cause.** Vertex and ring indices start at zero.
+
+**Fix.** Choose an existing nonnegative index; render to verify it is in range.
+
+### 16. A spec 0.5 construct inside an older-header def
+
+*Case id:* `v-spec05-def-header`
+
+<!-- case-source -->
+```ncel
+northcel "0.4.0-draft"
+scene S {
+  def D {
+    group g {}
+  }
+}
+```
+
+```console
+$ northcel check broken.ncel
+broken.ncel:4:5: error: group requires northcel "0.5.0-draft" (this document declares '0.4.0-draft')
+# exit 1
+```
+
+**Cause.** The version contract includes def bodies and nested groups, even unused definitions.
+
+**Fix.** Use tools 0.6.0 from source (unreleased) and `northcel "0.5.0-draft"`, or remove the 0.5 construct on published tools 0.5.0.
+
+### 17. A number that starts with a dot
 
 *Case id:* `p-unexpected-char`
 
@@ -396,7 +489,7 @@ broken.ncel:4:51: error: Unexpected character '.'
 
 **Fix.** Write `0.5px`.
 
-### 14. A missing comma in a header
+### 18. A missing comma in a header
 
 *Case id:* `p-expected-token`
 
@@ -419,7 +512,7 @@ broken.ncel:3:41: error: Expected IDENT, got '{'
 
 **Fix.** Close the attributes: `width: 320, height: 180)` then `{`.
 
-### 15. A statement with no root container
+### 19. A statement with no root container
 
 *Case id:* `p-no-root`
 
@@ -440,7 +533,7 @@ broken.ncel:3:1: error: Expected 'scene' or 'film' declaration, got 'layer'
 
 **Fix.** Wrap the statements in `scene Name(...) { ... }` or `film Name(...) { ... }`.
 
-### 16. Text after the closing brace
+### 20. Text after the closing brace
 
 *Case id:* `p-trailing-token`
 
@@ -465,7 +558,7 @@ broken.ncel:7:1: error: Unexpected trailing token 'extra'
 
 **Fix.** Delete the extra text, or move it inside the root (and give it a valid statement).
 
-### 17. A film attribute inside a scene body
+### 21. A film attribute inside a scene body
 
 *Case id:* `p-scene-statement`
 
@@ -489,7 +582,7 @@ broken.ncel:5:3: error: Unknown scene statement 'frames'
 
 **Fix.** Use `film Name(..., frames: N)` if you want a timeline; a scene has one frame.
 
-### 18. A film attribute inside the film body
+### 22. A film attribute inside the film body
 
 *Case id:* `p-film-statement`
 
@@ -513,7 +606,7 @@ broken.ncel:4:3: error: Unknown film statement 'frames'
 
 **Fix.** Move it: `film Name(..., frames: 12) { ... }`.
 
-### 19. A header attribute inside a frame override
+### 23. A header attribute inside a frame override
 
 *Case id:* `p-frame-statement`
 
@@ -539,7 +632,7 @@ broken.ncel:6:5: error: Unknown frame statement 'frames'
 
 **Fix.** Put `frames`/`fps`/`seed` only in the film header.
 
-### 20. A missing closing brace
+### 24. A missing closing brace
 
 *Case id:* `p-unclosed-scene`
 
@@ -562,7 +655,7 @@ broken.ncel:3:1: error: Unclosed 'scene' block
 
 **Fix.** Close the block with `}`.
 
-### 21. A missing brace in a def
+### 25. A missing brace in a def
 
 *Case id:* `p-unclosed-def`
 
@@ -585,7 +678,7 @@ broken.ncel:4:3: error: Unclosed 'def Mark' block
 
 **Fix.** Close the `def` block. The error names the def and its opening position.
 
-### 22. A missing brace in a film
+### 26. A missing brace in a film
 
 *Case id:* `p-unclosed-film`
 
@@ -607,7 +700,7 @@ broken.ncel:3:1: error: Unclosed 'film' block
 
 **Fix.** Close the film with `}`.
 
-### 23. A missing brace in a frame override
+### 27. A missing brace in a frame override
 
 *Case id:* `p-unclosed-frame`
 
@@ -631,7 +724,7 @@ broken.ncel:5:3: error: Unclosed 'frame' block
 
 **Fix.** Close the override; the error points at the `frame` keyword.
 
-### 24. A `use` inside a `def`
+### 28. A `use` inside a `def`
 
 *Case id:* `p-def-statement`
 
@@ -660,7 +753,7 @@ broken.ncel:8:5: error: Unsupported statement 'use' inside def block
 
 **Fix.** Expand the other def at the call site instead, or copy the primitive into this def.
 
-### 25. A missing colon after an attribute name
+### 29. A missing colon after an attribute name
 
 *Case id:* `p-attr-colon`
 
@@ -683,7 +776,7 @@ broken.ncel:4:19: error: Expected ':' after attribute 'color'
 
 **Fix.** Write `color: #RRGGBB`.
 
-### 26. A palette colour used before it exists
+### 30. A palette colour used before it exists
 
 *Case id:* `p-palette-undefined`
 
@@ -707,7 +800,7 @@ broken.ncel:5:21: error: Undefined palette color '$blue'
 
 **Fix.** Declare the colour earlier in the same body, or use a literal.
 
-### 27. A function NorthCel does not have
+### 31. A function NorthCel does not have
 
 *Case id:* `p-unknown-function`
 
@@ -731,7 +824,7 @@ broken.ncel:5:20: error: Unknown function 'oklch'
 
 **Fix.** Use `rgb(r, g, b)` / `#RRGGBB`, or precompute the sRGB value and put it in the palette.
 
-### 28. An empty attribute value
+### 32. An empty attribute value
 
 *Case id:* `p-expected-expression`
 
@@ -754,7 +847,7 @@ broken.ncel:4:20: error: Expected expression, got ','
 
 **Fix.** Give the attribute a value.
 
-### 29. A version header with no version
+### 33. A version header with no version
 
 *Case id:* `p-version-value`
 
@@ -777,7 +870,7 @@ broken.ncel:1:10: error: Expected version string or number after 'northcel'
 
 **Fix.** Write `northcel "0.2.0-draft"` or drop the header line.
 
-### 30. A colour attribute that is not a colour
+### 34. A colour attribute that is not a colour
 
 *Case id:* `p-colour-value`
 
@@ -800,7 +893,7 @@ broken.ncel:4:3: error: Invalid color attribute value
 
 **Fix.** Use `#RRGGBB`, `rgb(r, g, b)`, `tone: N` or `$palette`.
 
-### 31. An unsupported specification version
+### 35. An unsupported specification version
 
 *Case id:* `v-version`
 
@@ -823,7 +916,7 @@ broken.ncel:1:1: error: Unsupported NorthCel version '9.9.0'. Supported: ('0.1',
 
 **Fix.** Use `northcel "0.2.0-draft"` (or drop the header).
 
-### 32. A canvas larger than 8192
+### 36. A canvas larger than 8192
 
 *Case id:* `v-canvas`
 
@@ -846,7 +939,7 @@ broken.ncel:3:1: error: Canvas dimensions 9000x360 out of valid range [1..8192]
 
 **Fix.** Render tiles, or use a realistic size.
 
-### 33. An fps outside 1..240
+### 37. An fps outside 1..240
 
 *Case id:* `v-fps`
 
@@ -869,7 +962,7 @@ broken.ncel:3:1: error: FPS 0 out of valid range [1..240]
 
 **Fix.** Use a value in `1..240`.
 
-### 34. An unknown contour precision
+### 38. An unknown contour precision
 
 *Case id:* `v-precision`
 
@@ -892,7 +985,7 @@ broken.ncel:3:1: error: Unsupported precision '0.5px' (expected '0.25px', '0.25p
 
 **Fix.** Pick one of those three.
 
-### 35. A colour channel outside 0..255
+### 39. A colour channel outside 0..255
 
 *Case id:* `v-colour-channel`
 
@@ -915,7 +1008,7 @@ broken.ncel:4:3: error: Color channel r=300 out of range [0..255]
 
 **Fix.** Clamp the channel to `0..255`.
 
-### 36. An unsupported antialias grid
+### 40. An unsupported antialias grid
 
 *Case id:* `v-antialias`
 
@@ -938,7 +1031,7 @@ broken.ncel:4:3: error: paper.antialias_grid must be 1, 2, 4, or 8 (got 3)
 
 **Fix.** Use `4` (default) or `8` for finer edges.
 
-### 37. A ring count that disagrees with the payload
+### 41. A ring count that disagrees with the payload
 
 *Case id:* `v-rings-warning`
 
@@ -961,7 +1054,7 @@ broken.ncel:4:3: warning: Layer 'sky' declares rings: 3, but payload contains 1 
 
 **Fix.** Update `rings:` to the number of `|`-separated rings (or delete it).
 
-### 38. A swarm with no agents
+### 42. A swarm with no agents
 
 *Case id:* `v-swarm-agents`
 
@@ -984,7 +1077,7 @@ broken.ncel:4:3: error: Swarm 'dots' must have agents >= 1 (got 0)
 
 **Fix.** Declare the number of rings you actually put in the payload.
 
-### 39. A swarm whose payload decodes to no rings
+### 43. A swarm whose payload decodes to no rings
 
 *Case id:* `v-swarm-empty`
 
@@ -1007,7 +1100,7 @@ broken.ncel:4:3: error: Swarm 'dots' payload decoded to 0 rings
 
 **Fix.** Add at least one `|`-separated ring.
 
-### 40. A swarm with a malformed ring
+### 44. A swarm with a malformed ring
 
 *Case id:* `v-swarm-ring`
 
@@ -1030,7 +1123,7 @@ broken.ncel:4:3: error: Swarm 'dots' has invalid ring payload: Ring 0: Decoded r
 
 **Fix.** Give the agent at least three vertices.
 
-### 41. A stroke with one point
+### 45. A stroke with one point
 
 *Case id:* `v-stroke-points`
 
@@ -1053,7 +1146,7 @@ broken.ncel:4:3: error: Stroke 'dot' requires at least 2 control points
 
 **Fix.** Give it two points (a dot is a tiny layer, or a two-point stroke).
 
-### 42. A stroke with zero width
+### 46. A stroke with zero width
 
 *Case id:* `v-stroke-width`
 
@@ -1076,7 +1169,7 @@ broken.ncel:4:3: error: Stroke 'line' widths must be > 0
 
 **Fix.** Use a positive width (the renderer clamps ribbon widths below 0.25 to 0.25, but validation rejects zero stroke widths first).
 
-### 43. A ribbon with one point
+### 47. A ribbon with one point
 
 *Case id:* `v-ribbon-points`
 
@@ -1099,7 +1192,7 @@ broken.ncel:4:3: error: Ribbon 'line' requires at least 2 (x, y, width) points
 
 **Fix.** Add a second point.
 
-### 44. A use of an undefined def
+### 48. A use of an undefined def
 
 *Case id:* `v-undefined-def`
 
@@ -1122,7 +1215,7 @@ broken.ncel:4:3: error: Use of undefined def block 'Wave'
 
 **Fix.** Declare `def Name(...) { ... }` before the use.
 
-### 45. A film with zero frames
+### 49. A film with zero frames
 
 *Case id:* `v-film-frames`
 
@@ -1145,7 +1238,7 @@ broken.ncel:3:1: error: Film frames count must be >= 1 (got 0)
 
 **Fix.** Set `frames` to a positive integer.
 
-### 46. A frame override beyond the film
+### 50. A frame override beyond the film
 
 *Case id:* `v-frame-range`
 
@@ -1170,7 +1263,7 @@ broken.ncel:6:3: error: Frame override index 6 out of range [0..3]
 
 **Fix.** Fix `frames`, or delete/move the override.
 
-### 47. A plain payload token without a comma
+### 51. A plain payload token without a comma
 
 *Case id:* `r-q25-pair`
 
@@ -1193,7 +1286,7 @@ broken.ncel:4:3: error: Layer 'sky' has invalid ring payload: Ring 0: Expected '
 
 **Fix.** Write both components, e.g. `0,0 40,0 0,40`.
 
-### 48. A decimal in a quarter-pixel payload
+### 52. A decimal in a quarter-pixel payload
 
 *Case id:* `r-q25-noninteger`
 
@@ -1216,7 +1309,7 @@ broken.ncel:4:3: error: Layer 'sky' has invalid ring payload: Ring 0: Non-intege
 
 **Fix.** Multiply by four and write integers: `1.5px` becomes `6`.
 
-### 49. A two-vertex ring
+### 53. A two-vertex ring
 
 *Case id:* `r-q25-vertices`
 
@@ -1239,7 +1332,7 @@ broken.ncel:4:3: error: Layer 'sky' has invalid ring payload: Ring 0: Decoded ri
 
 **Fix.** Use a stroke for a line, or add a third vertex.
 
-### 50. A Base-63 header without a comma
+### 54. A Base-63 header without a comma
 
 *Case id:* `r-b63-header`
 
@@ -1262,7 +1355,7 @@ broken.ncel:4:3: error: Layer 'sky' has invalid ring payload: Ring 0: Base-63 ri
 
 **Fix.** Write `x0,y0:PAIRS`.
 
-### 51. Non-integer Base-63 start coordinates
+### 55. Non-integer Base-63 start coordinates
 
 *Case id:* `r-b63-start`
 
@@ -1285,7 +1378,7 @@ broken.ncel:4:3: error: Layer 'sky' has invalid ring payload: Ring 0: Invalid Ba
 
 **Fix.** Write integers: `720,360`.
 
-### 52. An odd Base-63 delta tail
+### 56. An odd Base-63 delta tail
 
 *Case id:* `r-b63-odd`
 
@@ -1308,7 +1401,7 @@ broken.ncel:4:3: error: Layer 'sky' has invalid ring payload: Ring 0: Base-63 de
 
 **Fix.** Remove or add one character.
 
-### 53. A character outside the Base-63 alphabet
+### 57. A character outside the Base-63 alphabet
 
 *Case id:* `r-b63-pair`
 
@@ -1331,7 +1424,7 @@ broken.ncel:4:3: error: Layer 'sky' has invalid ring payload: Ring 0: Invalid Ba
 
 **Fix.** Use a valid character pair.
 
-### 54. A Base-63 ring with fewer than three vertices
+### 58. A Base-63 ring with fewer than three vertices
 
 *Case id:* `r-b63-vertices`
 
@@ -1354,7 +1447,7 @@ broken.ncel:4:3: error: Layer 'sky' has invalid ring payload: Ring 0: Decoded Ba
 
 **Fix.** Add at least one more pair.
 
-### 55. A file that does not exist
+### 59. A file that does not exist
 
 *Case id:* `v-file-not-found`
 

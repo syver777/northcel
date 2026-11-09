@@ -5,7 +5,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { spawnSync } = require("node:child_process");
-const { checkNcelSource, decodeRingQ25, decodeRingB63, decodeRingsPayload, CONFIG, spec04Features } = require("../index.cjs");
+const { checkNcelSource, decodeRingQ25, decodeRingB63, decodeRingsPayload, CONFIG, spec04Features, spec05Features } = require("../index.cjs");
 const root = path.resolve(__dirname, "..");
 const repo = path.resolve(root, "../..");
 const pythonPkg = path.join(repo, "python");
@@ -60,7 +60,8 @@ test("Node-only invalid arguments, I/O errors and missing renderer never pass", 
   for (const command of ["render", "film"]) assert.equal(run([command, valid]).status, 3);
   assert.equal(run(["fmt", valid]).status, 1);
   assert.equal(run(["--version"]).status, 0);
-  assert.match(run(["--version"]).stdout, /^northcel 0\.5\.0 \(npm launcher/);
+  assert.ok(run(["--version"]).stdout.startsWith(`northcel ${CONFIG.PACKAGE_VERSION} (npm launcher`));
+  assert.ok(run(["--version"]).stdout.includes(`spec ${CONFIG.SPEC_VERSION}`));
   assert.equal(run(["check", "--help"]).status, 0);
 });
 
@@ -229,6 +230,79 @@ test("the npm launcher never hands a spec 0.4 document to the native runtime", (
   for (const command of ["render", "film"]) {
     const r = run([command, doc]);
     assert.equal(r.status, 3);
-    assert.match(r.stderr, /uses spec 0\.4 \(morph\)/);
+    assert.match(r.stderr, /uses spec 0\.4\/0\.5 features \(.*morph/);
+  }
+});
+
+test("spec 0.5 groups and delta statements accept nested bodies and trailing tuples", () => {
+  const source = `northcel "0.5.0-draft"
+film F(frames: 2) {
+  def D { group g(pivot: (4, 4)) { group inner { use Other }
+    layer a(tone: 0) { "0,0 4,0 0,4" }
+    warp g(handles: ((0, 0, 1, 2),), radius: 10)
+    nudge a(vertex: 0, dx: t)
+  } }
+  frame 0..1 { use D; warp g(handles: ((0, 0, 1, 0), (1, 1, 0, 1))) }
+}`;
+  const result = checkNcelSource(source);
+  assert.deepEqual(result.errors, []);
+  assert.equal(result.partial, true);
+  assert.deepEqual(spec05Features(source), ["group", "nudge", "spec-0.5.0-draft-header", "warp"]);
+  assert.deepEqual(spec04Features(source), ["frame-range"]);
+});
+
+for (const [name, body] of Object.entries({
+  "group frame": "group g { frame 0 {} }",
+  "group drop": "group g { drop a }",
+  "group palette": "group g { palette { ink: #000 } }",
+  "unclosed nested group": "group g { group inner { }",
+  "missing warp attrs": "warp g",
+  "missing nudge attrs": "nudge a",
+  "nudge body": "nudge a(vertex: 0) {}",
+  "broken inner ring": 'group g { layer a() { "0,0 4.5,0 0,4" } }',
+})) test(`spec 0.5 structural regression: ${name}`, () => {
+  const result = checkNcelSource(`scene S { ${body} }`);
+  assert.equal(result.ok, false);
+  assert.match(result.errors[0], /^\d+:\d+: error:/);
+});
+
+for (const [name, body] of Object.entries({
+  group: "def D { group g {} }",
+  warp: "def D { warp a(handles: ((0, 0, 1, 0),)) }",
+  nudge: "def D { nudge a(vertex: 0) }",
+  headerless: 'layer a() { "0,0 4,0 0,4" }',
+})) test(`npm routes headerless ${name} away from native`, () => {
+  const file = path.join(temp, `${name}.ncel`);
+  const source = `scene S { ${body} }`;
+  fs.writeFileSync(file, source);
+  const features = spec05Features(source);
+  assert.ok(features.includes(`headerless-spec-${CONFIG.SPEC_VERSION}`));
+  if (name !== "headerless") assert.ok(features.includes(name));
+  for (const command of ["info", "render", "film"]) {
+    const r = run([command, file]);
+    assert.equal(r.status, 3);
+    assert.match(r.stderr, /spec 0\.4\/0\.5 features/);
+    assert.ok(r.stderr.includes(name === "headerless" ? "headerless-spec-0.5.0-draft" : name));
+  }
+  const partial = run(["check", file, "--require-full", "--json"]);
+  assert.equal(partial.status, 2);
+  assert.equal(JSON.parse(partial.stdout).validator, "js");
+  assert.match(JSON.parse(partial.stdout).next, /0\.6\.0.*source checkout.*unreleased/);
+});
+
+test("spec 0.5 routing ignores comments and strings and retains explicit native headers", () => {
+  assert.deepEqual(spec05Features('northcel "0.3.0-draft" scene S(note: "group g warp a nudge b") { // group g\n }'), []);
+});
+
+test("npm routing recognizes every supported newer header spelling", () => {
+  for (const version of CONFIG.SUPPORTED_SPEC_VERSIONS.filter((v) => /^0\.[45](\.|$)/.test(v))) {
+    const source = `northcel "${version}" scene S {}`;
+    const features = [...spec04Features(source), ...spec05Features(source)];
+    assert.ok(features.some((f) => f.endsWith("-header")), version);
+    const file = path.join(temp, "header-spelling.ncel");
+    fs.writeFileSync(file, source);
+    const r = run(["info", file]);
+    assert.equal(r.status, 3);
+    assert.match(r.stderr, /spec 0\.4\/0\.5 features/);
   }
 });

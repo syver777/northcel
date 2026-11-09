@@ -1,4 +1,4 @@
-"""Canonical formatter for NorthCel (.ncel) AST documents (spec 0.1 through 0.4)."""
+"""Canonical formatter for NorthCel (.ncel) AST documents (spec 0.1 through 0.5)."""
 
 from __future__ import annotations
 
@@ -199,6 +199,8 @@ def _fmt_item(item: SceneItem, indent: str = "  ", palette: dict[str, ColorValue
         handles = ", ".join(
             f"({_fmt_expr(x)}, {_fmt_expr(y)}, {_fmt_expr(dx)}, {_fmt_expr(dy)})"
             for x, y, dx, dy in item.handles)
+        if len(item.handles) == 1:
+            handles += ","  # Preserve a tuple of one handle, not a parenthesised value.
         return [f"{indent}warp {item.target_name}(handles: ({handles}), radius: {_fmt_expr(item.radius)})"]
     if isinstance(item, NudgeNode):
         return [f"{indent}nudge {item.target_name}(vertex: {item.vertex}, ring: {item.ring}, "

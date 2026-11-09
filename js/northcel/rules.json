@@ -98,6 +98,21 @@
       "transform",
       "warp",
       "wash"
+    ],
+    "group": [
+      "bend_swarm",
+      "cel",
+      "group",
+      "layer",
+      "morph",
+      "nudge",
+      "ribbon",
+      "stroke",
+      "swarm",
+      "transform",
+      "use",
+      "warp",
+      "wash"
     ]
   },
   "b63_alphabet": "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_"

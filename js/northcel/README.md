@@ -1,12 +1,18 @@
 # `northcel` (npm) — the NorthCel launcher and pre-check
 
-Version 0.5.0 accepts spec 0.4 (`mix`, `morph`, `frame A..B`, `opacity`) in its
-partial pre-check. The bundled native runtime 0.4.0 implements spec 0.3 (anchored
-`transform`, `ease`, `smoothstep` and everything before), so a spec 0.4 document is
+**Source/unreleased version 0.6.0** accepts spec 0.4 (`mix`, `morph`, `frame A..B`,
+`opacity`) and spec 0.5 (`group` bodies, `warp`, `nudge`) structurally in its
+partial pre-check. Published npm is still **0.4.0**; published pip/Homebrew/install.sh
+are **0.5.0** (spec 0.4). Spec 0.5 rendering/full validation needs the Python source
+checkout (`python3 -m pip install -e './python[fit]'` in a venv at the repo root).
+The bundled native runtime 0.4.0 implements spec 0.3 (anchored
+`transform`, `ease`, `smoothstep` and everything before), so a spec 0.4/0.5 document is
 never handed to it: the launcher uses the Python reference when it can reach it and
 otherwise exits 3 naming the features. Optional `fit` and `tween` authoring tools
 live in `pip install 'northcel[fit]'`, not this npm package; `fit` output is spec 0.3
 and renders natively, `tween --match` output is spec 0.4 and needs Python.
+Headerless documents default to spec 0.5 in this checkout and also route to Python,
+even if their statements happen to exist in spec 0.3. Node-only `check` stays PARTIAL.
 
 Installs the `northcel` command (short alias `ncel`) for the
 [NorthCel drawing language](https://github.com/syver777/northcel).

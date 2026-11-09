@@ -5,14 +5,17 @@ implementation, the native runtime, the CLI and the editor tooling.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-The language specification has its own draft number (`0.3.0-draft`), which does not
+The language specification has its own draft number (currently `0.5.0-draft`), which does not
 move for packaging-only releases.
 
 ---
 
 ## [Unreleased]
 
-## [0.6.0] — Spec 0.5: addressable groups, warp, nudge and frame deltas (2026-11-09)
+### Planned 0.6.0 — Spec 0.5: addressable groups, warp, nudge and frame deltas (source-only)
+
+Not published: PyPI/Homebrew/install.sh still ship tools 0.5.0 (spec 0.4), npm
+ships 0.4.0. The 0.5-spec examples require this source checkout until Phase 7.
 
 ### Added
 - Spec **0.5.0-draft** (`docs/spec/SPEC-0.5.0-draft.md`): named `group` blocks with
@@ -28,6 +31,17 @@ move for packaging-only releases.
 - 0.1–0.4 documents keep their pixels. Headerless documents are now
   `0.5.0-draft`; 0.5 constructs in an older header are located validation errors.
 
+### Fixed
+- Scan definitions and nested groups for 0.5 features; route headerless documents
+  to the reference in both launchers, including reference syntax diagnostics.
+- Resolve late-declared parent pivots at transform time, reject fractional nudge
+  indices, preserve single-handle warp tuples through `fmt`, and report located
+  evaluation errors from `shapes` without tracebacks.
+- Parse 0.5 group/delta structure in the PARTIAL JS pre-check, report the real
+  source launcher version, and share evaluated geometry rows between fit receipts
+  and shape queries.
+- Separate published 0.5.0 install guidance from unreleased 0.6.0 examples; sync
+  offline guides and check every current spec/agent-guide fence and frame in CI.
 
 
 ## [0.5.0] — Spec 0.4: colour expressions, morph, frame ranges, opacity; polishing tools (2026-11-09)

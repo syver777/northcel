@@ -292,7 +292,8 @@ def test_launcher_routes_spec04_documents_to_the_reference(tmp_path, monkeypatch
     usable, reason = launcher._native_or_reason([str(header_only)], "check")
     assert not usable and "declares spec 0.4.0-draft" in reason
     assert launcher._native_or_reason([str(old)], "render") == (True, None)
-    assert launcher._native_or_reason([str(headerless)], "render") == (True, None)
+    usable, reason = launcher._native_or_reason([str(headerless)], "render")
+    assert not usable and "defaults to spec 0.5.0-draft" in reason
 
 
 # ------------------------------------------------------------ assignment

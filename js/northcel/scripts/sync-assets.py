@@ -48,6 +48,7 @@ def generated_assets() -> dict[Path, str]:
         "statements": {scope: statements(method) for scope, method in (
             ("scene", "parse_scene"), ("film", "parse_film"),
             ("frame", "parse_frame_override"), ("def", "parse_def"),
+            ("group", "parse_group_item"),
         )},
         "b63_alphabet": runpy.run_path(str(PY / "rings.py"))["B63_ALPHABET"],
     }

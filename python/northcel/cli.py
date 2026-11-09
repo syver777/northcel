@@ -301,39 +301,13 @@ def cmd_shapes(args: argparse.Namespace) -> int:
         for e in errors:
             print(f"{path}:{e.format()}", file=sys.stderr)
         return 1
-    _paper, _color, paints = frame_paint_list(doc, args.frame)
-    rows = []
-    for paint in paints:
-        pts = [p for ring in paint.rings for p in ring]
-        if not pts:
-            continue
-        lo = [min(p[0] for p in pts), min(p[1] for p in pts)]
-        hi = [max(p[0] for p in pts), max(p[1] for p in pts)]
-        area = sum(abs(0.5 * sum(r[i][0] * r[(i+1) % len(r)][1] - r[(i+1) % len(r)][0] * r[i][1]
-                                 for i in range(len(r)))) for r in paint.rings if len(r) >= 3)
-        cx = (lo[0] + hi[0]) / 2
-        cy = (lo[1] + hi[1]) / 2
-        rows.append({"id": paint.name, "color": paint.color.to_hex(),
-                     "area": round(area, 2), "bbox": [round(lo[0], 2), round(lo[1], 2),
-                                                      round(hi[0], 2), round(hi[1], 2)],
-                     "centroid": [round(cx, 2), round(cy, 2)]})
-    # Parent by bbox containment; children and neighbours from the full list.
-    for rec in rows:
-        cx, cy = rec["centroid"]
-        parent, best = None, None
-        for other in rows:
-            if other is rec or other["area"] <= rec["area"]:
-                continue
-            x0, y0, x1, y1 = other["bbox"]
-            if x0 <= cx <= x1 and y0 <= cy <= y1 and (best is None or other["area"] < best):
-                parent, best = other["id"], other["area"]
-        rec["parent"] = parent
-    for rec in rows:
-        rec["children"] = [o["id"] for o in rows if o.get("parent") == rec["id"]]
-        cx, cy = rec["centroid"]
-        near = sorted(((abs(o["centroid"][0]-cx)+abs(o["centroid"][1]-cy), o["id"])
-                       for o in rows if o["id"] != rec["id"]))[:3]
-        rec["neighbours"] = [n for _d, n in near]
+    try:
+        _paper, _color, paints = frame_paint_list(doc, args.frame)
+    except NorthCelEvaluationError as exc:
+        return evaluation_error(path, exc, args.json)
+    from .shapes import shape_rows
+
+    rows = shape_rows((p.name, p.color.to_hex(), p.rings) for p in paints)
 
     selected = rows
     if args.ids:

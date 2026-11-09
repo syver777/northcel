@@ -354,7 +354,7 @@ def _expand_paint(
 
     def process_list(seq: list[SceneItem], local_env: dict[str, float], groups: tuple,
                      path: tuple[str, ...] = (), pivots: dict | None = None,
-                     clip_names: tuple[str, ...] = ()) -> None:
+                     clip_names: tuple[tuple[str, int, int], ...] = ()) -> None:
         pivots = pivots or {}
         for item_idx, item in enumerate(seq):
             if isinstance(item, GroupNode):
@@ -374,7 +374,7 @@ def _expand_paint(
                     if gop < 1.0:
                         group_counter[0] += 1
                         child_groups = groups + ((group_counter[0], gop),)
-                child_clip = clip_names + ((item.clip,) if item.clip else ())
+                child_clip = clip_names + (((item.clip, item.span.line, item.span.column),) if item.clip else ())
                 process_list(item.items, local_env, child_groups, child_path, child_pivots, child_clip)
                 continue
             if isinstance(item, WarpNode):
@@ -416,8 +416,11 @@ def _expand_paint(
                 if not targets:
                     raise NorthCelEvaluationError(f"Transform target '{item.target_name}' has not been painted", item.span.line, item.span.column)
                 for paint in targets:
-                    if not item.anchor_explicit and item.target_name in paint.pivots:
-                        gax, gay = paint.pivots[item.target_name]
+                    if not item.anchor_explicit and item.target_name in paint.path:
+                        # A parent can be painted after its child. Resolve its
+                        # pivot now, once it has been registered, not at child paint time.
+                        gax, gay = paint.pivots.get(item.target_name,
+                                                  group_pivots.get(item.target_name, (ax, ay)))
                     else:
                         gax, gay = ax, ay
                     transformed = []
@@ -542,10 +545,10 @@ def _expand_paint(
         if not p.clip_names:
             continue
         shapes = []
-        for name in p.clip_names:
+        for name, line, column in p.clip_names:
             targets = [by_name[name]] if name in by_name else by_group.get(name, [])
             if not targets:
-                raise NorthCelEvaluationError(f"Clip target '{name}' has not been painted", 1, 1)
+                raise NorthCelEvaluationError(f"Clip target '{name}' has not been painted", line, column)
             shapes.extend(t.rings for t in targets)
         p.clip_shapes = shapes
     return layers_out

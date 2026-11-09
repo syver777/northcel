@@ -56,19 +56,26 @@ $ brew tap syver777/northcel && brew install northcel
 $ curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh | bash
 ```
 
-These install the current 0.6.0 CLI, which uses the native runtime where it can
+These install the current published **0.5.0** CLI (spec **0.4.0-draft**), which uses the native runtime where it can
 and the labelled Python reference everywhere else. **Homebrew is for Linux
 x86_64 only** (the formula pins the manylinux native wheel); on macOS use
 `pipx install northcel` or `pip install northcel`, which run the labelled Python
 reference. The one-line installer is also Linux x86_64 only.
 
-**npm:** the npm package currently ships the older **0.4.0** launcher. For 0.6.0,
-install from PyPI or Homebrew; npm is not the recommended install for this
-version.
+**npm:** the npm package currently ships the older **0.4.0** launcher. Use PyPI
+or Homebrew for published 0.5.0. The starter above works with published 0.5.0.
+
+**Source / unreleased:** this checkout targets tools **0.6.0**, spec
+**0.5.0-draft**; neither PyPI, Homebrew nor the installer ships it yet.
+For the 0.5-spec examples below and in the agent guide, install this checkout
+in a fresh venv with `python3 -m pip install -e './python[fit]'` and use its
+`northcel` command. Stay with the writing guide's spec-0.4 examples on a
+published 0.5.0 install. [Phase 7 release copy and checklist](docs/release-0.6.0.md)
+are kept separately until publication.
 
 ## First steps
 
-**New in 0.6.0 (spec 0.5):** addressable drawings — named `group` blocks with
+**Unreleased 0.6.0 from source (spec 0.5):** addressable drawings — named `group` blocks with
 pivots, opacity, clipping and optional parenting; group-wide `transform`; a
 handle-based smooth `warp` for petals, cloth and squash; per-vertex `nudge`; and
 cheap `use` + delta frame blocks. `fit --stacked` now gives every shape a stable
