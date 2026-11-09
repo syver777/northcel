@@ -43,8 +43,9 @@ usage: northcel <command> [options]
 
 Not available from npm (use pip for these): fmt, fit, tween — Python authoring
 tools (\`pip install 'northcel[fit]'\`). Spec 0.3 files render natively; files that
-use spec 0.4 (morph, mix, opacity, frame A..B — e.g. \`tween --match\` output)
-need the Python reference (\`pip install northcel\`).
+use spec 0.4/0.5 (morph, mix, opacity, frame A..B, group, warp, nudge), including
+headerless files (spec 0.5), need the Python reference. Spec 0.5 requires the
+unreleased tools 0.6.0 from a source checkout; published pip installs are 0.5.0.
 Platform: the native runtime is Linux x86_64 only, glibc >= 2.39, Mesa EGL/llvmpipe.
 macOS and Windows are not supported natively in this release; \`northcel doctor\`
 explains exactly what is missing.
@@ -90,7 +91,7 @@ function passthrough(command, args) {
 }
 
 /**
- * The native runtime 0.4.0 implements spec 0.3. A document that uses a spec 0.4
+ * The native runtime 0.4.0 implements spec 0.3. A document that uses a spec 0.4/0.5
  * construct must not be handed to it (it would be rejected, or worse, partly
  * understood). Returns the feature list, or [] when the file is fine for native.
  */
@@ -98,18 +99,24 @@ function spec04In(args) {
   const file = args.find((a) => !a.startsWith('-'));
   if (!file) return [];
   try {
-    return require('../index.cjs').spec04Features(fs.readFileSync(file, 'utf8'));
+    const { spec04Features, spec05Features } = require('../index.cjs');
+    const source = fs.readFileSync(file, 'utf8');
+    return [...new Set([...spec04Features(source), ...spec05Features(source)])].sort();
   } catch (err) {
     return [];
   }
 }
 
 function refuseNative(command, features) {
+  const needs05 = features.some((f) => ['group', 'warp', 'nudge'].includes(f)
+    || f.startsWith('headerless-spec-') || /^spec-0\.(?:[5-9]|\d\d)/.test(f));
+  const install = needs05
+    ? 'tools 0.6.0 from a source checkout (`python3 -m pip install -e ./python` at the repository root; unreleased)'
+    : 'the Python reference (`pip install northcel`)';
   fail(
-    `northcel: this document uses spec 0.4 (${features.join(', ')}); the native runtime ` +
+    `northcel: this document uses spec 0.4/0.5 features (${features.join(', ')}); the native runtime ` +
       `${locate.NATIVE_RUNTIME_VERSION} implements spec 0.3 only and is not used for it.\n` +
-      'northcel: install the Python reference (`pip install northcel`) to ' + command + ' it; ' +
-      'its results are labelled python-reference.',
+      `northcel: install ${install} to ${command} it; its results are labelled python-reference.`,
     locate.EXIT_NO_NATIVE
   );
 }
@@ -383,19 +390,19 @@ function precheck(args) {
         validator: 'js',
         partial: true,
         exit_code: exitCode,
-        reason: 'the native runtime and the Python reference are not available here; this is a structural pre-check only',
-        next: 'pip install northcel (or run on Linux x86_64) for full validation',
+        reason: 'a full validator for this document is unavailable through the launcher; this is a structural pre-check only',
       }, null, 2) + '\n'
     );
   } else {
     process.stdout.write(
       `${file}: PARTIAL (JS pre-check only; ${res.ok ? 'no pre-check errors found' : 'errors found'} — ` +
-        'install `pip install northcel` for full validation)\n'
+        'full validation still required)\n'
     );
     for (const warning of res.warnings) process.stderr.write(`${file}:${warning}\n`);
     for (const err of res.errors) process.stderr.write(`${file}:${err}\n`);
+    process.stderr.write(res.next + '\n');
     if (exitCode === 2) {
-      process.stderr.write('Full validation required but unavailable. Run on Linux x86_64 or `pip install northcel`.\n');
+      process.stderr.write('Full validation required but unavailable for this document.\n');
     }
   }
   process.exit(exitCode);

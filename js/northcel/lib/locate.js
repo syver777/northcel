@@ -15,10 +15,9 @@ const os = require('os');
 const path = require('path');
 const { spawnSync } = require('child_process');
 
-const PACKAGE_VERSION = '0.5.0';
+const { PACKAGE_VERSION, SPEC_VERSION } = require('../rules.json').config;
 const NATIVE_RUNTIME_VERSION = '0.4.0';
-const SPEC_VERSION = '0.4.0-draft';
-// The bundled native runtime 0.4.0 implements spec 0.3; spec 0.4 documents use the Python reference.
+// Native stays at spec 0.3; the current reference spec comes from generated rules.
 const NATIVE_SPEC_VERSION = '0.3.0-draft';
 const EXIT_NO_NATIVE = 3;
 

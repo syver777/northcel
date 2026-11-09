@@ -2,6 +2,24 @@
 
 This document records the key architectural, experimental, and naming decisions behind **NorthCel** (`.ncel`), including the evidence and rejected alternatives.
 
+## Decision 10 · 2026-11-09: Spec 0.5 addressable edits land in the reference first (tools 0.6.0, unreleased)
+
+- **Decision:** Add named groups with pivots, clipping, opacity and optional
+  parent transform paths; deterministic handle-based warp; integer-indexed nudge;
+  and reuse keys with `use` plus frame deltas. These are general constructs, not
+  subject-specific recipes, rigs or presets. Stable fit ids and evaluated shape
+  queries make geometry addressable without inferring semantic parts.
+- **Compatibility:** Explicit 0.1–0.4 headers retain their rules. Headerless
+  documents now mean spec 0.5. Both launchers route the interpreted newer spec
+  and detected 0.4/0.5 constructs to the labelled Python reference; the native
+  runtime stays at spec 0.3. JS checks remain explicitly partial.
+- **Release honesty:** tools 0.6.0 is source-only until Phase 7; published pip,
+  Homebrew and installer paths stay at tools 0.5.0 / spec 0.4 (npm 0.4.0).
+- **Rejected:** declaration-order-dependent parent pivots, truncating fractional
+  indices, and passing headerless newer documents to the older native runtime.
+
+---
+
 ## Decision 9 · 2026-11-09: Spec 0.4 (mix, morph, frame ranges, opacity) lands in the reference first; native routes away
 
 - **Context:** A 15-second film whose 90 frames were separate AI-drawn images
@@ -45,7 +63,7 @@ This document records the key architectural, experimental, and naming decisions 
 - **Why old headers ignore `opacity`:** before 0.4 the attribute was accepted and
   silently ignored, so applying it to a document that declares 0.3 would change
   its pixels. It is applied for 0.4 headers and headerless documents (which are
-  0.4 now); old headers get a warning. `mix`, `morph` and ranges were syntax
+  0.4 at tools 0.5.0, 0.5 at tools 0.6.0); old headers get a warning. `mix`, `morph` and ranges were syntax
   errors before, so in an old-header document they are validation errors naming
   the header to use.
 - **Matching is evidence, not judgement:** `tween --match` reports the matched

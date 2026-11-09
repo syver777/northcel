@@ -24,6 +24,8 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import docs_lib as lib  # noqa: E402
+sys.path.insert(0, str(lib.PYTHON_DIR))
+from northcel.config import PACKAGE_VERSION  # noqa: E402
 
 GUIDE = lib.DOCS / "guide"
 PATTERNS_DOC = lib.DOCS / "patterns"
@@ -215,7 +217,7 @@ def main() -> int:
         manifest = {
             "generated_by": "docs/scripts/build_docs_assets.py",
             "renderer": "python-reference",
-            "tool": "northcel 0.5.0",
+            "tool": f"northcel {PACKAGE_VERSION}",
         }
         guide = build_guide(manifest, tmp)
         patterns = build_patterns(manifest, tmp)

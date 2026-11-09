@@ -2,6 +2,12 @@
 
 This guide instructs AI coding agents (Claude Code, OpenCode, Codex, Cursor, Gemini CLI) how to author, verify, and surgically edit AI-drawn images and videos in **NorthCel (`.ncel`)**.
 
+**Version scope:** spec 0.5 / tools 0.6.0 examples require this **source checkout
+(unreleased)**, installed in a venv with `python3 -m pip install -e './python[fit]'`.
+Published PyPI/Homebrew/install.sh installs are tools 0.5.0 (spec 0.4); published
+npm is 0.4.0. On published tools 0.5.0, use the writing guide's spec-0.4 examples,
+not the `group`/`warp`/`nudge` examples here.
+
 ## The first ten minutes
 
 1. **Read three pages, in this order:** [getting started](guide/01-getting-started.md),
@@ -25,9 +31,11 @@ If you are unsure, read the diagnostic — it gives an exact `line:column`.
 
 ## Spec 0.5: edit a part, not the whole drawing
 
-`fit --stacked` returns stable ids (`s<sha1>`) and a `shape_manifest`; inspect
+`northcel fit IMAGE --stacked -o shapes.ncel --receipt shapes.json` returns stable
+ids (`s` + 10 SHA-1 hex digits, suffixed on collision) and a `shape_manifest`; inspect
 one with `northcel shapes file.ncel --ids s…` or query by colour/area/bbox/mask.
-Turn a set of shapes into a named unit and change only that unit:
+Turn a set of shapes into a named unit and change only that unit. This is an
+illustration, not a template or a subject preset:
 
 ```ncel
 northcel "0.5.0-draft"
@@ -93,14 +101,20 @@ reproduced by CI. The [architecture page](architecture.md) explains why the
 reference and native renderers can differ by a handful of edge pixels.
 
 <!-- npm-guide:start -->
-# NorthCel quick agent guide — tools 0.6.0, spec 0.5.0-draft
+# NorthCel quick agent guide — tools 0.6.0 (source/unreleased), spec 0.5.0-draft
+
+Published pip/Homebrew/install.sh installs are tools **0.5.0** (spec 0.4); npm is
+**0.4.0**. Spec-0.5 constructs below require this source checkout installed in a
+venv with `python3 -m pip install -e './python[fit]'`. Do not feed its 0.5 examples
+to published 0.5.0. Start new source-authored files at `northcel "0.5.0-draft"`;
+choose an older explicit header only for intentional compatibility.
 
 Discover this guide offline with `northcel guide` (or `npx northcel guide`). The
 npm package runs the native runtime on Linux x86_64 and otherwise falls back to the
 Python reference, with a zero-dependency **partial JS pre-check** for `check` when
 neither is available. There is no JavaScript renderer.
 
-## Start here (a complete 3-second film)
+## Start here (a complete 3-second film, published-compatible spec 0.4)
 
 ```ncel
 northcel "0.4.0-draft"
@@ -127,7 +141,9 @@ Never put expressions inside a quoted ring: move it with `translate: (x, y)`.
 ## Five language features to combine
 
 1. **Reusable shapes:** `def Mark(dx: 0, dy: 0) { stroke line(width: 2) { (0, 0), (8, 4) } }`
-   then `use Mark(dx: 20, dy: 30)`. Only primitives inside `def`, not nested `use`.
+   then `use Mark(dx: 20, dy: 30)`. In 0.5, defs may also contain groups,
+   transforms, warps and nudges; groups may contain `use`. Top-level nested `use`
+   in a def is still unsupported.
    `dx/dy` auto-translate expanded geometry; don't also add them to coordinates.
    Same-named cels in repeated uses replace one another; use distinct named defs
    for independent cel instances (stroke/ribbon uses append).
@@ -154,8 +170,9 @@ Never put expressions inside a quoted ring: move it with `translate: (x, y)`.
    numeric ranges, expression evaluation, def resolution and render quality remain unchecked.
 2. Run `npx northcel check film.ncel --require-full --json` before claiming full
    validation. Exit 2 = no full validator (clean partial); exit 1 = detected error;
-   exit 0 = Python full check succeeded. Install `pipx install northcel` (or
-   `pip install northcel` in a venv), expose its Python CLI on PATH, then repeat.
+   exit 0 = Python full check succeeded. For spec 0.4 install `pipx install northcel`
+   (or `pip install northcel` in a venv); for spec 0.5 install this unreleased
+   source checkout as above. Expose its Python CLI on PATH, then repeat.
    The npm bridge finds importable Python modules or pipx-style Python entrypoints.
    Never suppress exit 2 or call a partial check fully validated.
 3. Python: `northcel render film.ncel -o frame0.png --frame 0`, inspect the PNG;
@@ -220,6 +237,45 @@ writes painter's-order shapes; `northcel tween a.ncel b.ncel -o t.ncel --match
 receipt: below `--min-match`/`--max-displacement` it cuts (or `--fallback
 dissolve`). A match proves no anatomy: a crouch→jump needs a drawn key. Inspect
 every in-between; unmatched shapes pop at u = 0.5.
+
+## Addressable edits (spec 0.5, source/unreleased Python reference)
+
+This complete illustration uses general constructs, not a subject preset:
+
+```ncel
+northcel "0.5.0-draft"
+film Edit(width: 64, height: 64, fps: 12, frames: 3) {
+  paper { color: #FFFFFF }
+  def Key {
+    group part(pivot: (32, 32)) {
+      layer mark(color: #2060A0) { "80,80 96,0 0,96 -96,0" }
+    }
+  }
+  frame 0 { use Key }
+  frame 1 { use Key; transform part(rotate: 10) }
+  frame 2 {
+    use Key
+    warp part(handles: ((32, 32, 2, -1),), radius: 40)
+    nudge mark(vertex: 0, ring: 0, dx: 1px)
+  }
+}
+```
+
+Groups may nest, use `opacity`, clip to a named entry/group (`clip: mask`) or
+join a parent transform path (`parent: other`). The group pivot is used unless
+`transform` specifies `anchor`. `warp` blends handle offsets with smooth bounded
+falloff; `nudge` offsets one zero-based integer vertex/ring after painting.
+Unknown targets and out-of-range indices are located evaluation errors: render,
+do not rely on a static `check` alone. A frame delta reuses `use Key` and changes
+only the named geometry.
+
+`northcel fit drawing.png --stacked -o drawing.ncel --receipt drawing.json` gives
+each emitted layer a stable id (`s` + 10 SHA-1 hex digits, suffixed on collision)
+and adds `shape_manifest` rows. Inspect with `northcel shapes drawing.ncel`,
+`northcel shapes drawing.ncel --ids ID`, or filter with `--color`, `--area-min`,
+`--bbox x0,y0,x1,y1`, `--centroid x,y,r`, `--parent ID` or `--mask IMAGE`.
+The rows describe evaluated geometry, not semantic parts. Both launchers route
+0.4/0.5 (also headerless) documents to Python; JS-only `check` stays PARTIAL.
 <!-- npm-guide:end -->
 
 ---
@@ -227,9 +283,12 @@ every in-between; unmatched shapes pop at u = 0.5.
 ## 1. The Golden Rules of Authoring `.ncel`
 
 1. **Always Start with the Version Header:**
-   Start new files with `northcel "0.3.0-draft"` so they also render natively; use
-   `northcel "0.4.0-draft"` only when you need `mix`, `morph`, `frame A..B` or
-   `opacity` (Python reference only). `0.1.0-draft` and `0.2.0-draft` remain supported.
+   Start new source-authored files with the current `northcel "0.5.0-draft"`
+   (tools 0.6.0 from source, Python reference). On published tools 0.5.0 use
+   `northcel "0.4.0-draft"` for `mix`, `morph`, `frame A..B` and `opacity`;
+   do not use `group`, `warp` or `nudge` until you install the source release.
+   Choose `northcel "0.3.0-draft"` only when deliberately targeting the native
+   runtime with 0.3-only syntax. Explicit 0.1/0.2 headers remain supported.
 2. **Separate Washes, Ink Ribbons, and Parallel Swarms by Name:**
    - Use `layer` / `wash` for broad silhouette envelopes (`tile_wall`, `skin_envelope`, `hair_dome`).
    - Use `stroke` or `ribbon` for variable-width anatomical contours and props (`brow_eye`, `ear_loop`, `post_ink`).
