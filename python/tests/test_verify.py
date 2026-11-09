@@ -579,6 +579,46 @@ class TestErrors(unittest.TestCase):
             self.assertIn("Nudge vertex 999", result["errors"][0])
             self.assertNotIn("Traceback", stdout + stderr)
 
+    def test_spec05_parser_and_clip_errors_keep_locations_for_all_tools(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            for name, source_text, message in (
+                (
+                    "fractional-nudge.ncel",
+                    MOVE.replace("transform g(translate: (f * 8, 0))", "nudge a(vertex: 0.5)"),
+                    "7:3: error: nudge vertex must be an integer",
+                ),
+                (
+                    "missing-clip.ncel",
+                    MOVE.replace("group g(pivot: (32, 24))", "group g(clip: missing)"),
+                    "4:3: error: Clip target 'missing' has not been painted",
+                ),
+            ):
+                source = write_source(directory, name, source_text)
+                for command, options in (
+                    ("diff", ["--against", "missing.png"]),
+                    ("onion", ["-o", str(directory / "onion.png")]),
+                    ("contact", ["-o", str(directory / "contact.png")]),
+                    ("continuity", ["--group", "g"]),
+                    ("distinct", []),
+                ):
+                    for as_json in (False, True):
+                        with self.subTest(source=name, command=command, as_json=as_json):
+                            arguments = [command, str(source), *options]
+                            if as_json:
+                                arguments.append("--json")
+                            code, stdout, stderr = run_cli(arguments)
+                            self.assertEqual(code, 1)
+                            if as_json:
+                                result = json.loads(stdout)
+                                self.assertEqual(result["errors"], [message])
+                                self.assertEqual(result["command"], command)
+                                self.assertEqual(result["renderer"], "python-reference")
+                                self.assertFalse(result["native"])
+                            else:
+                                self.assertEqual(stderr.strip(), f"{source}:{message}")
+                            self.assertNotIn("Traceback", stdout + stderr)
+
 
 class TestHelp(unittest.TestCase):
     def test_verification_commands_are_in_help(self):
@@ -616,6 +656,42 @@ class TestHelp(unittest.TestCase):
                     self.assertFalse(result["native"])
                     if command == "diff":
                         self.assertTrue(result["overall"]["identical"])
+
+    def test_launcher_verification_commands_accept_reference_routing_flags(self):
+        from northcel.launcher.cli import main as launcher_main
+
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            source = write_source(directory, "move.ncel", MOVE)
+            reference = directory / "frame0.png"
+            Image.fromarray(render_document_frame(parse_ncel(MOVE), 0)).save(reference)
+            for command, options in (
+                ("diff", ["--against", str(reference)]),
+                ("onion", ["-o", str(directory / "onion.png")]),
+                ("contact", ["-o", str(directory / "contact.png")]),
+                ("continuity", ["--group", "g"]),
+                ("distinct", []),
+            ):
+                for flag in ("--no-native", "--python"):
+                    for leading in (True, False):
+                        with self.subTest(command=command, flag=flag, leading=leading):
+                            arguments = [command, str(source), *options, "--json"]
+                            arguments.insert(0 if leading else len(arguments), flag)
+                            stdout, stderr = io.StringIO(), io.StringIO()
+                            with (
+                                patch("northcel.launcher.cli.native.available") as available,
+                                patch("northcel.launcher.cli.native.run") as native_run,
+                                redirect_stdout(stdout),
+                                redirect_stderr(stderr),
+                            ):
+                                code = launcher_main(arguments)
+                            self.assertEqual(code, 0, stderr.getvalue())
+                            result = json.loads(stdout.getvalue())
+                            self.assertEqual(result["command"], command)
+                            self.assertEqual(result["renderer"], "python-reference")
+                            self.assertFalse(result["native"])
+                            available.assert_not_called()
+                            native_run.assert_not_called()
 
 
 if __name__ == "__main__":

@@ -32,6 +32,8 @@ ships 0.4.0. The 0.5-spec examples require this source checkout until Phase 7.
   `0.5.0-draft`; 0.5 constructs in an older header are located validation errors.
 
 ### Fixed
+- Accept the launcher routing flags `--no-native` and `--python` for the
+  reference-only `diff`, `onion`, `contact`, `continuity` and `distinct` commands.
 - Scan definitions and nested groups for 0.5 features; route headerless documents
   to the reference in both launchers, including reference syntax diagnostics.
 - Resolve late-declared parent pivots at transform time, reject fractional nudge

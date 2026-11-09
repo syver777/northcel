@@ -263,6 +263,8 @@ def main(argv: list[str] | None = None) -> int:
         return fallback.delegate(["shapes", *rest])
     if command in {"diff", "onion", "contact", "continuity", "distinct"}:
         # Verification tools are reference-only CPU tools; they are not native stages.
+        # Consume launcher routing flags before delegating to the reference parser.
+        _pop_flag(rest, "--no-native", "--python")
         return fallback.delegate([command, *rest])
 
     if command == "fmt":
