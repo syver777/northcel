@@ -34,6 +34,11 @@ usage: northcel <command> [options]        (short alias: ncel)
   info    FILE [--json]                scene/film metadata, layers, rings, vertices
   shapes  FILE [--frame N] [--ids …] [--color …] [--area-min …]
                                        list/query evaluated shapes with stable ids
+  diff    FILE --against IMAGE […]   render vs reference error, per group/region, heatmap
+  onion   FILE -o OUT.png […]        onion-skin neighbouring frames or a reference
+  contact FILE -o OUT.png|DIR […]    contact sheet(s), optionally one per transition
+  continuity FILE --group NAME […]   per-frame bbox/scale/position continuity
+  distinct FILE […]                  distinct frames/s (320x180 film-proof metric)
   render  FILE [-o OUT.png] [--frame N] [--seed N] [--json]
   film    FILE -o OUTDIR [--frames 0..5] [--mp4 OUT.mp4] [--json]
   fmt     FILE [-w|--write] [--check]  canonical formatting (Python reference)
@@ -244,6 +249,9 @@ def main(argv: list[str] | None = None) -> int:
         return _passthrough("info", rest)
     if command == "shapes":
         return fallback.delegate(["shapes", *rest])
+    if command in {"diff", "onion", "contact", "continuity", "distinct"}:
+        # Verification tools are reference-only CPU tools; they are not native stages.
+        return fallback.delegate([command, *rest])
 
     if command == "fmt":
         # The native runtime has no formatter; formatting is the Python reference.
