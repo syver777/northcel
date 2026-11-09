@@ -1,6 +1,6 @@
 # Releasing NorthCel
 
-## 0.5.0 candidate — spec 0.4.0-draft (tools only)
+## 0.5.0 — published 2026-11-09 — spec 0.4.0-draft (tools only)
 
 Only the tools move: `northcel` (PyPI) 0.5.0, `northcel` (npm) 0.5.0 and the
 deprecated `ncel` PyPI alias 0.5.0 (`northcel==0.5.0`). The native runtime is not
@@ -94,14 +94,15 @@ native build for the pinned runtime). If it is absent it tries to build the nati
 tree, which needs the MoonBit compiler and a C toolchain — see `native/BUILD.md`.
 `build_npm.sh` needs the same artifacts.
 
-Expected artifacts (fill the sizes/SHA-256 from the actual build before publishing):
+Published artifacts (PyPI verified 2026-11-09):
 
-| File | Notes |
-| --- | --- |
-| `northcel-0.5.0-py3-none-any.whl` | reference + launcher (tools only) |
-| `northcel-0.5.0.tar.gz` | sdist |
-| `northcel-0.5.0.tgz` (npm) | launcher + pre-check |
-| native artifacts | **do not rebuild**; `northcel-native` / `northcel-linux-x64` stay 0.4.0 |
+| File | Bytes | sha256 |
+| --- | ---: | --- |
+| `northcel-0.5.0-py3-none-any.whl` | 201,152 | `ffcd6b600704cdbd251021b9038aa7f52131ba74b45d80c7af0ba0cbb3d2ca94` |
+| `northcel-0.5.0.tar.gz` | 207,933 | `70f0a40526676703972858e61729abb909cf6dcb12a9c513bcdba0ddadce52df` |
+| `northcel-0.5.0.tgz` (npm) | 23 KB | `039365e23df13ec50e2b3aec3cefe018cefe47c607acbb85ffb740e935057663` |
+| `ncel-0.5.0` wheel/sdist (deprecated) | — | depends on `northcel==0.5.0` |
+| native artifacts | — | **not rebuilt**; `northcel-native` / `northcel-linux-x64` stay 0.4.0 |
 
 ## Publish, in this order
 
