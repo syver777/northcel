@@ -39,6 +39,8 @@ usage: northcel <command> [options]        (short alias: ncel)
   contact FILE -o OUT.png|DIR […]    contact sheet(s), optionally one per transition
   continuity FILE --group NAME […]   per-frame bbox/scale/position continuity
   distinct FILE […]                  distinct frames/s (320x180 film-proof metric)
+  perceive <segment|vectorize|flow|guide> […] --out PATH [--json]
+                                       optional offline helpers; tools suggest, the AI decides
   render  FILE [-o OUT.png] [--frame N] [--seed N] [--json]
   film    FILE -o OUTDIR [--frames 0..5] [--mp4 OUT.mp4] [--json]
   fmt     FILE [-w|--write] [--check]  canonical formatting (Python reference)
@@ -242,6 +244,8 @@ def main(argv: list[str] | None = None) -> int:
     if command == "tween":
         from ..tween import main as tween_main
         return tween_main(rest)
+    if command == "perceive":
+        return fallback.delegate(["perceive", *rest])
 
     if command in {"--version", "version", "-V"}:
         print(_version_line())

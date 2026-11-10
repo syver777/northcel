@@ -27,6 +27,10 @@ checkout (`python3 -m pip install -e './python[fit]'` in a venv), not a publishe
 | `northcel contact FILE -o OUT.png\|OUTDIR [--frames 0..N\|0,2,4] [--every N] [--transitions] [--json]` | labelled contact sheet(s); `--transitions` writes one per `frame N` / `frame A..B` block including its preceding frame when available, preserving key endpoints under `--every`; a PNG output becomes `OUT-transitions/`; cannot combine `--frames` with `--transitions` |
 | `northcel continuity FILE --group NAME [--shape ID] [--json]` | per-frame geometric bbox, width, height and bbox-centre centroid (before clipping/occlusion); adjacent scale/position changes, flagging a >8% bbox-height jump |
 | `northcel distinct FILE [--frames 0..N\|0,2,4] [--every N] [--json]` | reference render resized to 320×180 (LANCZOS); count changed adjacent samples above mean absolute RGB difference 0.2/255, excluding the first frame; rate uses sampled timeline duration at film fps, not globally unique images |
+| `northcel perceive segment IMAGE --points x,y [--points …] --out DIR [--frames DIR] [--checkpoint FILE] [--config NAME] [--json]` | optional SAM 2 masks; alternatively `--boxes x0,y0,x1,y1 …`; propagation requires the installed video API and numbered JPEGs; local weights only |
+| `northcel perceive vectorize IMAGE --out FILE [--mode stacked] [--json]` | optional VTracer SVG; when absent, explicitly labelled `fit --stacked` fallback only with already-installed fit libraries and `.ncel` output |
+| `northcel perceive flow A B --out DIR [--checkpoint FILE] [--model small\|large] [--json]` | optional TorchVision RAFT forward-flow PNG/NumPy array and geometric JSON motion hints; local weights only |
+| `northcel perceive guide A B --out DIR [--model-dir DIR] [--json]` | optional FILM midpoint visual target; JSON and PNG metadata say `guide_only: true`; never output or quality evidence |
 | `northcel fit IMAGE -o FILE [--palette P.json] [--stacked] [--receipt R.json]` | offline contour fitting (`pip install 'northcel[fit]'`). Default: a planar map. `--stacked`: painter's-order solid shapes with `--gap-fraction` (0.5), `--underpaint-min-area` (300 px², 0 = off), `--ink #RRGGBB` |
 | `northcel tween A B -o FILE [--steps N] [--fallback error\|hold]` | ordered-ring in-betweens; identical topology required |
 | `northcel tween A B -o FILE --match [--steps N] [--fps N] [--mode auto\|morph\|cut\|dissolve\|hold] [--fallback cut\|dissolve] [--min-match 0.5] [--max-displacement 32] [--colour-changes C.json] [--image-a A.png --image-b B.png] [--receipt R.json]` | shape matching across topology mismatch; writes one spec 0.4 film; below the thresholds an explicit cut or dissolve |
@@ -49,6 +53,15 @@ Without Python, `render`/`film`/`info` exit `3` naming the features instead of
 calling native; `check` falls back to the PARTIAL JS pre-check instead.
 Headerless files default to spec 0.5 in this checkout and also use the reference,
 including files whose statements happen to exist in spec 0.3.
+
+## Optional perception
+
+The source-only `perceive` helpers return JSON receipts and artifacts for the AI
+to inspect: tools suggest, the AI decides. Backends are lazy, optional user
+installs; no heavyweight core dependency or automatic model download is added.
+See [perception.md](perception.md) for local-model configuration, output formats,
+licences, exact absent-dependency messages and limitations. SAM 3, SEA-RAFT,
+RIFE and GPL tracing tools remain external alternatives, not bundled backends.
 
 ## Validation contract
 

@@ -664,6 +664,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--version", action="version", version=f"{CLI_COMMAND} {PACKAGE_VERSION} (spec {SPEC_VERSION})")
     sub = p.add_subparsers(dest="command", required=True)
 
+    from .perceive import register_parser
+
+    register_parser(sub)
+
     p_check = sub.add_parser("check", help="Parse and validate a .ncel file with line:column diagnostics.")
     p_check.add_argument("file", help="Path to .ncel file")
     p_check.add_argument("--json", action="store_true", help="Output structured JSON diagnostics")
