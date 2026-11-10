@@ -10,6 +10,23 @@ move for packaging-only releases.
 
 ---
 
+## [0.6.1] — 2026-11-10
+
+### Added
+- `northcel fit --figure [--backing PX] [--figure-mask FILE]`: fit one key as the
+  **measured figure** — paper, sky and a cloud the ink touches are excluded — and
+  paint an ink outline backing (default 4 px) underneath every fitted shape, so an
+  anti-aliased crack shows ink instead of the background colour.
+- `northcel.keys`: `measure_figure` (material fills + ink outline + white garments,
+  never a full-width field), `figure_box`, `dilate_mask`, `outline_rings`,
+  `add_outline_backing` and `prepare_key` (fit + backing + a receipt carrying both
+  the figure box and the material-only box used for scale/position checks).
+
+### Fixed
+- A black-and-white key is measured from its dark strokes; reddish/blue fills are
+  no longer mistaken for ink, and an anti-aliasing ring along a cloud or sky edge is
+  no longer treated as figure material.
+
 ## [Unreleased]
 
 ### Planned 0.6.0 — Spec 0.5: addressable groups, warp, nudge and frame deltas (source-only)

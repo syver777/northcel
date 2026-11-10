@@ -201,6 +201,11 @@ def main(argv=None) -> int:
     p.add_argument("--receipt", help="write JSON fitting receipt")
     p.add_argument("--stacked", action="store_true",
                    help="emit painter's-order solid shapes (biggest first) instead of a planar map")
+    p.add_argument("--figure", action="store_true",
+                   help="--stacked: fit the measured figure only (mask), with an ink outline backing")
+    p.add_argument("--figure-mask", help="--figure: author-supplied figure matte (one intact cel)")
+    p.add_argument("--backing", type=float, default=4.0,
+                   help="--figure: outline backing width in px (0 disables, default 4)")
     p.add_argument("--gap-fraction", type=float, default=0.5,
                    help="--stacked: a hole whose source pixels are more than this fraction paper stays as a paper-coloured shape")
     p.add_argument("--underpaint-min-area", type=float, default=300.0,
@@ -220,9 +225,20 @@ def main(argv=None) -> int:
                 ink = tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
             if not 0.0 <= a.gap_fraction <= 1.0 or a.underpaint_min_area < 0:
                 raise ValueError("--gap-fraction must be 0..1 and --underpaint-min-area nonnegative")
-            drawing, receipt = fit_stacked(Image.open(a.image), a.colors, a.tolerance, a.min_area, palette,
-                                           cell_edges=a.cell_edges, mask=mask, gap_fraction=a.gap_fraction,
-                                           underpaint_min_area=a.underpaint_min_area, ink=ink)
+            if a.figure:
+                from .keys import prepare_key
+                figure_mask = None
+                if a.figure_mask:
+                    figure_mask = np.asarray(Image.open(a.figure_mask).convert("L")) > 0
+                drawing, receipt = prepare_key(
+                    Image.open(a.image), palette=palette, colors=a.colors,
+                    tolerance=a.tolerance, min_area=a.min_area,
+                    gap_fraction=a.gap_fraction, underpaint_min_area=a.underpaint_min_area,
+                    backing=int(a.backing), mask=figure_mask)
+            else:
+                drawing, receipt = fit_stacked(Image.open(a.image), a.colors, a.tolerance, a.min_area, palette,
+                                               cell_edges=a.cell_edges, mask=mask, gap_fraction=a.gap_fraction,
+                                               underpaint_min_area=a.underpaint_min_area, ink=ink)
             source = stacked_source(drawing)
             receipt["bytes"] = len(source.encode())
             Path(a.out).write_text(source, encoding="utf-8")

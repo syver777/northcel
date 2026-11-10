@@ -6,7 +6,7 @@ CLI_COMMAND = "northcel"
 CLI_SHORT_ALIAS = "ncel"
 PYPI_PACKAGE = "northcel"
 NPM_PACKAGE = "northcel"
-PACKAGE_VERSION = "0.6.0"
+PACKAGE_VERSION = "0.6.1"
 SPEC_VERSION = "0.5.0-draft"
 SUPPORTED_SPEC_VERSIONS = ("0.1", "0.1.0", "0.1.0-draft", "0.2", "0.2.0", "0.2.0-draft", "0.3", "0.3.0", "0.3.0-draft",
                            "0.4", "0.4.0", "0.4.0-draft", "0.5", "0.5.0", "0.5.0-draft")

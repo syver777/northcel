@@ -36,7 +36,7 @@ checkout (`python3 -m pip install -e './python[fit]'` in a venv), not a publishe
 | `northcel perceive vectorize IMAGE --out FILE [--mode stacked] [--json]` | optional VTracer SVG; when absent, explicitly labelled `fit --stacked` fallback only with already-installed fit libraries and `.ncel` output |
 | `northcel perceive flow A B --out DIR [--checkpoint FILE] [--model small\|large] [--json]` | optional TorchVision RAFT forward-flow PNG/NumPy array and geometric JSON motion hints; local weights only |
 | `northcel perceive guide A B --out DIR [--model-dir DIR] [--json]` | optional FILM midpoint visual target; JSON and PNG metadata say `guide_only: true`; never output or quality evidence |
-| `northcel fit IMAGE -o FILE [--palette P.json] [--stacked] [--receipt R.json]` | offline contour fitting (`pip install 'northcel[fit]'`). Default: a planar map. `--stacked`: painter's-order solid shapes with `--gap-fraction` (0.5), `--underpaint-min-area` (300 px², 0 = off), `--ink #RRGGBB` |
+| `northcel fit IMAGE -o FILE [--palette P.json] [--stacked] [--figure [--backing PX] [--figure-mask FILE]] [--receipt R.json]` | offline contour fitting (`pip install 'northcel[fit]'`). Default: a planar map. `--stacked`: painter's-order solid shapes with `--gap-fraction` (0.5), `--underpaint-min-area` (300 px², 0 = off), `--ink #RRGGBB`. `--figure`: fit the measured figure only (paper/sky/cloud excluded) plus an ink outline backing, useful for an AI in-between key |
 | `northcel tween A B -o FILE [--steps N] [--fallback error\|hold]` | ordered-ring in-betweens; identical topology required |
 | `northcel tween A B -o FILE --match [--steps N] [--fps N] [--mode auto\|morph\|cut\|dissolve\|hold] [--fallback cut\|dissolve] [--min-match 0.5] [--max-displacement 32] [--colour-changes C.json] [--image-a A.png --image-b B.png] [--receipt R.json]` | shape matching across topology mismatch; writes one spec 0.4 film; below the thresholds an explicit cut or dissolve |
 | `northcel guide` | the compact offline agent guide |
@@ -141,6 +141,7 @@ and `scikit-image` (`northcel[fit]`) are only needed to trace images.
 ```python
 from northcel.fitting import fit_stacked
 from northcel.shapes import StackedDrawing, Shape, drawing_from_source, stack_planar, stacked_source
+from northcel.keys import measure_figure, figure_box, prepare_key, add_outline_backing
 from northcel.correspond import (Key, Transition, FilmOptions, MatchOptions, Match,
                                  match_drawings, film_from_keys, linear_assignment)
 ```
@@ -149,6 +150,9 @@ from northcel.correspond import (Key, Transition, FilmOptions, MatchOptions, Mat
 | --- | --- | --- |
 | `fit_stacked` | `fit_stacked(image, colors=32, tolerance=0.6, min_area=2.0, palette=None, name="StackedDrawing", cell_edges=False, mask=None, *, gap_fraction=0.5, underpaint_min_area=300.0, ink=None, hole_min_area=30.0, min_shape_area=4.0)` | `(StackedDrawing, receipt dict)` — tracing as `fit`, then stacking with the gap test on the image's own palette labels |
 | `drawing_from_source` | `drawing_from_source(source, image=None, *, stack="auto", gap_fraction=0.5, underpaint_min_area=300.0, ink=None)` | `StackedDrawing` from a plain scene (planar fit or already stacked); `image` (path or PIL image) supplies source pixels for the gap test |
+| `measure_figure` | `measure_figure(image, *, background=None, tolerance=42.0, min_component=1200, attach_px=14, max_hole=18000, white_min=400, white_max=26000, with_core=False)` | boolean raster mask of the drawing's figure without paper/sky/clouds; `with_core=True` also returns the material-only mask whose box is the accurate figure extent |
+| `prepare_key` | `prepare_key(image, *, palette=None, colors=32, tolerance=0.6, min_area=2.0, gap_fraction=0.5, underpaint_min_area=300.0, backing=4, mask=None, name="Key")` | `(StackedDrawing, receipt)` — masked stacked fit plus an ink outline backing; the receipt records `figure_mask.box` and `figure_mask.material_box` |
+| `add_outline_backing` | `add_outline_backing(drawing, mask, *, width=4, color=None, name="backing")` | copy of `drawing` painting the expanded figure silhouette in ink under every shape |
 | `stack_planar` | `stack_planar(layers, paper, width, height, labels=None, label_colors=None, *, gap_fraction=0.5, underpaint_min_area=300.0, ink=None, min_shape_area=4.0, hole_min_area=30.0, name="Drawing")` | `StackedDrawing`; `layers` is `[(rgb, [ring arrays])]` in paint order |
 | `stacked_source` | `stacked_source(drawing, *, spec="0.3.0-draft", antialias_grid=4, fps=24)` | `.ncel` scene text, one `layer` per shape |
 | `match_drawings` | `match_drawings(a, b, options=None)` (defaults to `MatchOptions()`) | `Match(pairs, only_a, only_b, displacement, matched_fraction)`; `match.confident(min_match, max_displacement)` |
