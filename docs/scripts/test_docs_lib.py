@@ -83,6 +83,15 @@ class AllFencesCheckTest(unittest.TestCase):
         self.assertEqual(checker.counts["valid_ncel_fences"], 0)
         self.assertEqual(checker.failures, [])
 
+    def test_four_backtick_and_tilde_fences_are_checked(self):
+        checker = self.check_page(
+            "````ncel\nnot a program\n````\n"
+            "~~~ncel\nnot a program\n~~~\n"
+        )
+        self.assertEqual(checker.counts["valid_ncel_fences"], 2)
+        self.assertEqual(len(checker.failures), 2)
+        self.assertTrue(all("invalid ncel fence" in f for f in checker.failures))
+
 
 if __name__ == "__main__":
     unittest.main()

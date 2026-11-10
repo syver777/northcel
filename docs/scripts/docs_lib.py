@@ -32,7 +32,7 @@ RENDER_RE = re.compile(r"^<!--\s*render:\s*(?P<path>\S+)(?P<rest>[^>]*)-->\s*$")
 ERROR_RE = re.compile(r"^<!--\s*expect-error:\s*(?P<text>.+?)\s*-->\s*$")
 IMAGE_RE = re.compile(r"^<!--\s*image:\s*(?P<path>\S+)(?P<rest>[^>]*)-->\s*$")
 SOURCE_RE = re.compile(r"^<!--\s*source:\s*(?P<path>\S+)\s*-->\s*$")
-FENCE_RE = re.compile(r"^```(?P<lang>[A-Za-z0-9_-]*)\s*$")
+FENCE_RE = re.compile(r"^(?P<fence>`{3,}|~{3,})(?P<lang>[A-Za-z0-9_-]*)\s*$")
 
 
 @dataclass
@@ -195,9 +195,10 @@ def extract_blocks(page_path: Path) -> list[Block]:
             continue
         m = FENCE_RE.match(stripped)
         if m:
+            fence = m.group("fence")
             language = m.group("lang")
             end = i + 1
-            while end < len(lines) and lines[end].strip() != "```":
+            while end < len(lines) and lines[end].strip() != fence:
                 end += 1
             if end == len(lines):
                 raise ValueError(f"unclosed {language} fence at line {i + 1}")

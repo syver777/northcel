@@ -103,8 +103,10 @@ vector geometry; an image model is not required.
 Store the key once in a `def`. Each applicable frame block says `use Key`, then
 only the changes. This saves source and review effort, not rasterisation work:
 every requested frame is still evaluated and rendered. Changes never accumulate
-from the preceding frame. Repeated uses with the same paint names replace those
-paints; they do not create independently named instances.
+from the preceding frame. Repeated uses do not rename their paints: same-named layers/cels, their coupled
+outlines and morphs replace earlier entries, while strokes, ribbons and
+ordinary swarms append. Use distinct paint names for independent instances,
+and avoid expanding the same ink twice in one evaluated frame.
 
 Keep width, height, fps, frame count and seed intact. `f` is the global frame
 index; `t = f / max(1, frames - 1)`, not progress local to a range. Choose a
