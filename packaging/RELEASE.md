@@ -1,5 +1,33 @@
 # Releasing NorthCel
 
+## 0.7.0 — release candidate — spec 0.6.0-draft
+
+Built from `main` after the 0.7.0 PR. Tools-only release of the core package
+(`northcel` + the deprecated `ncel` alias); the native runtime stays 0.4.0.
+It additionally ships **`northcel-vello` 0.7.0**, the optional tolerance-tier
+renderer consumed by `northcel[vello]`.
+
+Order:
+
+1. `bash packaging/scripts/build_python.sh` for `northcel` 0.7.0 (native 0.4.0
+   is already published; do not rebuild it).
+2. `bash packaging/scripts/build_vello.sh` for the host wheel, and let the
+   `Vello wheels` CI workflow build the other platforms
+   (macOS arm64/x86_64, Linux x86_64/aarch64, Windows x86_64).
+3. Upload `northcel` wheel/sdist, then `ncel` 0.7.0, then every
+   `northcel_vello-0.7.0-*.whl`. PyPI order matters: the extra depends on
+   `northcel-vello==0.7.0`.
+4. The CI `publish` job uses PyPI **trusted publishing** (`id-token: write`) on
+   a `v0.7.0` GitHub release. The PyPI project must have a trusted publisher
+   configured for this repository and the `vello.yml` workflow; until it is,
+   publish from a machine with `NORTH_NOIR_PYPI_API`/twine credentials.
+5. Fresh-venv proof: `pip install northcel==0.7.0`, `northcel --version` reports
+   0.7.0 / spec 0.6.0-draft, `northcel render examples/patterns/12-polishing-ai-frames.ncel`
+   works; `pip install "northcel[vello]==0.7.0"` then
+   `northcel render <file> --renderer vello` reports the tolerance tier.
+6. Re-pin `packaging/install.sh` and the Homebrew formula only from the published
+   0.7.0 sdist URL/SHA-256. npm remains with the owner; do not publish it here.
+
 ## 0.5.0 — published 2026-11-09 — spec 0.4.0-draft (tools only)
 
 PyPI and Homebrew ship `northcel` 0.5.0 and the deprecated `ncel` PyPI alias

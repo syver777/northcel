@@ -279,7 +279,7 @@ def test_negative_nudge_index_is_located(attrs):
 
 
 @pytest.mark.parametrize("body,feature", [
-    ('layer a(tone: 0) { "0,0 4,0 0,4" }', "defaults to spec 0.5.0-draft"),
+    ('layer a(tone: 0) { "0,0 4,0 0,4" }', "defaults to spec 0.6.0-draft"),
     ('def D { group g {} }', "group"),
     ('def D { warp a(handles: ((0, 0, 1, 0),)) }', "warp"),
     ('def D { nudge a(vertex: 0) }', "nudge"),

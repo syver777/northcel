@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "northcel"
-version = "0.6.1"
+version = "0.7.0"
 description = "NorthCel (.ncel) — the open drawing language for AI-drawn video: reference parser, validator, formatter and CPU renderer, plus the one-command CLI that runs the native MoonBit + Bend/HVM2 + GLSL runtime when the platform supports it."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -46,6 +46,13 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=7", "build>=1.0", "twine>=5"]
 fit = ["opencv-python-headless==5.0.0.93; python_version >= '3.11'", "opencv-python-headless==4.11.0.86; python_version < '3.11'", "scikit-image==0.26.0; python_version >= '3.11'", "scikit-image==0.24.0; python_version < '3.11'"]
+# Optional perception helpers. SAM 2 itself is installed from its upstream git
+# repository (it is not on PyPI); VTracer, PyTorch (SAM 2/RAFT) and TensorFlow
+# (FILM SavedModels) are the PyPI-installable parts. SAM 3 is deliberately NOT
+# included: it uses Meta's custom SAM License, so it stays external opt-in.
+perceive = ["vtracer==0.6.11", "torch>=2.4", "torchvision>=0.19", "tensorflow>=2.16"]
+# Vello tolerance renderer. Ships as per-platform wheels of `northcel-vello`.
+vello = ["northcel-vello==0.7.0"]
 
 [project.urls]
 Homepage = "https://github.com/syver777/northcel"

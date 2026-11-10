@@ -65,12 +65,12 @@ reference. The one-line installer is also Linux x86_64 only.
 **npm:** the npm package currently ships the older **0.4.0** launcher. Use PyPI
 or Homebrew for published 0.5.0. The starter above works with published 0.5.0.
 
-**Source / unreleased:** this checkout targets tools **0.6.0**, spec
-**0.5.0-draft**; neither PyPI, Homebrew nor the installer ships it yet.
+**Current:** this checkout targets tools **0.7.0**, spec **0.6.0-draft**; PyPI,
+Homebrew and the installer publish 0.7.0 after the release gate.
 For the 0.5-spec examples below and in the agent guide, install this checkout
 in a fresh venv with `python3 -m pip install -e './python[fit]'` and use its
 `northcel` command. Stay with the writing guide's spec-0.4 examples on a
-published 0.5.0 install. [Phase 7 release copy and checklist](docs/release-0.6.0.md)
+published 0.6.0 install. [Phase 7 release copy and checklist](docs/release-0.7.0.md)
 are kept separately until publication.
 
 ## First steps
@@ -82,14 +82,14 @@ and change only the regions that need it. The AI decides per video; the language
 provides general operations and checks. This method needs the unreleased source
 tools described above; it is not a promise about the published install.
 
-**Unreleased 0.6.0 from source (spec 0.5):** addressable drawings — named `group` blocks with
+**0.7.0 (spec 0.6):** `warp(mode: arap)`, NCIR v2 and the Vello tolerance tier; 0.6 added addressable drawings — named `group` blocks with
 pivots, opacity, clipping and optional parenting; group-wide `transform`; a
 handle-based smooth `warp` for petals, cloth and squash; per-vertex `nudge`; and
 cheap `use` + delta frame blocks. `fit --stacked` now gives every shape a stable
 id and a `shape_manifest` receipt, and `northcel shapes` queries by id, colour,
 area, location, parent or mask. Spec 0.5 is Python-reference only; the native
 runtime stays at spec 0.3 and the launchers route honestly. See the
-[spec](docs/spec/SPEC-0.5.0-draft.md).
+[spec](docs/spec/SPEC-0.6.0-draft.md).
 
 **0.5.0 (spec 0.4):** `mix(a, b, u)` colour expressions, a `morph`
 primitive, inclusive `frame A..B` blocks and layer/group `opacity`; `fit --stacked`
@@ -143,7 +143,7 @@ through the labelled Python reference.
 - **[Documentation index](docs/README.md)** — the full map.
 - [Format & tooling reference](docs/reference.md) — the CLI and the validation
   contract.
-- [Specification](docs/spec/SPEC-0.5.0-draft.md) · [changelog](CHANGELOG.md) ·
+- [Specification](docs/spec/SPEC-0.6.0-draft.md) · [changelog](CHANGELOG.md) ·
   [decision log](docs/DECISIONS.md).
 
 ## Contributing

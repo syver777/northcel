@@ -303,6 +303,46 @@ def spec05_features(doc: DocumentNode) -> list[tuple[str, int, int]]:
     return found
 
 
+def spec06_features(doc: DocumentNode) -> list[tuple[str, int, int]]:
+    """Every use of a spec 0.6 construct as (feature, line, column)."""
+    found: list[tuple[str, int, int]] = []
+
+    def items(seq) -> None:
+        for it in seq:
+            if isinstance(it, WarpNode) and getattr(it, "mode", "smooth") == "arap":
+                found.append(("warp mode: arap", it.span.line, it.span.column))
+            if isinstance(it, GroupNode):
+                items(it.items)
+
+    def scene(node) -> None:
+        for d in node.defs.values():
+            items(d.items)
+        items(node.items)
+
+    root = doc.root
+    scene(root)
+    if isinstance(root, FilmNode):
+        for f_scene in root.frame_overrides.values():
+            scene(f_scene)
+        for _lo, _hi, f_scene in root.frame_ranges:
+            scene(f_scene)
+    return found
+
+
+def _check_spec06(doc: DocumentNode, out: list[ValidationDiagnostic]) -> None:
+    if spec_minor(doc.spec_version) >= 6:
+        return
+    seen: set[tuple[str, int, int]] = set()
+    for feature, line, col in spec06_features(doc):
+        if (feature, line, col) in seen:
+            continue
+        seen.add((feature, line, col))
+        out.append(ValidationDiagnostic(
+            "error",
+            f"{feature} requires northcel \"0.6.0-draft\" (this document declares "
+            f"'{doc.spec_version}')", line, col))
+
+
 def _check_spec05(doc: DocumentNode, out: list[ValidationDiagnostic]) -> None:
     if spec_minor(doc.spec_version) >= 5:
         return
@@ -391,6 +431,7 @@ def validate_document(doc: DocumentNode) -> list[ValidationDiagnostic]:
     if doc.spec_version in SUPPORTED_SPEC_VERSIONS:
         _check_spec04(doc, out)
     _check_spec05(doc, out)
+    _check_spec06(doc, out)
     if root.paper.antialias_grid not in (1, 2, 4, 8):
         out.append(
             ValidationDiagnostic(

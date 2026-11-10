@@ -108,11 +108,11 @@ def test_offline_guide_teaches_current_constructs_and_stays_in_sync():
     compact = guide.split("<!-- npm-guide:start -->\n", 1)[1].split("<!-- npm-guide:end -->", 1)[0]
     for path in [REPO / "python/northcel/AGENT-GUIDE.md", REPO / "js/northcel/northcel/AGENT-GUIDE.md"]:
         assert path.read_text() == compact
-    for fragment in ('northcel "0.5.0-draft"', "group part", "warp part", "nudge mark",
-                     "northcel shapes", "--stacked -o", "source/unreleased"):
+    for fragment in ('northcel "0.6.0-draft"', "group part", "warp part", "nudge mark",
+                     "northcel shapes", "--stacked -o", "tools 0.7.0"):
         assert fragment in compact
     golden = guide.split("## 1. The Golden Rules", 1)[1]
-    assert 'current `northcel "0.5.0-draft"`' in golden
+    assert 'current `northcel "0.6.0-draft"`' in golden
 
 
 def test_install_docs_distinguish_published_and_source_versions():

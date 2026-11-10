@@ -263,3 +263,31 @@ This document records the key architectural, experimental, and naming decisions 
   rendering. Hidden limbs are never reconstructed: occlusions use explicit holds
   of neighbouring whole existing drawings. Contour-tween trials that folded black
   torso/limb regions were rejected, rather than reported as smooth animation.
+
+## 10. NCIR v2 and the Vello tolerance tier (tools 0.7.0)
+
+NCIR v2 is a binary, per-frame paint list emitted by the Python evaluator after
+every transform, group, clip, warp and morph has been resolved. It carries ring
+topology, group scopes with opacity, resolved clip rings, per-paint opacity,
+paper and grain. Accelerated renderers consume it; they never parse `.ncel` or
+re-implement evaluation.
+
+The Vello/wgpu renderer (`northcel render|film --renderer vello`) is shipped as
+the optional, per-platform `northcel-vello` wheel set (`northcel[vello]`). It is
+a **tolerance tier**: Vello's analytic area antialiasing cannot reproduce the
+reference's `aa x aa` subpixel box integration byte-for-byte. The Python
+reference stays the exact, normative tier; conformance compares the Vello tier
+with a mean-absolute-error limit and never claims byte equality. A missing
+module is an install error, not a silent fallback to another renderer.
+
+Rationale: the film workflow needs both exact review renders and a fast preview
+tier for iteration. Keeping the exact tier as the oracle preserves every
+existing pixel guarantee, while the optional wheel keeps heavy GPU dependencies
+out of the core install. The native MoonBit/Bend/GLSL runtime is unchanged and
+remains Linux x86_64 spec 0.3; spec 0.4+ documents keep routing to the labelled
+reference.
+
+`warp(mode: arap)` is the same kind of decision: a deterministic rigid-energy
+solve in the reference, not a new primitive. It operates on the paint's ring
+graph (the fill follows its rings), with fixed iteration counts and no random
+state.

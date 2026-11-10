@@ -201,7 +201,9 @@ def _fmt_item(item: SceneItem, indent: str = "  ", palette: dict[str, ColorValue
             for x, y, dx, dy in item.handles)
         if len(item.handles) == 1:
             handles += ","  # Preserve a tuple of one handle, not a parenthesised value.
-        return [f"{indent}warp {item.target_name}(handles: ({handles}), radius: {_fmt_expr(item.radius)})"]
+        mode = getattr(item, "mode", "smooth")
+        extra = ", mode: arap" if mode == "arap" else ""
+        return [f"{indent}warp {item.target_name}(handles: ({handles}), radius: {_fmt_expr(item.radius)}{extra})"]
     if isinstance(item, NudgeNode):
         return [f"{indent}nudge {item.target_name}(vertex: {item.vertex}, ring: {item.ring}, "
                 f"dx: {_fmt_expr(item.dx)}, dy: {_fmt_expr(item.dy)})"]

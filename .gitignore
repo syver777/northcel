@@ -17,6 +17,7 @@ npm-debug.log*
 *.tgz
 
 # --- Native build outputs (all reproducible, none committed) ------------
+**/target/
 native/build/
 native/moonbit/_build/
 native/moonbit/cmd/ncel_ast/pkg.generated.mbti

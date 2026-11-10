@@ -173,7 +173,21 @@ def _passthrough(command: str, args: list[str], strip_native_only: bool = True) 
     return native.run([command, *args]).returncode
 
 
+def _renderer_choice(args: list[str]) -> str:
+    for i, arg in enumerate(args):
+        if arg == "--renderer" and i + 1 < len(args):
+            return args[i + 1]
+        if arg.startswith("--renderer="):
+            return arg.split("=", 1)[1]
+    return "reference"
+
+
 def _cmd_render(args: list[str]) -> int:
+    if _renderer_choice(args) == "vello":
+        # Vello reads NCIR v2 from the Python evaluator; never the native tier.
+        from ..cli import main as reference_main
+
+        return reference_main(["render", *args])
     usable, reason = _native_or_reason(args, "render")
     if usable:
         return native.run(["render", *args]).returncode
@@ -196,6 +210,10 @@ def _cmd_render(args: list[str]) -> int:
 
 
 def _cmd_film(args: list[str]) -> int:
+    if _renderer_choice(args) == "vello":
+        from ..cli import main as reference_main
+
+        return reference_main(["film", *args])
     usable, reason = _native_or_reason(args, "film")
     if usable:
         return native.run(["film", *args]).returncode

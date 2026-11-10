@@ -2,18 +2,18 @@
 
 This page is the short lookup. The language itself is taught in the
 [writing guide](guide/README.md); the normative grammar is
-[SPEC-0.5.0-draft](spec/SPEC-0.5.0-draft.md).
+[SPEC-0.6.0-draft](spec/SPEC-0.6.0-draft.md).
 
 For the default authoring approach, read [editable drawings](guide/17-editable-drawings.md):
 observe → decompose → decide → edit the delta → verify → iterate. The five worked
 illustrations use different general mechanisms, not subject templates. Start
 with copies of good geometry; automatic `tween --match` is an optional alternative.
 
-**Version scope:** tools **0.6.0 in this checkout**, spec **0.5.0-draft**, are
+**Version scope:** tools **0.7.0**, spec **0.6.0-draft**, are
 **source / unreleased**. PyPI, Homebrew and install.sh publish **0.5.0** (spec 0.4);
 npm publishes **0.4.0**. `shapes`, fit ids and the spec-0.5 syntax below need this
 checkout (`python3 -m pip install -e './python[fit]'` in a venv), not a published
-0.5.0 install. [Release copy](release-0.6.0.md) is reserved for Phase 7.
+0.6.0 install. [Release copy](release-0.7.0.md) is reserved for Phase 7.
 
 ## CLI (`northcel` / `ncel`)
 
@@ -24,6 +24,7 @@ checkout (`python3 -m pip install -e './python[fit]'` in a venv), not a publishe
 | `northcel check FILE [--json] [--require-full]` | parse + validate; exit `1` on an error |
 | `northcel info FILE [--json]` | metadata: bytes, kind, size, frames, fps, layers, rings, vertices |
 | `northcel render FILE [-o OUT.png] [--frame N] [--seed N] [--json]` | one frame to PNG |
+| `northcel render FILE --renderer vello ...` | NCIR v2 -> Vello tolerance renderer (`northcel[vello]`); never a silent fallback |
 | `northcel film FILE -o OUTDIR [--frames 0..N] [--mp4 OUT.mp4] [--json]` | frame sequence and optional MP4 |
 | `northcel fmt FILE [-w] [--check]` | canonical formatting (reference only); round-trips every spec 0.4 and 0.5 construct |
 | `northcel shapes FILE [--frame N] [--ids …] [--color #RRGGBB] [--area-min N] [--area-max N] [--bbox x0,y0,x1,y1] [--centroid x,y,r] [--parent ID] [--mask IMAGE]` | JSON ids, colours, areas, bboxes, centroids, parents, children and neighbours of evaluated shapes |
@@ -70,8 +71,8 @@ RIFE and GPL tracing tools remain external alternatives, not bundled backends.
 
 ## Validation contract
 
-**Tools 0.6.0 from source (unreleased), spec 0.5.0-draft** (contract as of published
-0.5.0; 0.6.0 adds groups, warp, nudge and shape queries). Use PyPI or, on Linux
+**Tools 0.7.0, spec 0.6.0-draft** (published 0.6.0 adds groups, warp, nudge and
+shape queries; 0.7.0 adds ARAP, NCIR v2 and the Vello tier). Use PyPI or, on Linux
 x86_64 only, Homebrew for published **0.5.0**, which supports spec 0.4 only;
 macOS uses pipx/pip. The `northcel` distribution is the reference
 parser, validator, formatter and CPU renderer *and* the launcher that runs the

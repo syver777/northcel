@@ -8,7 +8,7 @@ the frames.
 - **Commands:** `northcel` (short alias `ncel`)
 - **Packages:** `northcel` on PyPI and npm (plus the `northcel-native` /
   `northcel-linux-x64` platform artifacts)
-- **Source / unreleased:** tools `0.6.0`; specification `0.5.0-draft` (the native runtime 0.4.0
+- **Current:** tools `0.7.0`; specification `0.6.0-draft` (the native runtime 0.4.0
   implements `0.3.0-draft`; spec 0.4/0.5 documents use the Python reference).
   **Published:** tools `0.5.0` / spec `0.4.0-draft`. Earlier
   history: tools `0.4.0` / spec `0.3.0-draft`, then tools `0.3.1` / spec

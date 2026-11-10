@@ -23,6 +23,52 @@ fn main() {
 }
 
 fn run() -> Result<(), String> {
+    // NCIR v2 backend (tools 0.7): one frame or a directory of frames.
+    let argv: Vec<String> = std::env::args().skip(1).collect();
+    if let Some(pos) = argv.iter().position(|a| a == "--ncir") {
+        let input = argv.get(pos + 1).ok_or("--ncir needs a path")?;
+        let out = argv
+            .iter()
+            .position(|a| a == "--out")
+            .and_then(|i| argv.get(i + 1))
+            .map(PathBuf::from)
+            .unwrap_or_else(|| PathBuf::from("out/ncir.png"));
+        let stats = ncel_vello::render_file(&PathBuf::from(input), &out)?;
+        println!(
+            "{{\"ncir\": {}, \"width\": {}, \"height\": {}, \"paints\": {}, \"sha256\": \"{}\"}}",
+            serde_json::json!(input),
+            stats.width,
+            stats.height,
+            stats.paints,
+            stats.rgba_sha256
+        );
+        return Ok(());
+    }
+    if let Some(pos) = argv.iter().position(|a| a == "--ncir-dir") {
+        let input = argv.get(pos + 1).ok_or("--ncir-dir needs a directory")?;
+        let out = argv
+            .iter()
+            .position(|a| a == "--out-dir")
+            .and_then(|i| argv.get(i + 1))
+            .map(PathBuf::from)
+            .unwrap_or_else(|| PathBuf::from("out/ncir"));
+        let mut files: Vec<PathBuf> = std::fs::read_dir(input)
+            .map_err(|e| format!("cannot read {input}: {e}"))?
+            .filter_map(|e| e.ok().map(|e| e.path()))
+            .filter(|p| p.extension().map(|x| x == "ncir").unwrap_or(false))
+            .collect();
+        files.sort();
+        let started = std::time::Instant::now();
+        let stats = ncel_vello::render_sequence(&files, &out)?;
+        let total_ms = started.elapsed().as_secs_f64() * 1000.0;
+        println!(
+            "{{\"ncir_dir\": {}, \"frames\": {}, \"total_ms\": {:.1}}}",
+            serde_json::json!(input),
+            stats.len(),
+            total_ms
+        );
+        return Ok(());
+    }
     let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let mut fixture_path = manifest.join(DEFAULT_FIXTURE);
     let mut out_path = manifest.join(DEFAULT_OUT);
