@@ -188,6 +188,11 @@ film F(width: 100, height: 100, fps: 10, frames: 3) {
 
 class TestFitIdsAndQueries(unittest.TestCase):
     def test_fit_assigns_stable_ids_and_manifest_geometry(self):
+        try:
+            import cv2  # noqa: F401
+            import skimage  # noqa: F401
+        except ImportError:
+            self.skipTest('requires northcel[fit] (cv2, scikit-image)')
         im = Image.new("RGB", (120, 100), "white")
         from PIL import ImageDraw
         ImageDraw.Draw(im).rectangle([20, 20, 90, 80], fill=(200, 40, 40), outline=(0, 0, 0), width=3)

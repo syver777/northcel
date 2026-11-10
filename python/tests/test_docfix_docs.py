@@ -78,6 +78,8 @@ film F(width: 8, height: 8, frames: 2) {
 
 
 def test_spec_fit_command_is_copyable_and_receipt_matches_queries(tmp_path, monkeypatch, capsys):
+    pytest.importorskip("cv2")
+    pytest.importorskip("skimage")
     import json
     from northcel.cli import main as cli
     from northcel.fitting import main as fit
