@@ -19,7 +19,8 @@ the frames.
 
 | If you want to… | Read |
 | --- | --- |
-| learn the language in order | **[The writing guide](guide/README.md)** — 16 numbered pages, every construct with a rendered example and its real diagnostic |
+| learn the language in order | **[The writing guide](guide/README.md)** — 16 published-compatible pages plus the source-only method chapter |
+| make deliberate changes between keys | **[Editable drawings](guide/17-editable-drawings.md)** — observe → decompose → decide → edit → verify → iterate; five illustrations, not templates (source/unreleased) |
 | copy a working animation | **[Patterns cookbook](patterns/README.md)** — twelve complete programs with contact sheets, sizes and pitfalls |
 | see what it looks like | **[Gallery](gallery.md)** |
 | fix an error message | **[Common errors](errors.md)** — generated from the source, reproduced in CI |
@@ -57,6 +58,7 @@ Project-level documents live in the repository root:
 | 14 | [Editing one frame surgically](guide/14-editing-one-frame.md) | the delta recipe |
 | 15 | [Fitting, transforms and in-betweens](guide/15-fitting-transforms-and-inbetweens.md) | offline fitting, transforms, easing, tween |
 | 16 | [Colour expressions, morph, frame ranges and opacity](guide/16-colour-morph-ranges-opacity.md) | `mix`, `morph`, `frame A..B`, `opacity` |
+| 17 | [Editable drawings](guide/17-editable-drawings.md) | source-only spec 0.5: ids, groups, key + delta, warp, clip, nudge, verification |
 
 [`tutorial.md`](tutorial.md) points to the matching guide pages.
 [`reference.md`](reference.md) covers the CLI and the validation contract; the
@@ -71,8 +73,11 @@ $ python docs/scripts/build_docs_assets.py   # render every image + write expect
 $ python docs/scripts/check_docs.py          # verify snippets, images, errors, links
 ```
 
-`check_docs.py` extracts every `.ncel` snippet from the guide, runs `northcel
-check` and renders it, compares the pixels with the committed expectation,
+`check_docs.py` validates every `ncel` fence in the README, docs and example
+pages. These fences are complete valid programs, never pseudo-code or deliberate
+failures. Negative diagnostic examples use `text` fences and remain checked
+against their exact expected errors. The checker renders the guide's marked
+examples, compares the pixels with the committed expectation,
 renders every `examples/patterns/*.ncel` and its contact sheet, reproduces every
 diagnostic in [errors.md](errors.md), and verifies every relative link and image
 path. The `docs` job in CI runs it on every push, so a snippet that does not

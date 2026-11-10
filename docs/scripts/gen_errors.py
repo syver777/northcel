@@ -822,14 +822,15 @@ def build() -> str:
     lines.append(
         "Each case is a complete `.ncel` file that was run through `check`; the output "
         "shown is exactly what the tool printed. The file is always called "
-        "`broken.ncel`, so the path prefix is stable.\n"
+        "`broken.ncel`, so the path prefix is stable. Diagnostic inputs use `text` "
+        "fences, not the `ncel` tag reserved for valid runnable programs.\n"
     )
     for i, res in enumerate(results, 1):
         lines.append(f"### {i}. {res['title']}\n")
         lines.append(f"*Case id:* `{res['id']}`\n")
         if res["source"] is not None:
             lines.append("<!-- case-source -->")
-            lines.append("```ncel")
+            lines.append("```text")
             lines.append(res["source"].rstrip())
             lines.append("```\n")
             lines.append("```console")

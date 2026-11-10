@@ -17,12 +17,13 @@ not the `group`/`warp`/`nudge` examples here.
 2. **Run the gates on the file you were given before editing it:**
    `northcel check file.ncel --json` then `northcel render file.ncel -o before.png`.
    Never start from a file you have not rendered.
-3. **Copy a structure, not a drawing.** The
-   [patterns cookbook](patterns/README.md) has twelve complete programs; pick the
-   one whose *motion* matches the request (head turn, blink, jump, colour beat,
-   drift, assembly, walk, boil, crowd, two-shot, fitting/cel transforms, polishing AI frames).
-4. **Edit one named block.** Find it with `northcel info file.ncel`; change only
-   that block; render the edited frame and both neighbours.
+3. **Observe → decompose → decide.** Read the [editable-drawing method](guide/17-editable-drawings.md).
+   Inspect both keys; identify parts/regions, then choose copy, move, warp,
+   recolour or redraw for each. The five worked illustrations are not templates.
+   The AI decides per video; there is no subject preset or character rig library.
+4. **Edit the delta.** Query `northcel shapes file.ncel` for addressable paints;
+   group the chosen regions, reuse the key and change only what needs changing.
+   Render the edited frame and both neighbours. Do not refit unchanged geometry.
 5. **Only then run the full film.** `northcel film file.ncel -o frames/` and look
    at the first, middle, last and transition frames.
 
@@ -64,6 +65,20 @@ The blocks are general: a `group` may contain any primitives, nested groups,
 flower or cloud preset. `transform` is for rigid moves; `warp` is for non-rigid
 squash/sway/cloth. The full contract is
 [SPEC-0.5.0-draft](spec/SPEC-0.5.0-draft.md).
+
+Fit ids identify fitted colour/geometry, not semantic objects tracked across new
+fits. Queries suggest regions; their containment heuristics are not `parent:`
+attachments or visible clip coverage. Keep names stable while editing. Store a
+key once in a `def`, then `use` it plus a few edits per exact/range frame block.
+This is cheap source reuse, not persistent frame state or a rendering shortcut.
+
+Verify with `northcel diff` and `northcel onion` against **both** neighbouring
+key images, `northcel contact` for the whole transition, `northcel continuity
+FILE --group NAME` for geometric scale/position, and `northcel distinct` on all
+final film frames. Read their [metric limits](guide/17-editable-drawings.md#5-verify-against-both-neighbours-then-iterate).
+Exit 0 only means the measurement ran. Inspect full-size images and iterate.
+Redraw a missing angle, pose, unseen prop or topology only when code cannot
+faithfully express the change; a low automatic match score is not enough.
 
 ## Verify a frame, not just the exit code
 
@@ -178,16 +193,35 @@ Never put expressions inside a quoted ring: move it with `translate: (x, y)`.
 3. Python: `northcel render film.ncel -o frame0.png --frame 0`, inspect the PNG;
    `northcel film film.ncel -o frames/ --mp4 preview.mp4`, inspect first/middle/last
    and transition frames. ffmpeg is required for MP4; verify the MP4 exists.
-   Render samples in reverse order and compare native RGB hashes for determinism.
+   Render samples in reverse order and compare decoded RGB hashes for determinism.
 4. Fix the named block that is wrong, preserve good parts, render again; up to
    three look-and-fix rounds. `northcel fmt -w film.ncel` canonicalizes it.
    Full validation is not a visual-quality or runtime-expression guarantee.
 
-Alternatively install `pip install "northnoir[ncel]"` and use
-`northnoir init ink --language ncel --duration 3 --fps 24`,
-`northnoir check ink/scene.ncel`, `northnoir render ink/scene.ncel -o ink/video.mp4`.
-This is an explicit optional local path; JavaScript `scene.html` stays the default.
 NorthCel films are silent; there is no native audio engine or hosted NorthCel API.
+
+## Default method: editable drawings, not subject recipes
+
+**Observe → decompose → decide (copy / move / warp / recolour / redraw) → edit
+the delta → verify → iterate.** Inspect both keys and choose the regions yourself.
+Copy unchanged geometry with `def`/`use`; group only what needs a shared edit.
+Use pivoted `transform`, constrained `warp`, per-vertex `nudge`, `mix` colours or
+`clip` as observations require. Rigging/parenting is optional, not a subject
+library. Redraw only missing information such as a new angle/pose/unseen prop;
+failed correspondence alone does not establish that a redraw is necessary.
+
+Run `northcel diff` and `northcel onion` against both key images, inspect
+`northcel contact`, query `northcel continuity FILE --group NAME --json`, and run
+`northcel distinct FILE --json` over the complete final film. Measurements are
+reference-only and advisory: group diff uses bboxes, continuity uses unclipped
+geometry/bbox centres and flags only >8% height jumps, onion can miss
+equal-luminance colour changes, and distinct counts changed adjacent samples
+(not globally unique images), excluding the first frame. Render every authored
+frame; a check or measurement exit 0 does not approve its appearance.
+
+The online writing guide's chapter 17 has five different labelled illustrations,
+not templates: a modest turn (copy/transform), sway (fixed/moving warp handles
+and pivot), colour flood (`mix`), squash (nonuniform scale) and ripple (clip/nudge).
 
 ## Common mistakes
 
@@ -357,7 +391,7 @@ An AI agent authored 8 representative frames (`1536×864`) of a 90-frame AI-draw
    Adding fine interior lines in later rounds (cloud outlines, facial features, grass tufts) makes the drawing look **much** more like a real cartoon to a human eye, yet can lower pixel-level Block SSIM by `0.01–0.02` if a 5px black outline is shifted by 4–8 pixels from the source frame's exact line position (because a shifted black line on white paper incurs a double pixel penalty). Judge AI-authored frames by **structural completeness + Edge IoU + visual inspection**, not raw pixel SSIM alone.
 3. **Where an Unassisted LLM Struggles Without a Fitter:**
    - **Easy for an LLM (`0.88–0.93` SSIM):** Isolated heads (`f0001`), simple frontal standing poses (`f0028`), flat sky/ground horizons, and reusable props (`clouds`, `grass_tufts`).
-   - **Hard for an LLM (`0.70–0.75` SSIM):** Complex foreshortened limbs (`f0037` airborne bent knees), articulated hands with 5 spread fingers (`f0055`, `f0067`), and overlapping seated legs (`f0076`, `f0085`). For complex character poses, pair an LLM layout/rig planner with a contour/part template library or fitted keyframe cels.
+   - **Hard for an LLM (`0.70–0.75` SSIM):** Complex foreshortened limbs (`f0037` airborne bent knees), articulated hands with 5 spread fingers (`f0055`, `f0067`), and overlapping seated legs (`f0076`, `f0085`). These are observations from that film, not subject rules. For a genuinely new pose, draw or fit the missing key/region; do not substitute a character rig or part-template library for observing the actual references.
 
 | Diagnostic | Cause | Fix |
 | --- | --- | --- |

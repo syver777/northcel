@@ -63,7 +63,7 @@ def build_guide(manifest: dict, tmp: Path) -> int:
             if marker is None:
                 raise SystemExit(
                     f"{block.page}#{block.index} (line {block.start_line}): "
-                    "every ```ncel fence needs a render:, expect-error: or source: marker"
+                    "every guide example needs a render:, expect-error: or source: marker"
                 )
             if marker["kind"] == "render":
                 asset = marker["path"]

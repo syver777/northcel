@@ -58,7 +58,7 @@ The colour below is a perfectly good CSS colour and a perfectly bad NorthCel
 attribute: only `#hex`, `rgb(...)`, `tone:` and `$palette` names are colours.
 
 <!-- expect-error: 5:20: error: Unknown function 'oklch' -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene DiagnosticBad(width: 360, height: 210) {

@@ -4,6 +4,11 @@ This page is the short lookup. The language itself is taught in the
 [writing guide](guide/README.md); the normative grammar is
 [SPEC-0.5.0-draft](spec/SPEC-0.5.0-draft.md).
 
+For the default authoring approach, read [editable drawings](guide/17-editable-drawings.md):
+observe → decompose → decide → edit the delta → verify → iterate. The five worked
+illustrations use different general mechanisms, not subject templates. Start
+with copies of good geometry; automatic `tween --match` is an optional alternative.
+
 **Version scope:** tools **0.6.0 in this checkout**, spec **0.5.0-draft**, are
 **source / unreleased**. PyPI, Homebrew and install.sh publish **0.5.0** (spec 0.4);
 npm publishes **0.4.0**. `shapes`, fit ids and the spec-0.5 syntax below need this

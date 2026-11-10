@@ -86,7 +86,7 @@ The override index must be a real frame. Shortening a film without updating its
 overrides is the usual cause:
 
 <!-- expect-error: 6:3: error: Frame override index 9 out of range [0..5] -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 film BadFrame(width: 480, height: 260, frames: 6) {

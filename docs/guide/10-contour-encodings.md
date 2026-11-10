@@ -113,7 +113,7 @@ A Base-63 tail is a sequence of **pairs**. An odd number of characters cannot be
 split into deltas:
 
 <!-- expect-error: 4:3: error: Layer 'badge' has invalid ring payload: Ring 0: Base-63 delta tail must have an even number of characters. -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene B63Bad(width: 360, height: 220, precision: 0.25px-b63) {

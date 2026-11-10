@@ -75,16 +75,35 @@ Never put expressions inside a quoted ring: move it with `translate: (x, y)`.
 3. Python: `northcel render film.ncel -o frame0.png --frame 0`, inspect the PNG;
    `northcel film film.ncel -o frames/ --mp4 preview.mp4`, inspect first/middle/last
    and transition frames. ffmpeg is required for MP4; verify the MP4 exists.
-   Render samples in reverse order and compare native RGB hashes for determinism.
+   Render samples in reverse order and compare decoded RGB hashes for determinism.
 4. Fix the named block that is wrong, preserve good parts, render again; up to
    three look-and-fix rounds. `northcel fmt -w film.ncel` canonicalizes it.
    Full validation is not a visual-quality or runtime-expression guarantee.
 
-Alternatively install `pip install "northnoir[ncel]"` and use
-`northnoir init ink --language ncel --duration 3 --fps 24`,
-`northnoir check ink/scene.ncel`, `northnoir render ink/scene.ncel -o ink/video.mp4`.
-This is an explicit optional local path; JavaScript `scene.html` stays the default.
 NorthCel films are silent; there is no native audio engine or hosted NorthCel API.
+
+## Default method: editable drawings, not subject recipes
+
+**Observe → decompose → decide (copy / move / warp / recolour / redraw) → edit
+the delta → verify → iterate.** Inspect both keys and choose the regions yourself.
+Copy unchanged geometry with `def`/`use`; group only what needs a shared edit.
+Use pivoted `transform`, constrained `warp`, per-vertex `nudge`, `mix` colours or
+`clip` as observations require. Rigging/parenting is optional, not a subject
+library. Redraw only missing information such as a new angle/pose/unseen prop;
+failed correspondence alone does not establish that a redraw is necessary.
+
+Run `northcel diff` and `northcel onion` against both key images, inspect
+`northcel contact`, query `northcel continuity FILE --group NAME --json`, and run
+`northcel distinct FILE --json` over the complete final film. Measurements are
+reference-only and advisory: group diff uses bboxes, continuity uses unclipped
+geometry/bbox centres and flags only >8% height jumps, onion can miss
+equal-luminance colour changes, and distinct counts changed adjacent samples
+(not globally unique images), excluding the first frame. Render every authored
+frame; a check or measurement exit 0 does not approve its appearance.
+
+The online writing guide's chapter 17 has five different labelled illustrations,
+not templates: a modest turn (copy/transform), sway (fixed/moving warp handles
+and pivot), colour flood (`mix`), squash (nonuniform scale) and ripple (clip/nudge).
 
 ## Common mistakes
 

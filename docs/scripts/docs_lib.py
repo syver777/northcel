@@ -1,8 +1,9 @@
 """Shared helpers for the NorthCel documentation build and check.
 
-The docs are not allowed to invent anything: every ```ncel fence carries a
-machine-readable marker saying either which image it renders to, or which exact
-diagnostic it must reproduce.  This module finds those fences, runs the real
+The docs are not allowed to invent anything: every ```ncel fence is a complete,
+valid program. Guide examples carry image/source markers; deliberate failures
+use ```text with an expect-error marker and still reproduce exact diagnostics.
+This module finds those fences, runs the real
 `northcel` CLI (the reference renderer, so the result is reproducible on every
 platform and in CI) and hashes the pixels.
 
@@ -41,6 +42,7 @@ class Block:
     code: str
     start_line: int
     marker: dict | None
+    language: str = "ncel"
 
     @property
     def kind(self) -> str:
@@ -161,63 +163,64 @@ def parse_marker(rest: str) -> dict:
     return marker
 
 
-def _next_fence(lines: list[str], start: int) -> tuple[int, int, int] | None:
-    """Return (fence_open_line, code_start, code_end) of the next ```ncel fence."""
-    i = start
-    while i < len(lines):
-        m = FENCE_RE.match(lines[i].strip())
-        if m and m.group("lang") == "ncel":
-            open_line = i
-            j = i + 1
-            body: list[str] = []
-            while j < len(lines):
-                if lines[j].strip() == "```":
-                    return open_line, open_line + 1, j
-                body.append(lines[j])
-                j += 1
-            raise ValueError(f"unclosed ncel fence at line {open_line + 1}")
-        i += 1
-    return None
-
-
 def extract_blocks(page_path: Path) -> list[Block]:
-    """Every ```ncel fence in a page, with the marker written just before it."""
+    """Valid ncel programs and explicitly marked text diagnostic examples.
+
+    Skip whole fences (including other languages) so code cannot be mistaken
+    for a marker or a nested example. A marker belongs to the next fence only.
+    """
     lines = page_path.read_text(encoding="utf-8").splitlines()
     page = rel(page_path)
     blocks: list[Block] = []
     pending: dict | None = None
     idx = 0
-    for i, line in enumerate(lines):
+    i = 0
+    while i < len(lines):
+        line = lines[i]
         stripped = line.strip()
         m = RENDER_RE.match(stripped)
         if m:
             pending = {"kind": "render", "path": m.group("path"), **parse_marker(m.group("rest"))}
+            i += 1
             continue
         m = ERROR_RE.match(stripped)
         if m:
             pending = {"kind": "error", "text": m.group("text")}
+            i += 1
             continue
         m = SOURCE_RE.match(stripped)
         if m:
             pending = {"kind": "source", "path": m.group("path")}
+            i += 1
             continue
         m = FENCE_RE.match(stripped)
-        if m and m.group("lang") == "ncel":
-            found = _next_fence(lines, i)
-            assert found is not None
-            _, code_start, code_end = found
-            code = "\n".join(lines[code_start:code_end]) + "\n"
-            blocks.append(
-                Block(
-                    page=page,
-                    index=idx,
-                    code=code,
-                    start_line=code_start + 1,
-                    marker=pending,
+        if m:
+            language = m.group("lang")
+            end = i + 1
+            while end < len(lines) and lines[end].strip() != "```":
+                end += 1
+            if end == len(lines):
+                raise ValueError(f"unclosed {language} fence at line {i + 1}")
+            if language == "ncel" or (
+                language == "text" and pending and pending["kind"] == "error"
+            ):
+                blocks.append(
+                    Block(
+                        page=page,
+                        index=idx,
+                        code="\n".join(lines[i + 1:end]) + "\n",
+                        start_line=i + 2,
+                        marker=pending,
+                        language=language,
+                    )
                 )
-            )
-            idx += 1
+                idx += 1
             pending = None
+            i = end + 1
+            continue
+        if stripped:
+            pending = None
+        i += 1
     return blocks
 
 

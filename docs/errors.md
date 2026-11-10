@@ -115,14 +115,14 @@ These are the message templates raised by `parser.py`, `validator.py` and `rings
 
 ## Reproduced diagnostics
 
-Each case is a complete `.ncel` file that was run through `check`; the output shown is exactly what the tool printed. The file is always called `broken.ncel`, so the path prefix is stable.
+Each case is a complete `.ncel` file that was run through `check`; the output shown is exactly what the tool printed. The file is always called `broken.ncel`, so the path prefix is stable. Diagnostic inputs use `text` fences, not the `ncel` tag reserved for valid runnable programs.
 
 ### 1. An unknown transform attribute
 
 *Case id:* `p-transform-attribute`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.3.0-draft"
 scene X { transform all(opacity: 1) }
 ```
@@ -142,7 +142,7 @@ broken.ncel:2:11: error: Unknown transform attribute 'opacity'
 *Case id:* `p-transform-pair`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.3.0-draft"
 scene X { transform all(anchor: 3) }
 ```
@@ -162,7 +162,7 @@ broken.ncel:2:11: error: transform.anchor requires 2 components
 *Case id:* `p-transform-number`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.3.0-draft"
 scene X { transform all(rotate: #FFF) }
 ```
@@ -182,7 +182,7 @@ broken.ncel:2:11: error: Expected a numeric transform component
 *Case id:* `p-easing-arity`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.3.0-draft"
 scene X { transform all(scale: ease(1,2)) }
 ```
@@ -202,7 +202,7 @@ broken.ncel:2:32: error: ease expects 1 arguments
 *Case id:* `p-frame-range-reversed`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.4.0-draft"
 film F(frames: 9) {
   frame 5..2 { }
@@ -224,7 +224,7 @@ broken.ncel:3:9: error: Frame range 5..2 is reversed; write 2..5
 *Case id:* `p-mix-in-palette`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.4.0-draft"
 scene S {
   palette { dusk: mix(#203040, #F0A060, 0.5) }
@@ -246,7 +246,7 @@ broken.ncel:3:3: error: Palette entry 'dusk' cannot be a mix(); palette colours 
 *Case id:* `p-mix-arguments`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.4.0-draft"
 scene S {
   layer a(color: mix(0, #FFFFFF, 0.5)) { "0,0 4,0 0,4" }
@@ -268,7 +268,7 @@ broken.ncel:3:22: error: mix() expects two colours and a number: mix(#RRGGBB, $n
 *Case id:* `p-morph-u`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.4.0-draft"
 scene S {
   morph m(tone: 0) { "0,0 4,0 0,4" => "0,0 8,0 0,8" }
@@ -290,7 +290,7 @@ broken.ncel:3:3: error: morph 'm' requires a u: expression
 *Case id:* `v-morph-rings`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.4.0-draft"
 scene S {
   morph m(tone: 0, u: 0.5) { "0,0 4,0 0,4|8,8 4,0 0,4" => "0,0 8,0 0,8" }
@@ -312,7 +312,7 @@ broken.ncel:3:3: error: Morph 'm' pairs ring i with ring i, but its sides have 2
 *Case id:* `v-spec04-header`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.3.0-draft"
 film F(frames: 6) {
   frame 1..3 { layer a(tone: 0) { "0,0 4,0 0,4" } }
@@ -334,7 +334,7 @@ broken.ncel:3:3: error: frame-range requires northcel "0.4.0-draft" (this docume
 *Case id:* `v-opacity-old-header`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.3.0-draft"
 scene S {
   layer a(tone: 0, opacity: 0.5) { "0,0 4,0 0,4" }
@@ -356,7 +356,7 @@ broken.ncel:3:3: warning: opacity is a spec 0.4 attribute and is ignored in a '0
 *Case id:* `v-frame-range-overlap`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.4.0-draft"
 film F(frames: 10) {
   frame 0..5 { layer a(tone: 0) { "0,0 4,0 0,4" } }
@@ -379,7 +379,7 @@ broken.ncel:4:3: warning: Frame range 4..9 overlaps 0..5 (line 3); the later blo
 *Case id:* `p-nudge-vertex-integer`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.5.0-draft"
 scene S {
   nudge a(vertex: 1.9, dx: 2px)
@@ -401,7 +401,7 @@ broken.ncel:3:3: error: nudge vertex must be an integer
 *Case id:* `p-nudge-ring-integer`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.5.0-draft"
 scene S {
   nudge a(vertex: 0, ring: 0.7, dx: 2px)
@@ -423,7 +423,7 @@ broken.ncel:3:3: error: nudge ring must be an integer
 *Case id:* `v-nudge-negative`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.5.0-draft"
 scene S {
   nudge a(vertex: -1)
@@ -445,7 +445,7 @@ broken.ncel:3:3: error: Nudge 'a' ring/vertex must be >= 0
 *Case id:* `v-spec05-def-header`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.4.0-draft"
 scene S {
   def D {
@@ -469,7 +469,7 @@ broken.ncel:4:5: error: group requires northcel "0.5.0-draft" (this document dec
 *Case id:* `p-unexpected-char`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene BoilBad(width: 360, height: 210) {
@@ -494,7 +494,7 @@ broken.ncel:4:51: error: Unexpected character '.'
 *Case id:* `p-expected-token`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene HeaderBad(width: 320, height: 180 {
@@ -517,7 +517,7 @@ broken.ncel:3:41: error: Expected IDENT, got '{'
 *Case id:* `p-no-root`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 layer sky(color: #BFD8E8, rings: 1) { "0,0 1920,0 0,1080 -1920,0" }
@@ -538,7 +538,7 @@ broken.ncel:3:1: error: Expected 'scene' or 'film' declaration, got 'layer'
 *Case id:* `p-trailing-token`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene Trailing(width: 320, height: 180) {
@@ -563,7 +563,7 @@ broken.ncel:7:1: error: Unexpected trailing token 'extra'
 *Case id:* `p-scene-statement`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene SceneFrames(width: 320, height: 180, fps: 12) {
@@ -587,7 +587,7 @@ broken.ncel:5:3: error: Unknown scene statement 'frames'
 *Case id:* `p-film-statement`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 film FilmFrames(width: 320, height: 180, fps: 12) {
@@ -611,7 +611,7 @@ broken.ncel:4:3: error: Unknown film statement 'frames'
 *Case id:* `p-frame-statement`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 film FrameStmt(width: 320, height: 180, fps: 12, frames: 2) {
@@ -637,7 +637,7 @@ broken.ncel:6:5: error: Unknown frame statement 'frames'
 *Case id:* `p-unclosed-scene`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene Unclosed(width: 320, height: 180) {
@@ -660,7 +660,7 @@ broken.ncel:3:1: error: Unclosed 'scene' block
 *Case id:* `p-unclosed-def`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene DefUnclosed(width: 320, height: 180) {
@@ -683,7 +683,7 @@ broken.ncel:4:3: error: Unclosed 'def Mark' block
 *Case id:* `p-unclosed-film`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 film FilmOpen(width: 320, height: 180, fps: 12, frames: 2) {
@@ -705,7 +705,7 @@ broken.ncel:3:1: error: Unclosed 'film' block
 *Case id:* `p-unclosed-frame`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 film FrameOpen(width: 320, height: 180, fps: 12, frames: 2) {
@@ -729,7 +729,7 @@ broken.ncel:5:3: error: Unclosed 'frame' block
 *Case id:* `p-def-statement`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene DefUse(width: 320, height: 180) {
@@ -758,7 +758,7 @@ broken.ncel:8:5: error: Unsupported statement 'use' inside def block
 *Case id:* `p-attr-colon`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene AttrBad(width: 320, height: 180) {
@@ -781,7 +781,7 @@ broken.ncel:4:19: error: Expected ':' after attribute 'color'
 *Case id:* `p-palette-undefined`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene PaletteBad(width: 320, height: 180) {
@@ -805,7 +805,7 @@ broken.ncel:5:21: error: Undefined palette color '$blue'
 *Case id:* `p-unknown-function`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene FunBad(width: 320, height: 180) {
@@ -829,7 +829,7 @@ broken.ncel:5:20: error: Unknown function 'oklch'
 *Case id:* `p-expected-expression`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene ExprBad(width: 320, height: 180) {
@@ -852,7 +852,7 @@ broken.ncel:4:20: error: Expected expression, got ','
 *Case id:* `p-version-value`
 
 <!-- case-source -->
-```ncel
+```text
 northcel scene
 
 scene Bad(width: 320, height: 180) {
@@ -875,7 +875,7 @@ broken.ncel:1:10: error: Expected version string or number after 'northcel'
 *Case id:* `p-colour-value`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene Bad(width: 320, height: 180) {
@@ -898,7 +898,7 @@ broken.ncel:4:3: error: Invalid color attribute value
 *Case id:* `v-version`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "9.9.0"
 
 scene Bad(width: 320, height: 180) {
@@ -921,7 +921,7 @@ broken.ncel:1:1: error: Unsupported NorthCel version '9.9.0'. Supported: ('0.1',
 *Case id:* `v-canvas`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene TooWide(width: 9000, height: 360) {
@@ -944,7 +944,7 @@ broken.ncel:3:1: error: Canvas dimensions 9000x360 out of valid range [1..8192]
 *Case id:* `v-fps`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene FpsBad(width: 320, height: 180, fps: 0) {
@@ -967,7 +967,7 @@ broken.ncel:3:1: error: FPS 0 out of valid range [1..240]
 *Case id:* `v-precision`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene PrecBad(width: 320, height: 180, precision: 0.5px) {
@@ -990,7 +990,7 @@ broken.ncel:3:1: error: Unsupported precision '0.5px' (expected '0.25px', '0.25p
 *Case id:* `v-colour-channel`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene ColourBad(width: 320, height: 180) {
@@ -1013,7 +1013,7 @@ broken.ncel:4:3: error: Color channel r=300 out of range [0..255]
 *Case id:* `v-antialias`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene AaBad(width: 320, height: 180) {
@@ -1036,7 +1036,7 @@ broken.ncel:4:3: error: paper.antialias_grid must be 1, 2, 4, or 8 (got 3)
 *Case id:* `v-rings-warning`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene RingsWarn(width: 320, height: 180) {
@@ -1059,7 +1059,7 @@ broken.ncel:4:3: warning: Layer 'sky' declares rings: 3, but payload contains 1 
 *Case id:* `v-swarm-agents`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene SwarmBad(width: 320, height: 180) {
@@ -1082,7 +1082,7 @@ broken.ncel:4:3: error: Swarm 'dots' must have agents >= 1 (got 0)
 *Case id:* `v-swarm-empty`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene SwarmEmpty(width: 320, height: 180) {
@@ -1105,7 +1105,7 @@ broken.ncel:4:3: error: Swarm 'dots' payload decoded to 0 rings
 *Case id:* `v-swarm-ring`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene SwarmRing(width: 320, height: 180) {
@@ -1128,7 +1128,7 @@ broken.ncel:4:3: error: Swarm 'dots' has invalid ring payload: Ring 0: Decoded r
 *Case id:* `v-stroke-points`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene StrokeBad(width: 320, height: 180) {
@@ -1151,7 +1151,7 @@ broken.ncel:4:3: error: Stroke 'dot' requires at least 2 control points
 *Case id:* `v-stroke-width`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene WidthBad(width: 320, height: 180) {
@@ -1174,7 +1174,7 @@ broken.ncel:4:3: error: Stroke 'line' widths must be > 0
 *Case id:* `v-ribbon-points`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene RibbonBad(width: 320, height: 180) {
@@ -1197,7 +1197,7 @@ broken.ncel:4:3: error: Ribbon 'line' requires at least 2 (x, y, width) points
 *Case id:* `v-undefined-def`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene UseBad(width: 320, height: 180) {
@@ -1220,7 +1220,7 @@ broken.ncel:4:3: error: Use of undefined def block 'Wave'
 *Case id:* `v-film-frames`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 film FramesBad(width: 320, height: 180, fps: 12, frames: 0) {
@@ -1243,7 +1243,7 @@ broken.ncel:3:1: error: Film frames count must be >= 1 (got 0)
 *Case id:* `v-frame-range`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 film RangeBad(width: 320, height: 180, fps: 12, frames: 4) {
@@ -1268,7 +1268,7 @@ broken.ncel:6:3: error: Frame override index 6 out of range [0..3]
 *Case id:* `r-q25-pair`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene RingPair(width: 320, height: 180) {
@@ -1291,7 +1291,7 @@ broken.ncel:4:3: error: Layer 'sky' has invalid ring payload: Ring 0: Expected '
 *Case id:* `r-q25-noninteger`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene RingDecimal(width: 320, height: 180) {
@@ -1314,7 +1314,7 @@ broken.ncel:4:3: error: Layer 'sky' has invalid ring payload: Ring 0: Non-intege
 *Case id:* `r-q25-vertices`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene RingTwo(width: 320, height: 180) {
@@ -1337,7 +1337,7 @@ broken.ncel:4:3: error: Layer 'sky' has invalid ring payload: Ring 0: Decoded ri
 *Case id:* `r-b63-header`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene B63Head(width: 320, height: 180, precision: 0.25px-b63) {
@@ -1360,7 +1360,7 @@ broken.ncel:4:3: error: Layer 'sky' has invalid ring payload: Ring 0: Base-63 ri
 *Case id:* `r-b63-start`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene B63Start(width: 320, height: 180, precision: 0.25px-b63) {
@@ -1383,7 +1383,7 @@ broken.ncel:4:3: error: Layer 'sky' has invalid ring payload: Ring 0: Invalid Ba
 *Case id:* `r-b63-odd`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene B63Odd(width: 320, height: 180, precision: 0.25px-b63) {
@@ -1406,7 +1406,7 @@ broken.ncel:4:3: error: Layer 'sky' has invalid ring payload: Ring 0: Base-63 de
 *Case id:* `r-b63-pair`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene B63Pair(width: 320, height: 180, precision: 0.25px-b63) {
@@ -1429,7 +1429,7 @@ broken.ncel:4:3: error: Layer 'sky' has invalid ring payload: Ring 0: Invalid Ba
 *Case id:* `r-b63-vertices`
 
 <!-- case-source -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene B63Two(width: 320, height: 180, precision: 0.25px-b63) {

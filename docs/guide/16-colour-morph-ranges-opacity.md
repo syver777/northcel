@@ -93,7 +93,7 @@ together, not one through the other) and holds from frame 5.
 ## What goes wrong
 
 <!-- expect-error: 3:3: error: Morph 'm' pairs ring i with ring i, but its sides have 2 and 1 rings -->
-```ncel
+```text
 northcel "0.4.0-draft"
 scene Pair(width: 320, height: 180) {
   morph m(tone: 0, u: 0.5) { "0,0 40,0 0,40|80,80 40,0 0,40" => "0,0 80,0 0,80" }

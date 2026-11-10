@@ -78,7 +78,7 @@ good container for marks that need different motion. Use two swarms, or
 A swarm with no agents is rejected before rendering:
 
 <!-- expect-error: 4:3: error: Swarm 'rain' must have agents >= 1 (got 0) -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene SwarmBad(width: 480, height: 260) {

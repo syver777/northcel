@@ -77,7 +77,7 @@ override (page [8](08-films-and-frame-overrides.md)).
 reasonable and is rejected, because the renderer integrates a square grid.
 
 <!-- expect-error: 4:3: error: paper.antialias_grid must be 1, 2, 4, or 8 (got 3) -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene PaperBad(width: 520, height: 300) {

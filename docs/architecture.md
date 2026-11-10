@@ -298,11 +298,17 @@ published spec 0.4); the native runtime implements
 ## The docs check
 
 `docs/scripts/check_docs.py` is part of the architecture in a small way: it is the
-reason the documentation can be trusted. It extracts every `.ncel` fence from the
-guide, runs `check` and renders it with the reference, compares pixels against
+reason the documentation can be trusted. Every `ncel` fence in the root README,
+docs and example pages must pass the full reference `check`: no pseudo-code or
+intentional failures use that tag. Deliberate diagnostic inputs use `text`
+fences, with exact expected errors still checked. For marked guide examples it
+renders with the reference and compares pixels against
 `docs/scripts/expected.json`, renders every `examples/patterns/*.ncel` and its
 contact sheet, reproduces every diagnostic in [errors.md](errors.md), and verifies
 every relative link and image path. CI runs it on every push. A docs change that
 does not render cannot merge. The root README, current spec and agent-guide
 fences (including the offline-guide source) are also validated and every frame
-is rendered, so an ellipsis in a copyable example fails CI.
+is rendered, so an ellipsis in a copyable example fails CI. The
+[editable-drawing chapter](guide/17-editable-drawings.md) follows the same
+render-marker/manifest pipeline for all 25 frames of its five illustrations;
+they are not one-off screenshots.

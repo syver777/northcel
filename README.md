@@ -75,6 +75,13 @@ are kept separately until publication.
 
 ## First steps
 
+**Author changes, not subject recipes:** [editable drawings](docs/guide/17-editable-drawings.md)
+teaches observe → decompose → decide → edit the delta → verify → iterate, with
+five labelled illustrations (not templates). Start from a key, copy what stays,
+and change only the regions that need it. The AI decides per video; the language
+provides general operations and checks. This method needs the unreleased source
+tools described above; it is not a promise about the published install.
+
 **Unreleased 0.6.0 from source (spec 0.5):** addressable drawings — named `group` blocks with
 pivots, opacity, clipping and optional parenting; group-wide `transform`; a
 handle-based smooth `warp` for petals, cloth and squash; per-vertex `nudge`; and
@@ -121,6 +128,8 @@ through the labelled Python reference.
 
 - **[The writing guide](docs/guide/README.md)** — start here: install, first file,
   then every construct with a rendered example and its real diagnostic.
+- **[Editable-drawing method](docs/guide/17-editable-drawings.md)** — addressable
+  parts, key + delta frames, five different illustrations, and measured review.
 - **[Patterns cookbook](docs/patterns/README.md)** — twelve complete animated
   programs with contact sheets, sizes and pitfalls.
 - **[Common errors](docs/errors.md)** — every diagnostic, generated from the

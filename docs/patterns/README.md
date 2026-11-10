@@ -1,5 +1,12 @@
 # Patterns cookbook
 
+For the current delta-first authoring method, start with
+[editable drawings](../guide/17-editable-drawings.md) (source/unreleased). The
+programs below are historical language illustrations, **not subject templates**
+or a rig library. Choose regions and motion from the actual keys, not from the
+name of a pattern. In particular, automatic contour matching in pattern 12 is
+an optional tool, not the default in-between method.
+
 Twelve complete `.ncel` programs for AI-drawn video. Every file compiles, renders
 and has a contact sheet of all its frames. The point is not to copy these
 drawings; it is to copy the **structure** — when to use a `frame` override, when

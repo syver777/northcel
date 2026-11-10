@@ -75,7 +75,7 @@ The most common surgical-edit mistake is shortening the film later and leaving a
 override behind. The parser accepts it; validation rejects it:
 
 <!-- expect-error: 6:3: error: Frame override index 5 out of range [0..3] -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 film Shortened(width: 420, height: 240, frames: 4) {

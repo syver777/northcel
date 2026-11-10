@@ -74,7 +74,7 @@ A closed contour needs at least three vertices. A two-vertex ring is a line, not
 an area, and is rejected during ring decoding:
 
 <!-- expect-error: 4:3: error: Layer 'badge' has invalid ring payload: Ring 0: Decoded ring has only 2 vertices (< 3). -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene RingBad(width: 360, height: 260) {

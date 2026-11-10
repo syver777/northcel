@@ -92,7 +92,7 @@ Three things are worth noticing now, because every later page builds on them:
 most common first-file mistake: the parser does not know the statement there.
 
 <!-- expect-error: 5:3: error: Unknown scene statement 'frames' -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene FirstLight(width: 640, height: 360, fps: 12, precision: 0.25px, seed: 7) {
