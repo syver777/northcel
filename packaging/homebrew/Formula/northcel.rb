@@ -29,8 +29,8 @@ class Northcel < Formula
 
   desc "Drawing language for AI-drawn video; native MoonBit + Bend/HVM2 + GLSL"
   homepage "https://github.com/syver777/northcel"
-  url "https://files.pythonhosted.org/packages/25/74/01ed8525d5c2011e31531e0ee6910fb7715769c4b9d0009d8489c92fff34/northcel-0.5.0.tar.gz"
-  sha256 "70f0a40526676703972858e61729abb909cf6dcb12a9c513bcdba0ddadce52df"
+  url "https://files.pythonhosted.org/packages/ec/63/49f26294228eef023ff02ef65cacc1281e0cb56215b70a84079ebbb32477/northcel-0.6.0.tar.gz"
+  sha256 "ccb4357e908249242dfee045e4d79a70f37956a772ae1b0763d1276e3d5ec774"
   license any_of: ["MIT", "Apache-2.0"]
 
   depends_on arch: :x86_64
@@ -120,8 +120,8 @@ class Northcel < Formula
   end
 
   test do
-    assert_match "0.5.0", shell_output("#{bin}/northcel version")
-    assert_match "0.5.0", shell_output("#{bin}/ncel version")
+    assert_match "0.6.0", shell_output("#{bin}/northcel version")
+    assert_match "0.6.0", shell_output("#{bin}/ncel version")
     assert_match "\"ok\": true", shell_output("#{bin}/northcel doctor --json")
     system bin/"northcel", "verify"
 
