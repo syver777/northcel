@@ -53,17 +53,21 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
-      - name: Build the wheel
+      - name: Build the wheel (manylinux container)
+        if: startsWith(matrix.os, 'ubuntu')
+        uses: PyO3/maturin-action@v1
+        with:
+          working-directory: native/vello-python
+          target: ${{ matrix.target }}
+          manylinux: "2_28"
+          args: --release --locked -o ../../dist/vello
+      - name: Build the wheel (native host toolchain)
+        if: ${{ !startsWith(matrix.os, 'ubuntu') }}
         working-directory: native/vello-python
         shell: bash
         run: |
           python -m pip install --upgrade pip maturin
-          extra=""
-          case "${{ matrix.os }}" in
-            ubuntu*) extra="--manylinux 2_28" ;;
-          esac
-          maturin build --release --locked --target "${{ matrix.target }}" \
-            $extra -o ../../dist/vello
+          maturin build --release --locked --target "${{ matrix.target }}" -o ../../dist/vello
       - name: Import the built wheel (no GPU needed)
         shell: bash
         run: |
