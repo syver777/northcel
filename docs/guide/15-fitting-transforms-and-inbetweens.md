@@ -107,7 +107,7 @@ order and writes a spec 0.4 film (Python reference only). See
 ## What goes wrong
 
 <!-- expect-error: 3:3: error: transform.anchor requires 2 components -->
-```ncel
+```text
 northcel "0.3.0-draft"
 scene BadAnchor(width: 320, height: 180) {
   transform all(anchor: 3)

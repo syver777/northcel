@@ -292,7 +292,8 @@ def test_launcher_routes_spec04_documents_to_the_reference(tmp_path, monkeypatch
     usable, reason = launcher._native_or_reason([str(header_only)], "check")
     assert not usable and "declares spec 0.4.0-draft" in reason
     assert launcher._native_or_reason([str(old)], "render") == (True, None)
-    assert launcher._native_or_reason([str(headerless)], "render") == (True, None)
+    usable, reason = launcher._native_or_reason([str(headerless)], "render")
+    assert not usable and "defaults to spec 0.5.0-draft" in reason
 
 
 # ------------------------------------------------------------ assignment
@@ -341,8 +342,7 @@ def test_fit_stacked_on_a_synthetic_drawing():
     image = _figure()
     drawing, receipt = fit_stacked(image, palette=PALETTE, underpaint_min_area=50, name="Fig")
     kinds = [s.kind for s in drawing.shapes]
-    areas = [s.area for s in drawing.shapes]
-    assert areas == sorted(areas, reverse=True)
+    assert [s.z if s.z is not None else s.area for s in drawing.shapes] == sorted([s.z if s.z is not None else s.area for s in drawing.shapes], reverse=True)
     assert kinds.count("gap") == 1 and kinds.count("underpaint") == 1
     gap = next(s for s in drawing.shapes if s.kind == "gap")
     under = next(s for s in drawing.shapes if s.kind == "underpaint")
@@ -370,7 +370,7 @@ def test_fit_cli_stacked(tmp_path):
     pal.write_text(json.dumps(PALETTE))
     out = tmp_path / "fig.ncel"
     assert main([str(img), "-o", str(out), "--stacked", "--palette", str(pal), "--ink", "#0A0A0A"]) == 0
-    assert errors(out.read_text()) == [] and "layer s000(" in out.read_text()
+    assert errors(out.read_text()) == [] and "layer s" in out.read_text()
 
 
 def _stacked(image, name):

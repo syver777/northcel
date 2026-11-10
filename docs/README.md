@@ -8,8 +8,9 @@ the frames.
 - **Commands:** `northcel` (short alias `ncel`)
 - **Packages:** `northcel` on PyPI and npm (plus the `northcel-native` /
   `northcel-linux-x64` platform artifacts)
-- **Version:** tools `0.5.0`; specification `0.4.0-draft` (the native runtime 0.4.0
-  implements `0.3.0-draft`; spec 0.4 documents use the Python reference). Earlier
+- **Source / unreleased:** tools `0.6.0`; specification `0.5.0-draft` (the native runtime 0.4.0
+  implements `0.3.0-draft`; spec 0.4/0.5 documents use the Python reference).
+  **Published:** tools `0.5.0` / spec `0.4.0-draft`. Earlier
   history: tools `0.4.0` / spec `0.3.0-draft`, then tools `0.3.1` / spec
   `0.2.0-draft` (backward compatible with `0.1.0-draft`)
 - **Source:** <https://github.com/syver777/northcel>
@@ -18,14 +19,15 @@ the frames.
 
 | If you want to… | Read |
 | --- | --- |
-| learn the language in order | **[The writing guide](guide/README.md)** — 16 numbered pages, every construct with a rendered example and its real diagnostic |
+| learn the language in order | **[The writing guide](guide/README.md)** — 16 published-compatible pages plus the source-only method chapter |
+| make deliberate changes between keys | **[Editable drawings](guide/17-editable-drawings.md)** — observe → decompose → decide → edit → verify → iterate; five illustrations, not templates (source/unreleased) |
 | copy a working animation | **[Patterns cookbook](patterns/README.md)** — twelve complete programs with contact sheets, sizes and pitfalls |
 | see what it looks like | **[Gallery](gallery.md)** |
 | fix an error message | **[Common errors](errors.md)** — generated from the source, reproduced in CI |
 | understand the runtime | **[Architecture](architecture.md)** — grammar → swarms → pixels, determinism, platforms |
 | have an AI agent author `.ncel` | **[AI-agent guide](agent-guide.md)** |
 | look up a CLI flag or the check contract | **[Format & tooling reference](reference.md)** |
-| read the normative grammar | [Specification `0.4.0-draft`](spec/SPEC-0.4.0-draft.md) (complete; archival [`0.3.0-draft`](spec/SPEC-0.3.0-draft.md), [`0.2.0-draft`](spec/SPEC-0.2.0-draft.md), [`0.1.0-draft`](spec/SPEC-0.1.0-draft.md)) |
+| read the normative grammar | [Specification `0.5.0-draft`](spec/SPEC-0.5.0-draft.md) (source/unreleased additions to [`0.4.0-draft`](spec/SPEC-0.4.0-draft.md), the published spec; archival [`0.3.0-draft`](spec/SPEC-0.3.0-draft.md), [`0.2.0-draft`](spec/SPEC-0.2.0-draft.md), [`0.1.0-draft`](spec/SPEC-0.1.0-draft.md)) |
 | see what the examples measure | [Examples & measurements](examples.md) |
 | understand why it is built this way | [Decision log](DECISIONS.md) |
 | get a short answer | [FAQ](faq.md) |
@@ -56,6 +58,7 @@ Project-level documents live in the repository root:
 | 14 | [Editing one frame surgically](guide/14-editing-one-frame.md) | the delta recipe |
 | 15 | [Fitting, transforms and in-betweens](guide/15-fitting-transforms-and-inbetweens.md) | offline fitting, transforms, easing, tween |
 | 16 | [Colour expressions, morph, frame ranges and opacity](guide/16-colour-morph-ranges-opacity.md) | `mix`, `morph`, `frame A..B`, `opacity` |
+| 17 | [Editable drawings](guide/17-editable-drawings.md) | source-only spec 0.5: ids, groups, key + delta, warp, clip, nudge, verification |
 
 [`tutorial.md`](tutorial.md) points to the matching guide pages.
 [`reference.md`](reference.md) covers the CLI and the validation contract; the
@@ -70,28 +73,42 @@ $ python docs/scripts/build_docs_assets.py   # render every image + write expect
 $ python docs/scripts/check_docs.py          # verify snippets, images, errors, links
 ```
 
-`check_docs.py` extracts every `.ncel` snippet from the guide, runs `northcel
-check` and renders it, compares the pixels with the committed expectation,
+`check_docs.py` validates every `ncel` fence in the README, docs and example
+pages. These fences are complete valid programs, never pseudo-code or deliberate
+failures. Negative diagnostic examples use `text` fences and remain checked
+against their exact expected errors. The checker renders the guide's marked
+examples, compares the pixels with the committed expectation,
 renders every `examples/patterns/*.ncel` and its contact sheet, reproduces every
 diagnostic in [errors.md](errors.md), and verifies every relative link and image
 path. The `docs` job in CI runs it on every push, so a snippet that does not
 render, an image that does not match its source, and a dead link all fail the
-build. See [architecture](architecture.md#the-docs-check).
+build. It also checks and renders every frame of each `ncel` fence in the root
+README, current spec and agent guide (including the packaged-guide source).
+See [architecture](architecture.md#the-docs-check).
 
 ## One command, two implementations
 
-`pip install northcel` (or Homebrew) installs the current 0.5.0 CLI. It runs the
+`pip install northcel` (or, on Linux x86_64, Homebrew) installs the current
+**0.5.0** CLI (spec 0.4). **0.6.0 / spec 0.5 is source-only and unreleased**:
+install this checkout with `python3 -m pip install -e './python[fit]'` in a venv
+before using its 0.5-spec examples. The writing guide's 0.4 examples work with
+the published install. **Homebrew is not a macOS path**: the formula requires Linux x86_64;
+macOS users should use `pipx install northcel` or `pip install northcel` and get
+the labelled Python reference. The installation runs the
 **native runtime** where it can (Linux x86_64: MoonBit typed AST, Bend/HVM2
 swarms, GLSL 4.30 on Mesa/EGL) and the **Python reference implementation**
 elsewhere, always labelled `python-reference` — never called native.
 
-**npm:** the npm package currently ships the older **0.4.0** launcher. For 0.5.0,
-use PyPI or Homebrew; npm is not the recommended install for this version. The npm
+**npm:** the npm package currently ships the older **0.4.0** launcher. For published
+0.5.0 use PyPI or Homebrew, not npm. The source npm
 launcher can also answer `check` with a zero-dependency **structural pre-check**.
 
 That npm pre-check answer is always marked `PARTIAL`; it never claims a document
 is valid. See the [validation contract](reference.md#validation-contract) and
 [the npm package README](../js/northcel/README.md).
+
+[Phase 7 release copy](release-0.6.0.md) must not replace these published-version
+instructions until the new artifacts and install pins have been verified.
 
 North Noir (the studio that uses NorthCel) is a separate product: no hosted
 NorthCel Studio, API or MCP support is implied by this repository.

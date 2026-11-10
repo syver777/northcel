@@ -146,15 +146,16 @@ class Precheck {
           if (Number(hi.value) < Number(lo.value)) this.fail(`Frame range ${lo.value}..${hi.value} is reversed`, lo);
         }
         this.body("frame", new Set(palette), precision);
-      } else if (t.value === "use" || t.value === "drop" || t.value === "transform") {
+      } else if (["use", "drop", "transform", "warp", "nudge"].includes(t.value)) {
         this.kind("ident");
-        if ((t.value === "use" || t.value === "transform") && this.cur().value === "(") this.attrs(palette);
+        if (["transform", "warp", "nudge"].includes(t.value)) this.attrs(palette);
+        else if (t.value === "use" && this.cur().value === "(") this.attrs(palette);
         this.match(";");
       } else {
         const name = this.kind("ident");
-        if (t.value === "def") {
+        if (t.value === "def" || t.value === "group") {
           if (this.cur().value === "(") this.attrs(palette);
-          this.body("def", palette, precision);
+          this.body(t.value, palette, precision);
           continue;
         }
         if (names.has(name.value)) this.warn(name, `Duplicate primitive name '${name.value}': layers/cels replace; strokes/ribbons append. Verify intent.`);
@@ -205,7 +206,7 @@ class Precheck {
     } else if (["hex", "string", "unit"].includes(this.cur().kind)) this.take();
     else if (this.match("(")) {
       this.value(palette);
-      while (this.match(",")) this.value(palette);
+      while (this.match(",") && this.cur().value !== ")") this.value(palette);
       this.expect(")");
     } else if (this.cur().value === "mix" && this.tokens[this.i + 1].value === "(") {
       // Spec 0.4 colour expression mix(colourA, colourB, u).
@@ -263,8 +264,26 @@ function spec04Features(source) {
     if (t.kind === "ident" && t.value === "mix" && next.value === "(") found.add("mix");
     if (t.kind === "ident" && t.value === "opacity" && (next.value === ":" || next.value === "=")) found.add("opacity");
     if (t.value === "..") found.add("frame-range");
-    if (i === 1 && tokens[0].value === "northcel" && /^"?0\.(?:[4-9]|\d\d)/.test(t.value)) found.add("spec-0.4-header");
+    if (i === 1 && tokens[0].value === "northcel" && /^0\.4(?:\.|$)/.test(t.value.replaceAll('"', ''))) found.add("spec-0.4-header");
   });
+  return [...found].sort();
+}
+
+// Token-shape routing only, not a semantic validator. Headerless documents use
+// the current reference spec even if their statements also exist in spec 0.3.
+function spec05Features(source) {
+  let tokens;
+  try { tokens = tokenize(source); } catch (err) { return []; }
+  const found = new Set();
+  tokens.forEach((t, i) => {
+    if (t.kind === "ident" && ["group", "warp", "nudge"].includes(t.value)
+        && tokens[i + 1]?.kind === "ident") found.add(t.value);
+    const minor = /^0\.(\d+)(?:\.|$)/.exec(t.value.replaceAll('"', ''));
+    if (i === 1 && tokens[0].value === "northcel" && minor && Number(minor[1]) >= 5) {
+      found.add(`spec-${t.value.replaceAll('"', '')}-header`);
+    }
+  });
+  if (["scene", "film"].includes(tokens[0].value)) found.add(`headerless-spec-${CONFIG.SPEC_VERSION}`);
   return [...found].sort();
 }
 
@@ -281,6 +300,9 @@ function checkNcelSource(source) {
     result.errors.push(err.message);
   }
   result.ok = result.errors.length === 0;
+  if (spec05Features(source).length) {
+    result.next = "Install tools 0.6.0 from this source checkout (unreleased): `python3 -m pip install -e ./python` at the repository root in a venv; then run `northcel check <file.ncel> --require-full`. Published pip tools 0.5.0 only supports spec 0.4.";
+  }
   return result;
 }
 
@@ -291,4 +313,5 @@ module.exports = {
   decodeRingsPayload,
   checkNcelSource,
   spec04Features,
+  spec05Features,
 };

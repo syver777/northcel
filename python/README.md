@@ -4,6 +4,12 @@ This directory is one Python distribution: the **normative reference implementat
 (parser, semantic validator, formatter, CPU renderer) *and* the **launcher** that
 runs the native runtime whenever the platform supports it.
 
+**This checkout is tools 0.6.0 / spec 0.5, source-only and unreleased.** Published
+`pip install northcel` still installs **0.5.0** (spec 0.4); Homebrew/install.sh
+also ship 0.5.0 and npm is 0.4.0. To run `group`, `warp`, `nudge` and `shapes`,
+install this checkout in a venv with `python3 -m pip install -e './python[fit]'`
+from the repository root. Do not feed spec-0.5 examples to a published install.
+
 ```
 pip install northcel        # installs this package + the northcel-native bundle
 northcel doctor             # stages, exact versions, platform verdict
@@ -44,7 +50,8 @@ or double lines: inspect every inserted drawing and keep a hold when it looks ba
    **GLSL 4.30**, compiled by the **Mesa/EGL** driver (llvmpipe, no GPU),
    rasterises the normative `aa×aa` even-odd integration.
 2. **Python reference** — this package's own renderer, used only where the native
-   stages cannot run. It prints one line to stderr and labels the result
+    stages cannot run or the document needs a newer spec (including headerless
+    documents, spec 0.5 in this checkout). It prints a notice to stderr and labels the result
    `python-reference`. Nothing is ever silently substituted.
 3. **`check` only:** the zero-dependency JS pre-check in the npm package, clearly
    labelled `PARTIAL`. It never reports a document as valid.

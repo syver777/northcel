@@ -32,6 +32,15 @@ usage: northcel <command> [options]        (short alias: ncel)
   verify  [--json] [--keep DIR]        render the bundled fixtures with the native runtime
   check   FILE [--json]                parse + validate (native when available)
   info    FILE [--json]                scene/film metadata, layers, rings, vertices
+  shapes  FILE [--frame N] [--ids …] [--color …] [--area-min …]
+                                       list/query evaluated shapes with stable ids
+  diff    FILE --against IMAGE […]   render vs reference error, per group/region, heatmap
+  onion   FILE -o OUT.png […]        onion-skin neighbouring frames or a reference
+  contact FILE -o OUT.png|DIR […]    contact sheet(s), optionally one per transition
+  continuity FILE --group NAME […]   per-frame bbox/scale/position continuity
+  distinct FILE […]                  distinct frames/s (320x180 film-proof metric)
+  perceive <segment|vectorize|flow|guide> […] --out PATH [--json]
+                                       optional offline helpers; tools suggest, the AI decides
   render  FILE [-o OUT.png] [--frame N] [--seed N] [--json]
   film    FILE -o OUTDIR [--frames 0..5] [--mp4 OUT.mp4] [--json]
   fmt     FILE [-w|--write] [--check]  canonical formatting (Python reference)
@@ -45,8 +54,8 @@ usage: northcel <command> [options]        (short alias: ncel)
   version, --version                   versions (native runtime + spec)
 
 Global: --no-native  force the labelled Python reference path (never called "native")
-Spec 0.4 documents (mix, morph, opacity, frame A..B) always use the labelled Python
-reference: the native runtime 0.4.0 implements spec 0.3.
+Spec 0.4/0.5 documents (mix, morph, opacity, frame A..B, groups, warp, nudge) always
+use the labelled Python reference: the native runtime 0.4.0 implements spec 0.3.
 Platform: Linux x86_64, glibc >= 2.39, Mesa EGL/llvmpipe. macOS/Windows are not
 supported natively in this release; `northcel doctor` explains exactly what is
 missing and every render there is labelled `python-reference`.
@@ -93,13 +102,14 @@ NATIVE_SPEC_MINOR = 3
 
 
 def spec04_reason(args: list[str]) -> str | None:
-    """Why a document must use the reference: it needs spec 0.4, which native 0.4.0 lacks.
+    """Why a document must use the reference: its interpreted spec exceeds native 0.3.
 
     The native runtime implements spec 0.3. A document that uses `mix`, `morph`,
-    `frame A..B` or `opacity`, or that declares a 0.4 header, is routed to the
+    `frame A..B`, `opacity`, `group`, `warp` or `nudge`, or has a 0.4+ spec, is routed to the
     labelled Python reference instead of being rendered (or rejected) by a runtime
-    that does not know those rules. Files the reference cannot parse go to native
-    unchanged, so diagnostics stay the native ones.
+    that does not know those rules. Old-spec files the reference cannot parse go
+    to native unchanged. Newer/headerless files keep reference syntax diagnostics.
+    Headerless files use the current spec, not the native runtime's older default.
     """
     files = [a for a in args if not a.startswith("-")]
     if not files:
@@ -108,22 +118,35 @@ def spec04_reason(args: list[str]) -> str | None:
         from pathlib import Path
 
         from ..parser import NorthCelSyntaxError, parse_ncel, tokenize
-        from ..validator import spec04_features, spec_minor
+        from ..validator import spec04_features, spec05_features, spec_minor
 
         source = Path(files[0]).read_text(encoding="utf-8")
-        doc = parse_ncel(source)
-        declared = tokenize(source)[0].value == "northcel"
+        tokens = tokenize(source)
+        declared = tokens[0].value == "northcel"
     except (OSError, UnicodeDecodeError, NorthCelSyntaxError, ValueError):
         return None
-    features = sorted({name for name, _line, _col in spec04_features(doc)})
+    try:
+        doc = parse_ncel(source)
+    except (NorthCelSyntaxError, ValueError):
+        doc = None
+    if doc:
+        version = doc.spec_version
+    elif declared:
+        version = tokens[1].value.strip('"')
+    else:
+        version = SPEC_VERSION if tokens[0].value in ("scene", "film") else "0.3"
+    features = sorted({name for name, _line, _col in spec04_features(doc)}
+                      | {name for name, _line, _col in spec05_features(doc)}) if doc else []
     if features:
+        label = "spec 0.4/0.5 features" if any(f in ("group", "warp", "nudge") for f in features) else "spec 0.4 features"
         return (
-            f"{files[0]} uses spec 0.4 features ({', '.join(features)}); the native runtime "
+            f"{files[0]} uses {label} ({', '.join(features)}); the native runtime "
             f"{NATIVE_RUNTIME_VERSION} implements spec 0.3 only"
         )
-    if declared and spec_minor(doc.spec_version) > NATIVE_SPEC_MINOR:
+    if spec_minor(version) > NATIVE_SPEC_MINOR:
+        interpretation = "declares" if declared else "defaults to"
         return (
-            f"{files[0]} declares spec {doc.spec_version}; the native runtime "
+            f"{files[0]} {interpretation} spec {version}; the native runtime "
             f"{NATIVE_RUNTIME_VERSION} implements spec 0.3 only"
         )
     return None
@@ -221,6 +244,8 @@ def main(argv: list[str] | None = None) -> int:
     if command == "tween":
         from ..tween import main as tween_main
         return tween_main(rest)
+    if command == "perceive":
+        return fallback.delegate(["perceive", *rest])
 
     if command in {"--version", "version", "-V"}:
         print(_version_line())
@@ -238,6 +263,13 @@ def main(argv: list[str] | None = None) -> int:
         return _passthrough("check", rest)
     if command == "info":
         return _passthrough("info", rest)
+    if command == "shapes":
+        return fallback.delegate(["shapes", *rest])
+    if command in {"diff", "onion", "contact", "continuity", "distinct"}:
+        # Verification tools are reference-only CPU tools; they are not native stages.
+        # Consume launcher routing flags before delegating to the reference parser.
+        _pop_flag(rest, "--no-native", "--python")
+        return fallback.delegate([command, *rest])
 
     if command == "fmt":
         # The native runtime has no formatter; formatting is the Python reference.

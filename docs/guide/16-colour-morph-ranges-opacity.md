@@ -1,6 +1,7 @@
 # 16. Colour expressions, morph, frame ranges and opacity
 
-Tools 0.5.0 implements spec [0.4.0-draft](../spec/SPEC-0.4.0-draft.md). These four
+Published tools 0.5.0 implements spec [0.4.0-draft](../spec/SPEC-0.4.0-draft.md).
+These constructs also work in source/unreleased tools 0.6.0 / spec 0.5. These four
 constructs let one film hold each drawing once and describe the frames between
 drawings as expressions, instead of a separate scene per frame.
 
@@ -92,7 +93,7 @@ together, not one through the other) and holds from frame 5.
 ## What goes wrong
 
 <!-- expect-error: 3:3: error: Morph 'm' pairs ring i with ring i, but its sides have 2 and 1 rings -->
-```ncel
+```text
 northcel "0.4.0-draft"
 scene Pair(width: 320, height: 180) {
   morph m(tone: 0, u: 0.5) { "0,0 40,0 0,40|80,80 40,0 0,40" => "0,0 80,0 0,80" }

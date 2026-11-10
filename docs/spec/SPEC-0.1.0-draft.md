@@ -175,4 +175,4 @@ The official conformance suite lives in `python/northcel/conformance/` (`conform
 The following features are **not** part of `0.1.0-draft` and are scheduled for `0.2.0`:
 - **Hierarchical Joint Rigs (`rig` / `joint`):** Forward/inverse 2D bone chains with angle inheritance.
 - **Smooth SDF Boolean Blends (`smin`):** Polynomial smooth-minimum blending between overlapping washes.
-- **Procedural Audio Cues (`cue`):** Embedded frame-accurate sound effect triggers for `northnoir mix`.
+- **Procedural Audio Cues (`cue`):** A future proposal for frame-accurate sound effect triggers for external audio assembly; not implemented by the drawing language.

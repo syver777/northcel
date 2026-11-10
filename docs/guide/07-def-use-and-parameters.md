@@ -89,7 +89,7 @@ palette first (page [4](04-palette-and-colour.md)).
 `use` must name a def declared in the same scene, film or frame body:
 
 <!-- expect-error: 4:3: error: Use of undefined def block 'Wave' -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene UseBad(width: 480, height: 260) {

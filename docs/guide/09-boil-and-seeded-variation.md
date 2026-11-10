@@ -73,7 +73,7 @@ Numbers in NorthCel may be unitless or carry `px`/`px-b63`/`deg`, but they must
 start with a digit. A leading dot is not accepted:
 
 <!-- expect-error: 4:51: error: Unexpected character '.' -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene BoilBad(width: 360, height: 210) {

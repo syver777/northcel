@@ -1,11 +1,17 @@
-# NorthCel quick agent guide — tools 0.5.0, spec 0.4.0-draft
+# NorthCel quick agent guide — tools 0.6.0 (source/unreleased), spec 0.5.0-draft
+
+Published pip/Homebrew/install.sh installs are tools **0.5.0** (spec 0.4); npm is
+**0.4.0**. Spec-0.5 constructs below require this source checkout installed in a
+venv with `python3 -m pip install -e './python[fit]'`. Do not feed its 0.5 examples
+to published 0.5.0. Start new source-authored files at `northcel "0.5.0-draft"`;
+choose an older explicit header only for intentional compatibility.
 
 Discover this guide offline with `northcel guide` (or `npx northcel guide`). The
 npm package runs the native runtime on Linux x86_64 and otherwise falls back to the
 Python reference, with a zero-dependency **partial JS pre-check** for `check` when
 neither is available. There is no JavaScript renderer.
 
-## Start here (a complete 3-second film)
+## Start here (a complete 3-second film, published-compatible spec 0.4)
 
 ```ncel
 northcel "0.4.0-draft"
@@ -32,7 +38,9 @@ Never put expressions inside a quoted ring: move it with `translate: (x, y)`.
 ## Five language features to combine
 
 1. **Reusable shapes:** `def Mark(dx: 0, dy: 0) { stroke line(width: 2) { (0, 0), (8, 4) } }`
-   then `use Mark(dx: 20, dy: 30)`. Only primitives inside `def`, not nested `use`.
+   then `use Mark(dx: 20, dy: 30)`. In 0.5, defs may also contain groups,
+   transforms, warps and nudges; groups may contain `use`. Top-level nested `use`
+   in a def is still unsupported.
    `dx/dy` auto-translate expanded geometry; don't also add them to coordinates.
    Same-named cels in repeated uses replace one another; use distinct named defs
    for independent cel instances (stroke/ribbon uses append).
@@ -59,23 +67,43 @@ Never put expressions inside a quoted ring: move it with `translate: (x, y)`.
    numeric ranges, expression evaluation, def resolution and render quality remain unchecked.
 2. Run `npx northcel check film.ncel --require-full --json` before claiming full
    validation. Exit 2 = no full validator (clean partial); exit 1 = detected error;
-   exit 0 = Python full check succeeded. Install `pipx install northcel` (or
-   `pip install northcel` in a venv), expose its Python CLI on PATH, then repeat.
+   exit 0 = Python full check succeeded. For spec 0.4 install `pipx install northcel`
+   (or `pip install northcel` in a venv); for spec 0.5 install this unreleased
+   source checkout as above. Expose its Python CLI on PATH, then repeat.
    The npm bridge finds importable Python modules or pipx-style Python entrypoints.
    Never suppress exit 2 or call a partial check fully validated.
 3. Python: `northcel render film.ncel -o frame0.png --frame 0`, inspect the PNG;
    `northcel film film.ncel -o frames/ --mp4 preview.mp4`, inspect first/middle/last
    and transition frames. ffmpeg is required for MP4; verify the MP4 exists.
-   Render samples in reverse order and compare native RGB hashes for determinism.
+   Render samples in reverse order and compare decoded RGB hashes for determinism.
 4. Fix the named block that is wrong, preserve good parts, render again; up to
    three look-and-fix rounds. `northcel fmt -w film.ncel` canonicalizes it.
    Full validation is not a visual-quality or runtime-expression guarantee.
 
-Alternatively install `pip install "northnoir[ncel]"` and use
-`northnoir init ink --language ncel --duration 3 --fps 24`,
-`northnoir check ink/scene.ncel`, `northnoir render ink/scene.ncel -o ink/video.mp4`.
-This is an explicit optional local path; JavaScript `scene.html` stays the default.
 NorthCel films are silent; there is no native audio engine or hosted NorthCel API.
+
+## Default method: editable drawings, not subject recipes
+
+**Observe → decompose → decide (copy / move / warp / recolour / redraw) → edit
+the delta → verify → iterate.** Inspect both keys and choose the regions yourself.
+Copy unchanged geometry with `def`/`use`; group only what needs a shared edit.
+Use pivoted `transform`, constrained `warp`, per-vertex `nudge`, `mix` colours or
+`clip` as observations require. Rigging/parenting is optional, not a subject
+library. Redraw only missing information such as a new angle/pose/unseen prop;
+failed correspondence alone does not establish that a redraw is necessary.
+
+Run `northcel diff` and `northcel onion` against both key images, inspect
+`northcel contact`, query `northcel continuity FILE --group NAME --json`, and run
+`northcel distinct FILE --json` over the complete final film. Measurements are
+reference-only and advisory: group diff uses bboxes, continuity uses unclipped
+geometry/bbox centres and flags only >8% height jumps, onion can miss
+equal-luminance colour changes, and distinct counts changed adjacent samples
+(not globally unique images), excluding the first frame. Render every authored
+frame; a check or measurement exit 0 does not approve its appearance.
+
+The online writing guide's chapter 17 has five different labelled illustrations,
+not templates: a modest turn (copy/transform), sway (fixed/moving warp handles
+and pivot), colour flood (`mix`), squash (nonuniform scale) and ripple (clip/nudge).
 
 ## Common mistakes
 
@@ -125,3 +153,42 @@ writes painter's-order shapes; `northcel tween a.ncel b.ncel -o t.ncel --match
 receipt: below `--min-match`/`--max-displacement` it cuts (or `--fallback
 dissolve`). A match proves no anatomy: a crouch→jump needs a drawn key. Inspect
 every in-between; unmatched shapes pop at u = 0.5.
+
+## Addressable edits (spec 0.5, source/unreleased Python reference)
+
+This complete illustration uses general constructs, not a subject preset:
+
+```ncel
+northcel "0.5.0-draft"
+film Edit(width: 64, height: 64, fps: 12, frames: 3) {
+  paper { color: #FFFFFF }
+  def Key {
+    group part(pivot: (32, 32)) {
+      layer mark(color: #2060A0) { "80,80 96,0 0,96 -96,0" }
+    }
+  }
+  frame 0 { use Key }
+  frame 1 { use Key; transform part(rotate: 10) }
+  frame 2 {
+    use Key
+    warp part(handles: ((32, 32, 2, -1),), radius: 40)
+    nudge mark(vertex: 0, ring: 0, dx: 1px)
+  }
+}
+```
+
+Groups may nest, use `opacity`, clip to a named entry/group (`clip: mask`) or
+join a parent transform path (`parent: other`). The group pivot is used unless
+`transform` specifies `anchor`. `warp` blends handle offsets with smooth bounded
+falloff; `nudge` offsets one zero-based integer vertex/ring after painting.
+Unknown targets and out-of-range indices are located evaluation errors: render,
+do not rely on a static `check` alone. A frame delta reuses `use Key` and changes
+only the named geometry.
+
+`northcel fit drawing.png --stacked -o drawing.ncel --receipt drawing.json` gives
+each emitted layer a stable id (`s` + 10 SHA-1 hex digits, suffixed on collision)
+and adds `shape_manifest` rows. Inspect with `northcel shapes drawing.ncel`,
+`northcel shapes drawing.ncel --ids ID`, or filter with `--color`, `--area-min`,
+`--bbox x0,y0,x1,y1`, `--centroid x,y,r`, `--parent ID` or `--mask IMAGE`.
+The rows describe evaluated geometry, not semantic parts. Both launchers route
+0.4/0.5 (also headerless) documents to Python; JS-only `check` stays PARTIAL.

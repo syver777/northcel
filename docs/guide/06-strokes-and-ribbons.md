@@ -83,7 +83,7 @@ ends are flat cuts of the offset polygon.
 A single point has no direction, so no width can be applied:
 
 <!-- expect-error: 4:3: error: Stroke 'dot' requires at least 2 control points -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene StrokeBad(width: 480, height: 260) {

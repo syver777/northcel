@@ -329,6 +329,151 @@
       "page": "docs/guide/16-colour-morph-ranges-opacity.md",
       "pixel_sha256": "06e99b74049c9b9c70fddc2c7399850571f045dbaf087a5814a0d175046093ec",
       "width": 1310
+    },
+    "assets/guide/17-cloud-squash.png": {
+      "block": 3,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "c77acda8fc6728e51d21d43051f1885f6906b014b7d99e2f16c9c95b8b19aa41"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "20f95db18ad1dc692c32cc99c33696aabde533336b48b82bb74b48365dc90db0"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "4d3979539d9613a80e7380221d42a2ac37e42ba5163ad635ed1d9eb282d6f6c2"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "885f84f6663459925e638e8d58fbb097a3ae73394274aff56302656b35e46e56"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "1348f139cfff31c94de0c75a9ea440333e3d1057cc5ef13bbf76ba66483937d4"
+        }
+      ],
+      "height": 112,
+      "page": "docs/guide/17-editable-drawings.md",
+      "pixel_sha256": "d9518df6fa6ae7d4f4718b4b887824afaa8759399521e8ca4999b52bec2e8171",
+      "width": 836
+    },
+    "assets/guide/17-colour-flood.png": {
+      "block": 2,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "521ade2a5ef6f55d2ba34a3a61a5761b06f3a177fde5fe2afbfd2fa8157507f3"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "2c3397210d1aef3aa489f2a8c28d35ffe971291879f33f4b01759fdf186cb5bf"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "56ef2d28454b94884e39a8c7ba55c88f3bbad9c2a82153c143e529011d6da08f"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "2efd210c7ddb6e46eeeb89f42c0cf2d9ed3ea3bff08a77729ea77af4fdc6cf86"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "c58177ea37e5cce0c3b0edb8d73fb094fd55ad019e7bd9cafb9f520fa302a71e"
+        }
+      ],
+      "height": 112,
+      "page": "docs/guide/17-editable-drawings.md",
+      "pixel_sha256": "a81231a91ba3f24ab4342964cf4d9fd3a41ff1a27f7551be88a49ce634c364b6",
+      "width": 836
+    },
+    "assets/guide/17-flower-sway.png": {
+      "block": 1,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "3e51f46b5b1844999a5b1747a1d188fc8b6cf9e7116d658e41ca3871d5c6e610"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "d734fc408d2de4ff8dd748cb99804b05b3be2458ad1c2fb9836de071eb85b1ff"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "a24b292e8449239edf61a44d59a3fdd0b2bd7fc60372c356e45530aa04da1101"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "fbfcf974b38ca2dd5b90f45ec09ee1ecc941fa35d0c1eb386bf4b6ca9baf7467"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "b4217e3db02323e1965f72102f3b73dc689f38581912b0a873072b437f1039c2"
+        }
+      ],
+      "height": 112,
+      "page": "docs/guide/17-editable-drawings.md",
+      "pixel_sha256": "f690e2e9c9ea28dbbdf284499ac0a244252ddf7f348ab006a8e3a42332b64386",
+      "width": 836
+    },
+    "assets/guide/17-head-turn.png": {
+      "block": 0,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "7742e99d20fd70e150a8cad0c0f7d2851b2f208bba10f62e6c9251882424cd8e"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "cb41e4a9abc0d53c309c26f5f92b0cc6c96b16afe6633fcfab3d7b286d6d58e8"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "fe9924c05013554824a3bf8efe89f948fe0e8024cc6dcc1b88cf429962a98e64"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "181fdb3014bdc19b18ae1f137f3634bd90f6fbea55a1272edd953a4038be6487"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "564bba4487c8bf8ede5974ccc11bcba70f61816c77d05faaa977ac4a536daeb8"
+        }
+      ],
+      "height": 112,
+      "page": "docs/guide/17-editable-drawings.md",
+      "pixel_sha256": "06144d891202dde5e00fd082707083fc2cd48e8ad4b67dbb0bbcf8c0c0681a02",
+      "width": 836
+    },
+    "assets/guide/17-water-ripple.png": {
+      "block": 4,
+      "frames": [
+        {
+          "index": 0,
+          "pixel_sha256": "5da4e47e7280345f7cf2d79de4c3f1fbe099d0580c4260279f253c4f85778abc"
+        },
+        {
+          "index": 1,
+          "pixel_sha256": "e6196ac2fa8e98d45a565b9fb6f18ed1fcc6d4cad4537e28645c42ef9f09ea4b"
+        },
+        {
+          "index": 2,
+          "pixel_sha256": "876b5f913ed727a90d3f66baf3d7c149c6e712811cfed353455b1c2cd3099b58"
+        },
+        {
+          "index": 3,
+          "pixel_sha256": "b563f4a24bc772d0fc0733a1f8c293f7a650da6acd2d823ca86e3b78dc86afd0"
+        },
+        {
+          "index": 4,
+          "pixel_sha256": "52b5f96c9681ee8fa91501649d18a2b785d4eacf4f9308ac5857233a8c6b55f9"
+        }
+      ],
+      "height": 112,
+      "page": "docs/guide/17-editable-drawings.md",
+      "pixel_sha256": "d286acf445a18c2bc78a937b96e0918f81f1ca940f2447b9d45ebbc260da13f0",
+      "width": 836
     }
   },
   "patterns": {
@@ -878,5 +1023,5 @@
     }
   },
   "renderer": "python-reference",
-  "tool": "northcel 0.5.0"
+  "tool": "northcel 0.6.0"
 }

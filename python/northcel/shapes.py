@@ -23,7 +23,8 @@ characters, infer depth or judge the result.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import hashlib
+from dataclasses import dataclass, field, replace
 from typing import Iterable, Sequence
 
 import numpy as np
@@ -97,6 +98,11 @@ class Shape:
     ring: np.ndarray
     area: float
     kind: str = "region"  # "region", "gap" (paper seen through) or "underpaint"
+    #: Stable fit id (`s<sha1>`), assigned by `stack_planar` when absent.
+    id: str = ""
+    #: Paint order when it differs from area (gap/underpaint sit just under their
+    #: parent outer, before the real shapes inside it). None means use area.
+    z: float | None = None
 
     @property
     def centroid(self) -> np.ndarray:
@@ -166,8 +172,9 @@ def stack_planar(
 
     `labels` is an (H, W) integer array of indices into `label_colors`. When it
     is omitted, the planar map itself is rasterised to make it. Shapes are sorted
-    by decreasing area (stable); gap/underpaint shapes sort just after an outer
-    shape of the same area.
+    by decreasing paint order (stable). A gap or underpaint shape paints just
+    after its parent outer (``parent.area - 0.25``), so a real coloured shape
+    inside that hole is painted on top of it instead of being covered.
     """
     if labels is None:
         labels, label_colors = planar_labels(layers, paper, width, height)
@@ -200,20 +207,42 @@ def stack_planar(
     for c, r, a in holes:
         if a <= hole_min_area:
             continue
+        # The parent is the smallest same-colour outer containing this hole.
+        parent_area = None
+        centre = ring_centroid(r)
+        for oc, oring, oarea in outers:
+            if oc == c and oarea > a and point_in_ring(centre, oring):
+                if parent_area is None or oarea < parent_area:
+                    parent_area = oarea
+        order = parent_area - 0.25 if parent_area is not None else a - 0.5
         # Fractions per colour (a palette may list a colour twice).
         frac: dict[RGB, float] = {}
         for k, v in colour_fractions(labels, r).items():
             if 0 <= k < len(label_colors):
                 frac[label_colors[k]] = frac.get(label_colors[k], 0.0) + v
         if frac.get(paper, 0.0) > gap_fraction:
-            shapes.append(Shape(paper, r, a - 0.5, "gap"))
+            shapes.append(Shape(paper, r, a - 0.5, "gap", z=order))
         elif underpaint_min_area > 0 and c == ink and a > underpaint_min_area:
             others = {k: v for k, v in frac.items() if k != ink}
             if others:
                 dom = max((v, k) for k, v in others.items())[1]
-                shapes.append(Shape(dom, r, a - 0.5, "underpaint"))
-    shapes.sort(key=lambda s: -s.area)
-    return StackedDrawing(width, height, paper, shapes, name)
+                shapes.append(Shape(dom, r, a - 0.5, "underpaint", z=order))
+    shapes.sort(key=lambda s: -(s.z if s.z is not None else s.area))
+    used: dict[str, int] = {}
+    identified = []
+    for shape in shapes:
+        if shape.id:
+            identified.append(shape)
+            continue
+        digest = hashlib.sha1(shape.color.__repr__().encode() + np.round(shape.ring * 4).astype(np.int32).tobytes()).hexdigest()[:10]
+        sid = f"s{digest}"
+        if sid in used:
+            used[sid] += 1
+            sid = f"{sid}_{used[sid]}"
+        else:
+            used[sid] = 1
+        identified.append(replace(shape, id=sid))
+    return StackedDrawing(width, height, paper, identified, name)
 
 
 def planar_labels(layers, paper: RGB, width: int, height: int):
@@ -347,9 +376,71 @@ def stacked_source(drawing: StackedDrawing, *, spec: str = "0.3.0-draft", antial
     for n, shape in enumerate(drawing.shapes):
         text = encode_ring(shape.ring)
         if text:
-            lines.append(f'  layer s{n:0{width}d}(color: ${names[shape.color]}) {{ "{text}" }}')
+            name = shape.id or f"s{n:0{width}d}"
+            lines.append(f'  layer {name}(color: ${names[shape.color]}) {{ "{text}" }}')
     lines.append("}")
     return "\n".join(lines) + "\n"
+
+
+def shape_manifest(drawing: StackedDrawing) -> list[dict]:
+    """Stable ids and geometry of the emitted quarter-pixel fitted shapes.
+
+    Use the same encoded rings as stacked_source, not unrounded fitting areas
+    (which can include paint-order offsets for gaps and underpaint).
+    """
+    from .rings import decode_ring_b63_q25
+
+    entries = []
+    kinds = {}
+    for shape in drawing.shapes:
+        text = encode_ring(shape.ring)
+        if text:
+            entries.append((shape.id, list(shape.color), [decode_ring_b63_q25(text)]))
+            kinds[shape.id] = shape.kind
+    rows = shape_rows(entries)
+    for row in rows:
+        row["kind"] = kinds[row["id"]]
+    return rows
+
+
+def shape_rows(entries) -> list[dict]:
+    """Shared evaluated-geometry rows for fit receipts and shape queries.
+
+    Entries are (id, colour, rings). Area and centroid use absolute ring areas;
+    containment is a bbox/centroid heuristic, not semantic parenting or depth.
+    """
+    out = []
+    for sid, color, rings in entries:
+        arrays = [np.asarray(r, dtype=np.float64) for r in rings if len(r) >= 3]
+        if not arrays:
+            continue
+        points = np.concatenate(arrays)
+        lo, hi = points.min(axis=0), points.max(axis=0)
+        areas = np.asarray([abs(ring_area(r)) for r in arrays])
+        area = float(areas.sum())
+        centroid = (sum((ring_centroid(r) * a for r, a in zip(arrays, areas)), np.zeros(2)) / area
+                    if area > 1e-6 else points.mean(axis=0))
+        out.append({"id": sid, "color": color, "area": round(area, 2),
+                    "bbox": [round(float(v), 2) for v in (*lo, *hi)],
+                    "centroid": [round(float(v), 2) for v in centroid]})
+    # Parent by containment; children after every parent is known.
+    for i, rec in enumerate(out):
+        cx, cy = rec["centroid"]
+        parent, best = None, None
+        for j, other in enumerate(out):
+            if i == j or other["area"] <= rec["area"]:
+                continue
+            x0, y0, x1, y1 = other["bbox"]
+            if x0 <= cx <= x1 and y0 <= cy <= y1 and (best is None or other["area"] < best):
+                parent, best = other["id"], other["area"]
+        rec["parent"] = parent
+    for rec in out:
+        rec["children"] = [o["id"] for o in out if o.get("parent") == rec["id"]]
+        cx, cy = rec["centroid"]
+        near = sorted(((abs(o["centroid"][0]-cx)+abs(o["centroid"][1]-cy), o["id"])
+                       for o in out if o["id"] != rec["id"]))[:3]
+        rec["neighbours"] = [n for _d, n in near]
+    return out
 
 
 def shape_summary(drawing: StackedDrawing) -> dict:

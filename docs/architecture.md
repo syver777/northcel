@@ -32,6 +32,19 @@ launcher's job, and the launcher labels the result.
 
 ## What each stage owns
 
+### Spec 0.5 / tools 0.6 additions: source/unreleased, reference only
+
+Named `group` paths carry pivots, opacity scopes, clip coverage and optional
+parent links. Group transforms, handle-based `warp` and vertex `nudge` operate
+on the evaluated paint list in source order. The reference resolves parent
+pivots at transform time and clip targets after the whole paint list exists.
+Fit ids and `shapes` queries are offline/evaluated geometry tools, not semantic
+part detectors. The native runtime remains 0.4.0 / spec 0.3: both launchers route
+0.4/0.5 constructs and interpreted newer specs, including headerless files
+(now spec 0.5), to Python. Conformance cases `05` and `06` are reference-only.
+Published installs still ship tools 0.5.0 / spec 0.4; this section requires the
+source checkout until Phase 7. No native stage has been changed for spec 0.5.
+
 ### Spec 0.4 / tools 0.5 additions: reference only
 
 `mix` colour expressions, `morph`, `frame A..B` ranges and layer/group
@@ -146,8 +159,9 @@ The reference (`pip install northcel`, `python/northcel/`) is:
 - the **conformance source** (`tests/conformance.py`, the shower probes and the
   fitted-film comparison);
 - the **checker/formatter** used by the `fmt` command and by the docs check;
-- the **only implementation of spec 0.4** (`mix`, `morph`, frame ranges,
-  opacity) in tools 0.5. Spec 0.4 documents always render here, labelled.
+- the **only implementation of spec 0.4/0.5** (`mix`, `morph`, frame ranges,
+  opacity, groups, warp, nudge) in source tools 0.6. Spec 0.4/0.5 documents
+  always render here, labelled; published tools 0.5 supports spec 0.4 only.
 
 The native runtime matches the reference on the 10 conformance probes, is
 pixel-identical on the shower frames, and differs by a handful of edge pixels on
@@ -277,15 +291,24 @@ language is an execution paradigm, not extra visual information:
 
 The full decision record, with the rejected alternatives and measured numbers, is
 in [DECISIONS.md](DECISIONS.md). The normative grammar is
-[SPEC-0.4.0-draft](spec/SPEC-0.4.0-draft.md); the native runtime implements
+[SPEC-0.5.0-draft](spec/SPEC-0.5.0-draft.md) (source/unreleased additions to
+published spec 0.4); the native runtime implements
 [SPEC-0.3.0-draft](spec/SPEC-0.3.0-draft.md).
 
 ## The docs check
 
 `docs/scripts/check_docs.py` is part of the architecture in a small way: it is the
-reason the documentation can be trusted. It extracts every `.ncel` fence from the
-guide, runs `check` and renders it with the reference, compares pixels against
+reason the documentation can be trusted. Every `ncel` fence in the root README,
+docs and example pages must pass the full reference `check`: no pseudo-code or
+intentional failures use that tag. Deliberate diagnostic inputs use `text`
+fences, with exact expected errors still checked. For marked guide examples it
+renders with the reference and compares pixels against
 `docs/scripts/expected.json`, renders every `examples/patterns/*.ncel` and its
 contact sheet, reproduces every diagnostic in [errors.md](errors.md), and verifies
 every relative link and image path. CI runs it on every push. A docs change that
-does not render cannot merge.
+does not render cannot merge. The root README, current spec and agent-guide
+fences (including the offline-guide source) are also validated and every frame
+is rendered, so an ellipsis in a copyable example fails CI. The
+[editable-drawing chapter](guide/17-editable-drawings.md) follows the same
+render-marker/manifest pipeline for all 25 frames of its five illustrations;
+they are not one-off screenshots.

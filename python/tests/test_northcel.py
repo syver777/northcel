@@ -52,7 +52,7 @@ class TestConfigAndRings(unittest.TestCase):
         self.assertEqual(FILE_EXTENSION, ".ncel")
         self.assertEqual(CLI_COMMAND, "northcel")
         self.assertEqual(CLI_SHORT_ALIAS, "ncel")
-        self.assertEqual(SPEC_VERSION, "0.4.0-draft")
+        self.assertEqual(SPEC_VERSION, "0.5.0-draft")
 
     def test_ring_b63_q25_roundtrip(self) -> None:
         ring = [(12.25, 40.5), (18.75, 40.5), (18.75, 46.25), (12.25, 46.25)]

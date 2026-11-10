@@ -72,7 +72,7 @@ makes `outline: 3px` do what you expect.
 Referencing a name that was never declared (or declared later) stops the parse:
 
 <!-- expect-error: 7:24: error: Undefined palette color '$blue' -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene PaletteBad(width: 400, height: 240) {

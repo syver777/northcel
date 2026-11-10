@@ -86,7 +86,7 @@ A document must start with `scene` or `film`. A bare statement at the root has
 nowhere to paint.
 
 <!-- expect-error: 3:1: error: Expected 'scene' or 'film' declaration, got 'layer' -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 layer sky(color: #BFD8E8, rings: 1) { "0,0 1920,0 0,1080 -1920,0" }

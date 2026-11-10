@@ -56,16 +56,42 @@ $ brew tap syver777/northcel && brew install northcel
 $ curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh | bash
 ```
 
-These install the current 0.5.0 CLI, which uses the native runtime where it can
-and the labelled Python reference everywhere else.
+These install the current published **0.5.0** CLI (spec **0.4.0-draft**), which uses the native runtime where it can
+and the labelled Python reference everywhere else. **Homebrew is for Linux
+x86_64 only** (the formula pins the manylinux native wheel); on macOS use
+`pipx install northcel` or `pip install northcel`, which run the labelled Python
+reference. The one-line installer is also Linux x86_64 only.
 
-**npm:** the npm package currently ships the older **0.4.0** launcher. For 0.5.0,
-install from PyPI or Homebrew; npm is not the recommended install for this
-version.
+**npm:** the npm package currently ships the older **0.4.0** launcher. Use PyPI
+or Homebrew for published 0.5.0. The starter above works with published 0.5.0.
+
+**Source / unreleased:** this checkout targets tools **0.6.0**, spec
+**0.5.0-draft**; neither PyPI, Homebrew nor the installer ships it yet.
+For the 0.5-spec examples below and in the agent guide, install this checkout
+in a fresh venv with `python3 -m pip install -e './python[fit]'` and use its
+`northcel` command. Stay with the writing guide's spec-0.4 examples on a
+published 0.5.0 install. [Phase 7 release copy and checklist](docs/release-0.6.0.md)
+are kept separately until publication.
 
 ## First steps
 
-**New in 0.5.0 (spec 0.4):** `mix(a, b, u)` colour expressions, a `morph`
+**Author changes, not subject recipes:** [editable drawings](docs/guide/17-editable-drawings.md)
+teaches observe → decompose → decide → edit the delta → verify → iterate, with
+five labelled illustrations (not templates). Start from a key, copy what stays,
+and change only the regions that need it. The AI decides per video; the language
+provides general operations and checks. This method needs the unreleased source
+tools described above; it is not a promise about the published install.
+
+**Unreleased 0.6.0 from source (spec 0.5):** addressable drawings — named `group` blocks with
+pivots, opacity, clipping and optional parenting; group-wide `transform`; a
+handle-based smooth `warp` for petals, cloth and squash; per-vertex `nudge`; and
+cheap `use` + delta frame blocks. `fit --stacked` now gives every shape a stable
+id and a `shape_manifest` receipt, and `northcel shapes` queries by id, colour,
+area, location, parent or mask. Spec 0.5 is Python-reference only; the native
+runtime stays at spec 0.3 and the launchers route honestly. See the
+[spec](docs/spec/SPEC-0.5.0-draft.md).
+
+**0.5.0 (spec 0.4):** `mix(a, b, u)` colour expressions, a `morph`
 primitive, inclusive `frame A..B` blocks and layer/group `opacity`; `fit --stacked`
 writes painter's-order shapes and `tween --match` fills the gaps between
 independently drawn keys with one compact film, falling back to an explicit cut or
@@ -102,6 +128,8 @@ through the labelled Python reference.
 
 - **[The writing guide](docs/guide/README.md)** — start here: install, first file,
   then every construct with a rendered example and its real diagnostic.
+- **[Editable-drawing method](docs/guide/17-editable-drawings.md)** — addressable
+  parts, key + delta frames, five different illustrations, and measured review.
 - **[Patterns cookbook](docs/patterns/README.md)** — twelve complete animated
   programs with contact sheets, sizes and pitfalls.
 - **[Common errors](docs/errors.md)** — every diagnostic, generated from the
@@ -115,7 +143,7 @@ through the labelled Python reference.
 - **[Documentation index](docs/README.md)** — the full map.
 - [Format & tooling reference](docs/reference.md) — the CLI and the validation
   contract.
-- [Specification](docs/spec/SPEC-0.4.0-draft.md) · [changelog](CHANGELOG.md) ·
+- [Specification](docs/spec/SPEC-0.5.0-draft.md) · [changelog](CHANGELOG.md) ·
   [decision log](docs/DECISIONS.md).
 
 ## Contributing

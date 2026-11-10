@@ -10,8 +10,10 @@ from .ast_nodes import (
     DefBlock,
     DocumentNode,
     FilmNode,
+    GroupNode,
     LayerNode,
     MorphNode,
+    NudgeNode,
     PaperSpec,
     RibbonNode,
     SceneItem,
@@ -19,6 +21,7 @@ from .ast_nodes import (
     StrokeNode,
     SwarmNode,
     UseNode,
+    WarpNode,
 )
 from .config import SUPPORTED_SPEC_VERSIONS
 from .rings import RingEncodingError, decode_rings_payload
@@ -176,6 +179,28 @@ def _validate_items(
                         item.span.column,
                     )
                 )
+        elif isinstance(item, GroupNode):
+            _validate_items(item.items, defs, precision, out)
+            for name in (item.clip, item.parent):
+                if name is not None and not any(ch.isalnum() or ch == "_" for ch in name):
+                    out.append(ValidationDiagnostic(
+                        "error", f"Group '{item.name}' target '{name}' must be a name",
+                        item.span.line, item.span.column))
+        elif isinstance(item, WarpNode):
+            if not item.handles:
+                out.append(ValidationDiagnostic(
+                    "error", f"Warp '{item.target_name}' needs at least one handle",
+                    item.span.line, item.span.column))
+            for h in item.handles:
+                if len(h) != 4:
+                    out.append(ValidationDiagnostic(
+                        "error", f"Warp '{item.target_name}' handles need (x, y, dx, dy)",
+                        item.span.line, item.span.column))
+        elif isinstance(item, NudgeNode):
+            if item.ring < 0 or item.vertex < 0:
+                out.append(ValidationDiagnostic(
+                    "error", f"Nudge '{item.target_name}' ring/vertex must be >= 0",
+                    item.span.line, item.span.column))
         elif isinstance(item, UseNode):
             if item.def_name not in defs:
                 out.append(
@@ -229,6 +254,8 @@ def spec04_features(doc: DocumentNode) -> list[tuple[str, int, int]]:
                 found.append(("opacity", line, col))
             if isinstance(it, UseNode) and "opacity" in it.args:
                 found.append(("opacity", line, col))
+            if isinstance(it, GroupNode):
+                items(it.items)
 
     def scene(node) -> None:
         paper(node.paper)
@@ -245,6 +272,49 @@ def spec04_features(doc: DocumentNode) -> list[tuple[str, int, int]]:
             found.append(("frame-range", f_scene.span.line, f_scene.span.column))
             scene(f_scene)
     return found
+
+
+def spec05_features(doc: DocumentNode) -> list[tuple[str, int, int]]:
+    """Every use of a spec 0.5 construct as (feature, line, column)."""
+    found: list[tuple[str, int, int]] = []
+
+    def items(seq) -> None:
+        for it in seq:
+            if isinstance(it, GroupNode):
+                found.append(("group", it.span.line, it.span.column))
+                items(it.items)
+            elif isinstance(it, WarpNode):
+                found.append(("warp", it.span.line, it.span.column))
+            elif isinstance(it, NudgeNode):
+                found.append(("nudge", it.span.line, it.span.column))
+
+    def scene(node) -> None:
+        for d in node.defs.values():
+            items(d.items)
+        items(node.items)
+
+    root = doc.root
+    scene(root)
+    if isinstance(root, FilmNode):
+        for f_scene in root.frame_overrides.values():
+            scene(f_scene)
+        for _lo, _hi, f_scene in root.frame_ranges:
+            scene(f_scene)
+    return found
+
+
+def _check_spec05(doc: DocumentNode, out: list[ValidationDiagnostic]) -> None:
+    if spec_minor(doc.spec_version) >= 5:
+        return
+    seen: set[tuple[str, int, int]] = set()
+    for feature, line, col in spec05_features(doc):
+        if (feature, line, col) in seen:
+            continue
+        seen.add((feature, line, col))
+        out.append(ValidationDiagnostic(
+            "error",
+            f"{feature} requires northcel \"0.5.0-draft\" (this document declares '{doc.spec_version}')",
+            line, col))
 
 
 def _check_spec04(doc: DocumentNode, out: list[ValidationDiagnostic]) -> None:
@@ -320,6 +390,7 @@ def validate_document(doc: DocumentNode) -> list[ValidationDiagnostic]:
     _check_color(root.paper.color, root.paper.span.line, root.paper.span.column, out)
     if doc.spec_version in SUPPORTED_SPEC_VERSIONS:
         _check_spec04(doc, out)
+    _check_spec05(doc, out)
     if root.paper.antialias_grid not in (1, 2, 4, 8):
         out.append(
             ValidationDiagnostic(

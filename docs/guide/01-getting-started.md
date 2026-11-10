@@ -19,10 +19,16 @@ same binary.
 | Homebrew on Linux | `brew tap syver777/northcel && brew install northcel` | Yes |
 | A shell + curl | `curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh \| bash` | Yes on Linux x86_64 |
 
-Tools version **0.5.0**, specification **0.4.0-draft**. `0.1.0-draft`, `0.2.0-draft` and
+Published tools version **0.5.0**, specification **0.4.0-draft**. `0.1.0-draft`, `0.2.0-draft` and
 `0.3.0-draft` files still load and render as before. The native runtime 0.4.0 implements spec
 0.3; spec 0.4 documents render with the labelled Python reference (the sample below is from a
 0.4.0 install).
+
+This numbered guide targets the published install. **Tools 0.6.0 / spec 0.5 are
+source-only and unreleased**; the [current spec additions](../spec/SPEC-0.5.0-draft.md)
+and [agent guide](../agent-guide.md) require this checkout installed in a venv
+with `python3 -m pip install -e './python[fit]'`. A published 0.5.0 install must not
+be given a 0.5-header example with `group`, `warp` or `nudge`.
 
 ## Prove the install
 
@@ -86,7 +92,7 @@ Three things are worth noticing now, because every later page builds on them:
 most common first-file mistake: the parser does not know the statement there.
 
 <!-- expect-error: 5:3: error: Unknown scene statement 'frames' -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene FirstLight(width: 640, height: 360, fps: 12, precision: 0.25px, seed: 7) {

@@ -2,7 +2,18 @@
 
 This page is the short lookup. The language itself is taught in the
 [writing guide](guide/README.md); the normative grammar is
-[SPEC-0.4.0-draft](spec/SPEC-0.4.0-draft.md).
+[SPEC-0.5.0-draft](spec/SPEC-0.5.0-draft.md).
+
+For the default authoring approach, read [editable drawings](guide/17-editable-drawings.md):
+observe → decompose → decide → edit the delta → verify → iterate. The five worked
+illustrations use different general mechanisms, not subject templates. Start
+with copies of good geometry; automatic `tween --match` is an optional alternative.
+
+**Version scope:** tools **0.6.0 in this checkout**, spec **0.5.0-draft**, are
+**source / unreleased**. PyPI, Homebrew and install.sh publish **0.5.0** (spec 0.4);
+npm publishes **0.4.0**. `shapes`, fit ids and the spec-0.5 syntax below need this
+checkout (`python3 -m pip install -e './python[fit]'` in a venv), not a published
+0.5.0 install. [Release copy](release-0.6.0.md) is reserved for Phase 7.
 
 ## CLI (`northcel` / `ncel`)
 
@@ -14,7 +25,17 @@ This page is the short lookup. The language itself is taught in the
 | `northcel info FILE [--json]` | metadata: bytes, kind, size, frames, fps, layers, rings, vertices |
 | `northcel render FILE [-o OUT.png] [--frame N] [--seed N] [--json]` | one frame to PNG |
 | `northcel film FILE -o OUTDIR [--frames 0..N] [--mp4 OUT.mp4] [--json]` | frame sequence and optional MP4 |
-| `northcel fmt FILE [-w] [--check]` | canonical formatting (reference only); round-trips every spec 0.4 construct |
+| `northcel fmt FILE [-w] [--check]` | canonical formatting (reference only); round-trips every spec 0.4 and 0.5 construct |
+| `northcel shapes FILE [--frame N] [--ids …] [--color #RRGGBB] [--area-min N] [--area-max N] [--bbox x0,y0,x1,y1] [--centroid x,y,r] [--parent ID] [--mask IMAGE]` | JSON ids, colours, areas, bboxes, centroids, parents, children and neighbours of evaluated shapes |
+| `northcel diff FILE --against IMAGE [--frame N] [-o HEATMAP.png] [--region NAME:x0,y0,x1,y1]… [--json]` | reference render vs same-size image: overall and per-group/per-region MAE, RMSE and PSNR; group errors measure the canvas-clipped geometric bbox, not a coverage mask; optional error heatmap |
+| `northcel onion FILE -o OUT.png [--frame N] [--against IMAGE] [--json]` | previous frame (red) and this frame (blue); frame 0 uses frames 0/1, a scene uses its only frame; optionally compare against a same-size reference |
+| `northcel contact FILE -o OUT.png\|OUTDIR [--frames 0..N\|0,2,4] [--every N] [--transitions] [--json]` | labelled contact sheet(s); `--transitions` writes one per `frame N` / `frame A..B` block including its preceding frame when available, preserving key endpoints under `--every`; a PNG output becomes `OUT-transitions/`; cannot combine `--frames` with `--transitions` |
+| `northcel continuity FILE --group NAME [--shape ID] [--json]` | per-frame geometric bbox, width, height and bbox-centre centroid (before clipping/occlusion); adjacent scale/position changes, flagging a >8% bbox-height jump |
+| `northcel distinct FILE [--frames 0..N\|0,2,4] [--every N] [--json]` | reference render resized to 320×180 (LANCZOS); count changed adjacent samples above mean absolute RGB difference 0.2/255, excluding the first frame; rate uses sampled timeline duration at film fps, not globally unique images |
+| `northcel perceive segment IMAGE --points x,y [--points …] --out DIR [--frames DIR] [--checkpoint FILE] [--config NAME] [--json]` | optional SAM 2 masks; alternatively `--boxes x0,y0,x1,y1 …`; propagation requires the installed video API and numbered JPEGs; local weights only |
+| `northcel perceive vectorize IMAGE --out FILE [--mode stacked] [--json]` | optional VTracer SVG; when absent, explicitly labelled `fit --stacked` fallback only with already-installed fit libraries and `.ncel` output |
+| `northcel perceive flow A B --out DIR [--checkpoint FILE] [--model small\|large] [--json]` | optional TorchVision RAFT forward-flow PNG/NumPy array and geometric JSON motion hints; local weights only |
+| `northcel perceive guide A B --out DIR [--model-dir DIR] [--json]` | optional FILM midpoint visual target; JSON and PNG metadata say `guide_only: true`; never output or quality evidence |
 | `northcel fit IMAGE -o FILE [--palette P.json] [--stacked] [--receipt R.json]` | offline contour fitting (`pip install 'northcel[fit]'`). Default: a planar map. `--stacked`: painter's-order solid shapes with `--gap-fraction` (0.5), `--underpaint-min-area` (300 px², 0 = off), `--ink #RRGGBB` |
 | `northcel tween A B -o FILE [--steps N] [--fallback error\|hold]` | ordered-ring in-betweens; identical topology required |
 | `northcel tween A B -o FILE --match [--steps N] [--fps N] [--mode auto\|morph\|cut\|dissolve\|hold] [--fallback cut\|dissolve] [--min-match 0.5] [--max-displacement 32] [--colour-changes C.json] [--image-a A.png --image-b B.png] [--receipt R.json]` | shape matching across topology mismatch; writes one spec 0.4 film; below the thresholds an explicit cut or dissolve |
@@ -27,18 +48,32 @@ are Python-only authoring tools and do not take it. On a platform without a nati
 two-line notice and labels the receipt `"renderer": "python-reference"`; it never
 claims a native render.
 
-**Spec 0.4 routing.** The native runtime 0.4.0 implements spec 0.3. When a
-document uses `mix`, `morph`, `frame A..B` or `opacity`, or declares a 0.4
-header, `check`, `info`, `render` and `film` use the Python reference even where
-native is available, print why (`… uses spec 0.4 features (morph); the native
-runtime 0.4.0 implements spec 0.3 only`) and label the receipt
-`python-reference`. The npm launcher does the same through its Python bridge.
+**Spec 0.4/0.5 routing.** The native runtime 0.4.0 implements spec 0.3. When a
+document uses `mix`, `morph`, `frame A..B` or `opacity` (0.4), or `group`,
+`warp` or `nudge` (0.5), or declares a 0.4/0.5 header, `check`, `info`, `render`
+and `film` use the Python reference even where native is available, print why
+(`… uses spec 0.4/0.5 features (group); the native runtime 0.4.0 implements spec
+0.3 only`) and label the receipt `python-reference`. The npm launcher does the same through its Python bridge.
 Without Python, `render`/`film`/`info` exit `3` naming the features instead of
 calling native; `check` falls back to the PARTIAL JS pre-check instead.
+Headerless files default to spec 0.5 in this checkout and also use the reference,
+including files whose statements happen to exist in spec 0.3.
+
+## Optional perception
+
+The source-only `perceive` helpers return JSON receipts and artifacts for the AI
+to inspect: tools suggest, the AI decides. Backends are lazy, optional user
+installs; no heavyweight core dependency or automatic model download is added.
+See [perception.md](perception.md) for local-model configuration, output formats,
+licences, exact absent-dependency messages and limitations. SAM 3, SEA-RAFT,
+RIFE and GPL tracing tools remain external alternatives, not bundled backends.
 
 ## Validation contract
 
-**Tools 0.5.0, spec 0.4.0-draft** (contract as of 0.4.0; 0.5.0 adds the polishing API). The npm package currently ships the older **0.4.0** launcher; use PyPI or Homebrew for 0.5.0. The `northcel` distribution is the reference
+**Tools 0.6.0 from source (unreleased), spec 0.5.0-draft** (contract as of published
+0.5.0; 0.6.0 adds groups, warp, nudge and shape queries). Use PyPI or, on Linux
+x86_64 only, Homebrew for published **0.5.0**, which supports spec 0.4 only;
+macOS uses pipx/pip. The `northcel` distribution is the reference
 parser, validator, formatter and CPU renderer *and* the launcher that runs the
 native runtime. The npm `northcel` package runs the same launcher and adds a
 zero-dependency structural JS pre-check, the embedded guide and a Python bridge;
@@ -86,6 +121,7 @@ partial marker; never treat `ok` alone as full success.
 | Width/height/fps/frame ranges, agents, stroke widths, undefined def | Not checked | Python semantic validator |
 | Variable binding, time-dependent arithmetic, rendered quality | Not checked | Real renders and visual review |
 | Spec 0.4: `mix(…)` shape, `morph … { "A" => "B" }`, `frame A..B` (reversed bounds), equal ring counts on both morph sides | Error with line:column | `u`/`opacity` values, `samples` range, overlapping-range warning, header/feature agreement |
+| Spec 0.5 (source launcher): `group` bodies (including nested groups/defs), `warp`/`nudge` statement headers and tuples | Structural errors with line:column | Attribute meaning, integer indices, target resolution, header/feature agreement, pivots, clipping and deformation need Python and renders |
 
 The structural scanner is intentionally not advertised as a complete JS parser.
 An invalid file can pass the pre-check (e.g. `film F(fps: 0) { use Missing }`).
@@ -120,7 +156,7 @@ from northcel.correspond import (Key, Transition, FilmOptions, MatchOptions, Mat
 | `linear_assignment` | `linear_assignment(cost)` | `(rows, cols)` minimum-cost assignment, deterministic |
 
 Data types: `Shape(color, ring, area, kind)` (`kind` is `region`, `gap` or
-`underpaint`); `StackedDrawing(width, height, paper, shapes, name)`;
+`underpaint`; optional `id=""`, `z=None` in this checkout); `StackedDrawing(width, height, paper, shapes, name)`;
 `Key(drawing, time, name=None)` (time in seconds);
 `Transition(mode="auto", seconds=None)` with `mode` one of `auto`, `morph`,
 `cut`, `dissolve`, `hold`; `MatchOptions(colour_changes=(), match_cost=2.0,

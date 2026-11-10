@@ -109,7 +109,7 @@ Mesa version.
 A canvas side above 8192 is rejected before allocation:
 
 <!-- expect-error: 3:1: error: Canvas dimensions 9000x360 out of valid range [1..8192] -->
-```ncel
+```text
 northcel "0.2.0-draft"
 
 scene TooWide(width: 9000, height: 360) {

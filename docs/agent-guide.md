@@ -2,6 +2,12 @@
 
 This guide instructs AI coding agents (Claude Code, OpenCode, Codex, Cursor, Gemini CLI) how to author, verify, and surgically edit AI-drawn images and videos in **NorthCel (`.ncel`)**.
 
+**Version scope:** spec 0.5 / tools 0.6.0 examples require this **source checkout
+(unreleased)**, installed in a venv with `python3 -m pip install -e './python[fit]'`.
+Published PyPI/Homebrew/install.sh installs are tools 0.5.0 (spec 0.4); published
+npm is 0.4.0. On published tools 0.5.0, use the writing guide's spec-0.4 examples,
+not the `group`/`warp`/`nudge` examples here.
+
 ## The first ten minutes
 
 1. **Read three pages, in this order:** [getting started](guide/01-getting-started.md),
@@ -11,17 +17,68 @@ This guide instructs AI coding agents (Claude Code, OpenCode, Codex, Cursor, Gem
 2. **Run the gates on the file you were given before editing it:**
    `northcel check file.ncel --json` then `northcel render file.ncel -o before.png`.
    Never start from a file you have not rendered.
-3. **Copy a structure, not a drawing.** The
-   [patterns cookbook](patterns/README.md) has twelve complete programs; pick the
-   one whose *motion* matches the request (head turn, blink, jump, colour beat,
-   drift, assembly, walk, boil, crowd, two-shot, fitting/cel transforms, polishing AI frames).
-4. **Edit one named block.** Find it with `northcel info file.ncel`; change only
-   that block; render the edited frame and both neighbours.
+3. **Observe → decompose → decide.** Read the [editable-drawing method](guide/17-editable-drawings.md).
+   Inspect both keys; identify parts/regions, then choose copy, move, warp,
+   recolour or redraw for each. The five worked illustrations are not templates.
+   The AI decides per video; there is no subject preset or character rig library.
+4. **Edit the delta.** Query `northcel shapes file.ncel` for addressable paints;
+   group the chosen regions, reuse the key and change only what needs changing.
+   Render the edited frame and both neighbours. Do not refit unchanged geometry.
 5. **Only then run the full film.** `northcel film file.ncel -o frames/` and look
    at the first, middle, last and transition frames.
 
 If a request is about a still, use `scene`; if it is about timing, use `film`.
 If you are unsure, read the diagnostic — it gives an exact `line:column`.
+
+## Spec 0.5: edit a part, not the whole drawing
+
+`northcel fit IMAGE --stacked -o shapes.ncel --receipt shapes.json` returns stable
+ids (`s` + 10 SHA-1 hex digits, suffixed on collision) and a `shape_manifest`; inspect
+one with `northcel shapes file.ncel --ids s…` or query by colour/area/bbox/mask.
+Turn a set of shapes into a named unit and change only that unit. This is an
+illustration, not a template or a subject preset:
+
+```ncel
+northcel "0.5.0-draft"
+film Edit(width: 640, height: 360, fps: 24, frames: 3) {
+  paper { color: #FFF8EC }
+  def Face {
+    group face(pivot: (320, 160)) {
+      layer head(color: #F2C6A0) { "240,100 160,0 0,160 -160,0" }
+      layer eye_l(color: #202830) { "280,150 12,0 0,12 -12,0" }
+      layer cheek(color: #E8A0B8) { "360,190 40,0 0,40 -40,0" }
+    }
+  }
+  frame 0 { use Face }
+  frame 1 { use Face; transform face(rotate: 2) }
+  frame 2 {
+    use Face
+    nudge eye_l(vertex: 2, dx: 3px, dy: -1px)
+    warp cheek(handles: ((300, 200, 2, -1),), radius: 60)
+  }
+}
+```
+
+The blocks are general: a `group` may contain any primitives, nested groups,
+`use`, `transform`, `warp` and `nudge`; a group can be clipped by another entry
+(`clip: mask`) and can opt into a parent (`parent: arm`). There is no head,
+flower or cloud preset. `transform` is for rigid moves; `warp` is for non-rigid
+squash/sway/cloth. The full contract is
+[SPEC-0.5.0-draft](spec/SPEC-0.5.0-draft.md).
+
+Fit ids identify fitted colour/geometry, not semantic objects tracked across new
+fits. Queries suggest regions; their containment heuristics are not `parent:`
+attachments or visible clip coverage. Keep names stable while editing. Store a
+key once in a `def`, then `use` it plus a few edits per exact/range frame block.
+This is cheap source reuse, not persistent frame state or a rendering shortcut.
+
+Verify with `northcel diff` and `northcel onion` against **both** neighbouring
+key images, `northcel contact` for the whole transition, `northcel continuity
+FILE --group NAME` for geometric scale/position, and `northcel distinct` on all
+final film frames. Read their [metric limits](guide/17-editable-drawings.md#5-verify-against-both-neighbours-then-iterate).
+Exit 0 only means the measurement ran. Inspect full-size images and iterate.
+Redraw a missing angle, pose, unseen prop or topology only when code cannot
+faithfully express the change; a low automatic match score is not enough.
 
 ## Verify a frame, not just the exit code
 
@@ -59,14 +116,20 @@ reproduced by CI. The [architecture page](architecture.md) explains why the
 reference and native renderers can differ by a handful of edge pixels.
 
 <!-- npm-guide:start -->
-# NorthCel quick agent guide — tools 0.5.0, spec 0.4.0-draft
+# NorthCel quick agent guide — tools 0.6.0 (source/unreleased), spec 0.5.0-draft
+
+Published pip/Homebrew/install.sh installs are tools **0.5.0** (spec 0.4); npm is
+**0.4.0**. Spec-0.5 constructs below require this source checkout installed in a
+venv with `python3 -m pip install -e './python[fit]'`. Do not feed its 0.5 examples
+to published 0.5.0. Start new source-authored files at `northcel "0.5.0-draft"`;
+choose an older explicit header only for intentional compatibility.
 
 Discover this guide offline with `northcel guide` (or `npx northcel guide`). The
 npm package runs the native runtime on Linux x86_64 and otherwise falls back to the
 Python reference, with a zero-dependency **partial JS pre-check** for `check` when
 neither is available. There is no JavaScript renderer.
 
-## Start here (a complete 3-second film)
+## Start here (a complete 3-second film, published-compatible spec 0.4)
 
 ```ncel
 northcel "0.4.0-draft"
@@ -93,7 +156,9 @@ Never put expressions inside a quoted ring: move it with `translate: (x, y)`.
 ## Five language features to combine
 
 1. **Reusable shapes:** `def Mark(dx: 0, dy: 0) { stroke line(width: 2) { (0, 0), (8, 4) } }`
-   then `use Mark(dx: 20, dy: 30)`. Only primitives inside `def`, not nested `use`.
+   then `use Mark(dx: 20, dy: 30)`. In 0.5, defs may also contain groups,
+   transforms, warps and nudges; groups may contain `use`. Top-level nested `use`
+   in a def is still unsupported.
    `dx/dy` auto-translate expanded geometry; don't also add them to coordinates.
    Same-named cels in repeated uses replace one another; use distinct named defs
    for independent cel instances (stroke/ribbon uses append).
@@ -120,23 +185,43 @@ Never put expressions inside a quoted ring: move it with `translate: (x, y)`.
    numeric ranges, expression evaluation, def resolution and render quality remain unchecked.
 2. Run `npx northcel check film.ncel --require-full --json` before claiming full
    validation. Exit 2 = no full validator (clean partial); exit 1 = detected error;
-   exit 0 = Python full check succeeded. Install `pipx install northcel` (or
-   `pip install northcel` in a venv), expose its Python CLI on PATH, then repeat.
+   exit 0 = Python full check succeeded. For spec 0.4 install `pipx install northcel`
+   (or `pip install northcel` in a venv); for spec 0.5 install this unreleased
+   source checkout as above. Expose its Python CLI on PATH, then repeat.
    The npm bridge finds importable Python modules or pipx-style Python entrypoints.
    Never suppress exit 2 or call a partial check fully validated.
 3. Python: `northcel render film.ncel -o frame0.png --frame 0`, inspect the PNG;
    `northcel film film.ncel -o frames/ --mp4 preview.mp4`, inspect first/middle/last
    and transition frames. ffmpeg is required for MP4; verify the MP4 exists.
-   Render samples in reverse order and compare native RGB hashes for determinism.
+   Render samples in reverse order and compare decoded RGB hashes for determinism.
 4. Fix the named block that is wrong, preserve good parts, render again; up to
    three look-and-fix rounds. `northcel fmt -w film.ncel` canonicalizes it.
    Full validation is not a visual-quality or runtime-expression guarantee.
 
-Alternatively install `pip install "northnoir[ncel]"` and use
-`northnoir init ink --language ncel --duration 3 --fps 24`,
-`northnoir check ink/scene.ncel`, `northnoir render ink/scene.ncel -o ink/video.mp4`.
-This is an explicit optional local path; JavaScript `scene.html` stays the default.
 NorthCel films are silent; there is no native audio engine or hosted NorthCel API.
+
+## Default method: editable drawings, not subject recipes
+
+**Observe → decompose → decide (copy / move / warp / recolour / redraw) → edit
+the delta → verify → iterate.** Inspect both keys and choose the regions yourself.
+Copy unchanged geometry with `def`/`use`; group only what needs a shared edit.
+Use pivoted `transform`, constrained `warp`, per-vertex `nudge`, `mix` colours or
+`clip` as observations require. Rigging/parenting is optional, not a subject
+library. Redraw only missing information such as a new angle/pose/unseen prop;
+failed correspondence alone does not establish that a redraw is necessary.
+
+Run `northcel diff` and `northcel onion` against both key images, inspect
+`northcel contact`, query `northcel continuity FILE --group NAME --json`, and run
+`northcel distinct FILE --json` over the complete final film. Measurements are
+reference-only and advisory: group diff uses bboxes, continuity uses unclipped
+geometry/bbox centres and flags only >8% height jumps, onion can miss
+equal-luminance colour changes, and distinct counts changed adjacent samples
+(not globally unique images), excluding the first frame. Render every authored
+frame; a check or measurement exit 0 does not approve its appearance.
+
+The online writing guide's chapter 17 has five different labelled illustrations,
+not templates: a modest turn (copy/transform), sway (fixed/moving warp handles
+and pivot), colour flood (`mix`), squash (nonuniform scale) and ripple (clip/nudge).
 
 ## Common mistakes
 
@@ -186,6 +271,45 @@ writes painter's-order shapes; `northcel tween a.ncel b.ncel -o t.ncel --match
 receipt: below `--min-match`/`--max-displacement` it cuts (or `--fallback
 dissolve`). A match proves no anatomy: a crouch→jump needs a drawn key. Inspect
 every in-between; unmatched shapes pop at u = 0.5.
+
+## Addressable edits (spec 0.5, source/unreleased Python reference)
+
+This complete illustration uses general constructs, not a subject preset:
+
+```ncel
+northcel "0.5.0-draft"
+film Edit(width: 64, height: 64, fps: 12, frames: 3) {
+  paper { color: #FFFFFF }
+  def Key {
+    group part(pivot: (32, 32)) {
+      layer mark(color: #2060A0) { "80,80 96,0 0,96 -96,0" }
+    }
+  }
+  frame 0 { use Key }
+  frame 1 { use Key; transform part(rotate: 10) }
+  frame 2 {
+    use Key
+    warp part(handles: ((32, 32, 2, -1),), radius: 40)
+    nudge mark(vertex: 0, ring: 0, dx: 1px)
+  }
+}
+```
+
+Groups may nest, use `opacity`, clip to a named entry/group (`clip: mask`) or
+join a parent transform path (`parent: other`). The group pivot is used unless
+`transform` specifies `anchor`. `warp` blends handle offsets with smooth bounded
+falloff; `nudge` offsets one zero-based integer vertex/ring after painting.
+Unknown targets and out-of-range indices are located evaluation errors: render,
+do not rely on a static `check` alone. A frame delta reuses `use Key` and changes
+only the named geometry.
+
+`northcel fit drawing.png --stacked -o drawing.ncel --receipt drawing.json` gives
+each emitted layer a stable id (`s` + 10 SHA-1 hex digits, suffixed on collision)
+and adds `shape_manifest` rows. Inspect with `northcel shapes drawing.ncel`,
+`northcel shapes drawing.ncel --ids ID`, or filter with `--color`, `--area-min`,
+`--bbox x0,y0,x1,y1`, `--centroid x,y,r`, `--parent ID` or `--mask IMAGE`.
+The rows describe evaluated geometry, not semantic parts. Both launchers route
+0.4/0.5 (also headerless) documents to Python; JS-only `check` stays PARTIAL.
 <!-- npm-guide:end -->
 
 ---
@@ -193,9 +317,12 @@ every in-between; unmatched shapes pop at u = 0.5.
 ## 1. The Golden Rules of Authoring `.ncel`
 
 1. **Always Start with the Version Header:**
-   Start new files with `northcel "0.3.0-draft"` so they also render natively; use
-   `northcel "0.4.0-draft"` only when you need `mix`, `morph`, `frame A..B` or
-   `opacity` (Python reference only). `0.1.0-draft` and `0.2.0-draft` remain supported.
+   Start new source-authored files with the current `northcel "0.5.0-draft"`
+   (tools 0.6.0 from source, Python reference). On published tools 0.5.0 use
+   `northcel "0.4.0-draft"` for `mix`, `morph`, `frame A..B` and `opacity`;
+   do not use `group`, `warp` or `nudge` until you install the source release.
+   Choose `northcel "0.3.0-draft"` only when deliberately targeting the native
+   runtime with 0.3-only syntax. Explicit 0.1/0.2 headers remain supported.
 2. **Separate Washes, Ink Ribbons, and Parallel Swarms by Name:**
    - Use `layer` / `wash` for broad silhouette envelopes (`tile_wall`, `skin_envelope`, `hair_dome`).
    - Use `stroke` or `ribbon` for variable-width anatomical contours and props (`brow_eye`, `ear_loop`, `post_ink`).
@@ -264,7 +391,7 @@ An AI agent authored 8 representative frames (`1536×864`) of a 90-frame AI-draw
    Adding fine interior lines in later rounds (cloud outlines, facial features, grass tufts) makes the drawing look **much** more like a real cartoon to a human eye, yet can lower pixel-level Block SSIM by `0.01–0.02` if a 5px black outline is shifted by 4–8 pixels from the source frame's exact line position (because a shifted black line on white paper incurs a double pixel penalty). Judge AI-authored frames by **structural completeness + Edge IoU + visual inspection**, not raw pixel SSIM alone.
 3. **Where an Unassisted LLM Struggles Without a Fitter:**
    - **Easy for an LLM (`0.88–0.93` SSIM):** Isolated heads (`f0001`), simple frontal standing poses (`f0028`), flat sky/ground horizons, and reusable props (`clouds`, `grass_tufts`).
-   - **Hard for an LLM (`0.70–0.75` SSIM):** Complex foreshortened limbs (`f0037` airborne bent knees), articulated hands with 5 spread fingers (`f0055`, `f0067`), and overlapping seated legs (`f0076`, `f0085`). For complex character poses, pair an LLM layout/rig planner with a contour/part template library or fitted keyframe cels.
+   - **Hard for an LLM (`0.70–0.75` SSIM):** Complex foreshortened limbs (`f0037` airborne bent knees), articulated hands with 5 spread fingers (`f0055`, `f0067`), and overlapping seated legs (`f0076`, `f0085`). These are observations from that film, not subject rules. For a genuinely new pose, draw or fit the missing key/region; do not substitute a character rig or part-template library for observing the actual references.
 
 | Diagnostic | Cause | Fix |
 | --- | --- | --- |

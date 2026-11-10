@@ -1,4 +1,4 @@
-"""Lexer and recursive-descent parser for NorthCel (.ncel) up to spec 0.4 with line:column diagnostics."""
+"""Lexer and recursive-descent parser for NorthCel (.ncel) up to spec 0.5 with line:column diagnostics."""
 
 from __future__ import annotations
 
@@ -15,8 +15,10 @@ from .ast_nodes import (
     DocumentNode,
     DropNode,
     FilmNode,
+    GroupNode,
     LayerNode,
     MorphNode,
+    NudgeNode,
     PaperSpec,
     RibbonNode,
     SceneItem,
@@ -26,6 +28,7 @@ from .ast_nodes import (
     SwarmNode,
     TransformNode,
     UseNode,
+    WarpNode,
 )
 from .config import SPEC_VERSION
 
@@ -258,6 +261,12 @@ class _Parser:
                 items.append(self.parse_ribbon())
             elif tok.kind == "IDENT" and tok.value == "morph":
                 items.append(self.parse_morph())
+            elif tok.kind == "IDENT" and tok.value == "group":
+                items.append(self.parse_group())
+            elif tok.kind == "IDENT" and tok.value == "warp":
+                items.append(self.parse_warp())
+            elif tok.kind == "IDENT" and tok.value == "nudge":
+                items.append(self.parse_nudge())
             else:
                 raise NorthCelSyntaxError(
                     f"Unknown scene statement '{tok.value}'", tok.line, tok.column
@@ -326,6 +335,12 @@ class _Parser:
                 items.append(self.parse_ribbon())
             elif tok.kind == "IDENT" and tok.value == "morph":
                 items.append(self.parse_morph())
+            elif tok.kind == "IDENT" and tok.value == "group":
+                items.append(self.parse_group())
+            elif tok.kind == "IDENT" and tok.value == "warp":
+                items.append(self.parse_warp())
+            elif tok.kind == "IDENT" and tok.value == "nudge":
+                items.append(self.parse_nudge())
             elif tok.kind == "IDENT" and tok.value == "frame":
                 f_lo, f_hi, f_scene = self.parse_frame_override(width, height, fps, precision, seed, paper, palette)
                 if f_hi is None:
@@ -415,6 +430,12 @@ class _Parser:
                 items.append(self.parse_ribbon())
             elif tok.kind == "IDENT" and tok.value == "morph":
                 items.append(self.parse_morph())
+            elif tok.kind == "IDENT" and tok.value == "group":
+                items.append(self.parse_group())
+            elif tok.kind == "IDENT" and tok.value == "warp":
+                items.append(self.parse_warp())
+            elif tok.kind == "IDENT" and tok.value == "nudge":
+                items.append(self.parse_nudge())
             else:
                 raise NorthCelSyntaxError(f"Unknown frame statement '{tok.value}'", tok.line, tok.column)
         self.expect("PUNCT", "}")
@@ -471,7 +492,7 @@ class _Parser:
             for k, v in raw_attrs.items():
                 params[k] = float(self._eval_const(v))
         self.expect("PUNCT", "{")
-        items: list[LayerNode | SwarmNode | StrokeNode | RibbonNode | MorphNode | TransformNode] = []
+        items: list[SceneItem] = []
         while not (self.cur().kind == "PUNCT" and self.cur().value == "}"):
             if self.cur().kind == "EOF":
                 raise NorthCelSyntaxError(f"Unclosed 'def {name_tok.value}' block", kw.line, kw.column)
@@ -488,6 +509,12 @@ class _Parser:
                 items.append(self.parse_transform())
             elif tok.kind == "IDENT" and tok.value == "morph":
                 items.append(self.parse_morph())
+            elif tok.kind == "IDENT" and tok.value == "group":
+                items.append(self.parse_group())
+            elif tok.kind == "IDENT" and tok.value == "warp":
+                items.append(self.parse_warp())
+            elif tok.kind == "IDENT" and tok.value == "nudge":
+                items.append(self.parse_nudge())
             else:
                 raise NorthCelSyntaxError(
                     f"Unsupported statement '{tok.value}' inside def block", tok.line, tok.column
@@ -527,7 +554,109 @@ class _Parser:
         self.match("PUNCT", ";")
         return TransformNode(target, pair("scale", (1.0, 1.0), True), number(attrs.get("rotate", 0.0)),
                              pair("anchor", (0.0, 0.0)), pair("translate", (0.0, 0.0)),
-                             SourceSpan(kw.line, kw.column))
+                             "anchor" in attrs, SourceSpan(kw.line, kw.column))
+
+    def _attr_pair(self, attrs: dict[str, Any], key: str, default: tuple[Any, Any],
+                   line: int, column: int) -> tuple[Any, Any]:
+        value = attrs.get(key, default)
+        if not isinstance(value, tuple) or len(value) != 2:
+            raise NorthCelSyntaxError(f"{key} requires 2 components", line, column)
+        return value
+
+    def _attr_name(self, attrs: dict[str, Any], key: str, line: int, column: int) -> str | None:
+        value = attrs.get(key)
+        if value is None:
+            return None
+        if isinstance(value, str):
+            return value
+        if isinstance(value, ExprValue) and value.op == "var":
+            return str(value.args[0])
+        raise NorthCelSyntaxError(f"{key} must name an entry", line, column)
+
+    def parse_group_item(self) -> SceneItem:
+        tok = self.cur()
+        if tok.kind == "IDENT" and tok.value in ("layer", "wash", "cel"):
+            return self.parse_layer(is_cel=(tok.value == "cel"))
+        if tok.kind == "IDENT" and tok.value in ("bend_swarm", "swarm"):
+            return self.parse_swarm()
+        if tok.kind == "IDENT" and tok.value == "stroke":
+            return self.parse_stroke()
+        if tok.kind == "IDENT" and tok.value == "ribbon":
+            return self.parse_ribbon()
+        if tok.kind == "IDENT" and tok.value == "morph":
+            return self.parse_morph()
+        if tok.kind == "IDENT" and tok.value == "use":
+            return self.parse_use()
+        if tok.kind == "IDENT" and tok.value == "transform":
+            return self.parse_transform()
+        if tok.kind == "IDENT" and tok.value == "group":
+            return self.parse_group()
+        if tok.kind == "IDENT" and tok.value == "warp":
+            return self.parse_warp()
+        if tok.kind == "IDENT" and tok.value == "nudge":
+            return self.parse_nudge()
+        raise NorthCelSyntaxError(f"Unsupported group statement '{tok.value}'", tok.line, tok.column)
+
+    def parse_group(self) -> GroupNode:
+        kw = self.expect("IDENT", "group")
+        name_tok = self.expect("IDENT")
+        attrs = self.parse_attr_list() if self.cur().value == "(" else {}
+        for key in attrs:
+            if key not in ("pivot", "clip", "parent", "opacity"):
+                raise NorthCelSyntaxError(f"Unknown group attribute '{key}'", kw.line, kw.column)
+        pivot = self._attr_pair(attrs, "pivot", (0.0, 0.0), kw.line, kw.column)
+        clip = self._attr_name(attrs, "clip", kw.line, kw.column)
+        parent = self._attr_name(attrs, "parent", kw.line, kw.column)
+        self.expect("PUNCT", "{")
+        items: list[SceneItem] = []
+        while not (self.cur().kind == "PUNCT" and self.cur().value == "}"):
+            if self.cur().kind == "EOF":
+                raise NorthCelSyntaxError(f"Unclosed 'group {name_tok.value}' block", kw.line, kw.column)
+            items.append(self.parse_group_item())
+        self.expect("PUNCT", "}")
+        return GroupNode(name_tok.value, items, pivot, clip, parent,
+                         attrs.get("opacity"), SourceSpan(kw.line, kw.column))
+
+    def parse_warp(self) -> WarpNode:
+        kw = self.expect("IDENT", "warp")
+        target = self.expect("IDENT").value
+        attrs = self.parse_attr_list()
+        for key in attrs:
+            if key not in ("handles", "radius"):
+                raise NorthCelSyntaxError(f"Unknown warp attribute '{key}'", kw.line, kw.column)
+        handles = attrs.get("handles")
+        if not isinstance(handles, tuple) or not handles:
+            raise NorthCelSyntaxError("warp needs handles: ((x, y, dx, dy), ...)", kw.line, kw.column)
+        for h in handles:
+            if not isinstance(h, tuple) or len(h) != 4:
+                raise NorthCelSyntaxError("each warp handle needs 4 components (x, y, dx, dy)",
+                                          kw.line, kw.column)
+        self.match("PUNCT", ";")
+        return WarpNode(target, handles, attrs.get("radius", 120.0), SourceSpan(kw.line, kw.column))
+
+    def parse_nudge(self) -> NudgeNode:
+        kw = self.expect("IDENT", "nudge")
+        target = self.expect("IDENT").value
+        attrs = self.parse_attr_list()
+        for key in attrs:
+            if key not in ("vertex", "ring", "dx", "dy"):
+                raise NorthCelSyntaxError(f"Unknown nudge attribute '{key}'", kw.line, kw.column)
+        if "vertex" not in attrs:
+            raise NorthCelSyntaxError("nudge needs vertex:", kw.line, kw.column)
+        self.match("PUNCT", ";")
+        indices = {}
+        for key in ("vertex", "ring"):
+            try:
+                value = self._eval_const(attrs.get(key, 0))
+                if not math.isfinite(value) or not value.is_integer():
+                    raise ValueError
+            except (ValueError, TypeError, KeyError, OverflowError):
+                raise NorthCelSyntaxError(f"nudge {key} must be an integer", kw.line, kw.column) from None
+            indices[key] = int(value)
+        return NudgeNode(target, indices["vertex"],
+                          attrs.get("dx", 0.0), attrs.get("dy", 0.0),
+                          indices["ring"],
+                         SourceSpan(kw.line, kw.column))
 
     def parse_drop(self) -> DropNode:
         kw = self.expect("IDENT", "drop")
@@ -750,6 +879,8 @@ class _Parser:
             self.advance()
             items = [self.parse_attr_value()]
             while self.match("PUNCT", ","):
+                if self.cur().value == ")":
+                    break
                 items.append(self.parse_attr_value())
             self.expect("PUNCT", ")")
             return tuple(items)

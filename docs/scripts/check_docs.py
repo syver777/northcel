@@ -6,14 +6,17 @@ Run from the repository root:
 
 What it proves:
 
-* every ```ncel fence in the guide carries a marker and does what it claims:
-  errors reproduce the exact diagnostic, sources equal their file, rendered
+* every ```ncel fence in public Markdown passes the full reference check;
+* every guide example carries a marker and does what it claims: deliberate
+  errors in text fences reproduce the exact diagnostic, sources equal their file, rendered
   snippets match their committed image and the manifest;
 * every `examples/patterns/*.ncel` compiles, renders every frame and matches the
   committed contact sheet;
 * the gallery images are the renders of the files and frames they name;
 * every relative link and image path resolves;
 * `docs/errors.md` is current (regenerated from the source and compared).
+* every ncel fence in the README, current spec and agent guide validates and
+  renders every frame, including examples extracted into the offline guide.
 """
 
 from __future__ import annotations
@@ -42,6 +45,9 @@ class Checker:
             "patterns": 0,
             "pattern_frames": 0,
             "gallery": 0,
+            "reference_snippets": 0,
+            "reference_frames": 0,
+            "valid_ncel_fences": 0,
         }
 
     def fail(self, message: str) -> None:
@@ -67,6 +73,22 @@ class Checker:
                     self.fail(f"{lib.rel(page)}:{line}: dead link/image: {target}")
 
     # ------------------------------------------------------------------ guide
+    def check_ncel_fences(self, tmp: Path) -> None:
+        """The ncel language tag promises a valid, complete program everywhere."""
+        for page in lib.markdown_files():
+            for block in lib.extract_blocks(page):
+                if block.language != "ncel":
+                    continue
+                self.counts["valid_ncel_fences"] += 1
+                src = tmp / "fence.ncel"
+                src.write_text(block.code)
+                receipt = lib.check_document(src)
+                if not receipt.get("ok") or receipt.get("exit_code") != 0:
+                    self.fail(
+                        f"{block.page}:{block.start_line}: invalid ncel fence: "
+                        f"{receipt.get('errors')} (use marked text for a deliberate error)"
+                    )
+
     def _render_matches(self, block: lib.Block, asset: str, entry: dict, tmp: Path) -> None:
         frames = [int(x) for x in block.marker.get("frames", "0").split(",") if x]
         cols = int(block.marker.get("cols", min(4, len(frames))))
@@ -161,6 +183,28 @@ class Checker:
         for asset in manifest.get("guide", {}):
             if asset not in seen:
                 self.fail(f"expected.json lists {asset}, but no guide fence renders it")
+
+    # ------------------------------------------- spec / agent guide / README
+    def check_reference_examples(self, tmp: Path, pages=None) -> None:
+        if pages is None:
+            pages = [lib.REPO / "README.md", lib.DOCS / "agent-guide.md",
+                     lib.DOCS / "spec" / "SPEC-0.5.0-draft.md"]
+        for page in pages:
+            for block in lib.extract_blocks(page):
+                self.counts["reference_snippets"] += 1
+                src = tmp / f"reference-{page.stem}-{block.index}.ncel"
+                src.write_text(block.code)
+                receipt = lib.check_document(src)
+                if not receipt.get("ok") or receipt.get("exit_code") != 0:
+                    self.fail(f"{block.page}#{block.index}: example check failed: {receipt.get('errors')}")
+                    continue
+                try:
+                    info = lib.info_document(src)
+                    for frame in range(int(info.get("frames") or 1)):
+                        lib.render_frame(src, tmp / "reference-frame.png", frame=frame)
+                        self.counts["reference_frames"] += 1
+                except RuntimeError as exc:
+                    self.fail(f"{block.page}#{block.index}: {exc}")
 
     # --------------------------------------------------------------- patterns
     def check_patterns(self, manifest: dict, tmp: Path) -> None:
@@ -305,7 +349,9 @@ def main() -> int:
     checker.check_links()
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)
+        checker.check_ncel_fences(tmp)
         checker.check_guide(manifest, tmp)
+        checker.check_reference_examples(tmp)
         checker.check_patterns(manifest, tmp)
         checker.check_gallery(manifest, tmp)
     if not args.skip_errors:

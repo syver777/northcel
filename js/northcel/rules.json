@@ -5,8 +5,8 @@
     "FILE_EXTENSION": ".ncel",
     "CLI_COMMAND": "northcel",
     "CLI_SHORT_ALIAS": "ncel",
-    "PACKAGE_VERSION": "0.5.0",
-    "SPEC_VERSION": "0.4.0-draft",
+    "PACKAGE_VERSION": "0.6.0",
+    "SPEC_VERSION": "0.5.0-draft",
     "SUPPORTED_SPEC_VERSIONS": [
       "0.1",
       "0.1.0",
@@ -19,7 +19,10 @@
       "0.3.0-draft",
       "0.4",
       "0.4.0",
-      "0.4.0-draft"
+      "0.4.0-draft",
+      "0.5",
+      "0.5.0",
+      "0.5.0-draft"
     ],
     "DOCS_URL": "https://northnoir.com/northcel"
   },
@@ -29,8 +32,10 @@
       "cel",
       "def",
       "drop",
+      "group",
       "layer",
       "morph",
+      "nudge",
       "palette",
       "paper",
       "ribbon",
@@ -38,6 +43,7 @@
       "swarm",
       "transform",
       "use",
+      "warp",
       "wash"
     ],
     "film": [
@@ -46,8 +52,10 @@
       "def",
       "drop",
       "frame",
+      "group",
       "layer",
       "morph",
+      "nudge",
       "palette",
       "paper",
       "ribbon",
@@ -55,6 +63,7 @@
       "swarm",
       "transform",
       "use",
+      "warp",
       "wash"
     ],
     "frame": [
@@ -62,8 +71,10 @@
       "cel",
       "def",
       "drop",
+      "group",
       "layer",
       "morph",
+      "nudge",
       "palette",
       "paper",
       "ribbon",
@@ -71,17 +82,36 @@
       "swarm",
       "transform",
       "use",
+      "warp",
       "wash"
     ],
     "def": [
       "bend_swarm",
       "cel",
+      "group",
       "layer",
       "morph",
+      "nudge",
       "ribbon",
       "stroke",
       "swarm",
       "transform",
+      "warp",
+      "wash"
+    ],
+    "group": [
+      "bend_swarm",
+      "cel",
+      "group",
+      "layer",
+      "morph",
+      "nudge",
+      "ribbon",
+      "stroke",
+      "swarm",
+      "transform",
+      "use",
+      "warp",
       "wash"
     ]
   },
