@@ -1,0 +1,6 @@
+northcel "0.6.0-draft"
+scene Arap(width: 120, height: 120) {
+  paper { color: #FFFFFF, antialias_grid: 4 }
+  layer box(color: #FF0000) { "120,120 240,0 0,240 -240,0" }
+  warp box(handles: ((40, 40, 16, 4),), radius: 55, mode: arap)
+}

@@ -331,6 +331,97 @@ def _expand_paint(
             out.append(pts)
         paint.rings = out
 
+    def apply_arap(paint, handles, radius, local_env):
+        """As-rigid-as-possible deformation of one paint's ring graph (spec 0.6).
+
+        Handles prescribe offsets inside `radius` (same falloff as the smooth
+        warp) and also act as soft anchors. The shape's rings are the graph:
+        boundary edges keep every ring's segments as rigid as possible while
+        the handles drive the deformation. Deterministic: no random sampling,
+        a fixed CG iteration budget and a closed-form 2x2 polar factor.
+        """
+        hs = [(_eval_num(hx, local_env), _eval_num(hy, local_env),
+               _eval_num(hdx, local_env), _eval_num(hdy, local_env)) for hx, hy, hdx, hdy in handles]
+        r = max(1e-6, _eval_num(radius, local_env))
+        pts = []
+        edges = []
+        for ring in paint.rings:
+            base = len(pts)
+            pts.extend([(float(x), float(y)) for x, y in ring])
+            for i in range(len(ring)):
+                edges.append((base + i, base + (i + 1) % len(ring)))
+        if not pts or not edges:
+            return
+        p0 = np.asarray(pts, dtype=np.float64)
+        n = p0.shape[0]
+        weight = np.zeros(n, dtype=np.float64)
+        target = np.zeros((n, 2), dtype=np.float64)
+        for hx, hy, hdx, hdy in hs:
+            d = np.hypot(p0[:, 0] - hx, p0[:, 1] - hy)
+            w = np.where(d < r, (1.0 - (d / r) ** 2) ** 2, 0.0)
+            weight += w
+            target += w[:, None] * np.array([hdx, hdy])
+        safe = np.maximum(weight, 1e-12)
+        disp = target / safe[:, None]
+        disp[weight <= 1e-12] = 0.0
+        # Soft anchors at the handles and a very weak anchor to the original
+        # shape everywhere, so the centroid cannot drift.
+        c = 12.0 * weight + 0.2
+        t = p0 + disp
+        p = t.copy()
+        ei = np.asarray([e[0] for e in edges])
+        ej = np.asarray([e[1] for e in edges])
+        rest = p0[ei] - p0[ej]
+        for _ in range(10):
+            # Local: best 2x2 rotation per vertex from its ring neighbours.
+            d = p[ei] - p[ej]
+            S = np.zeros((n, 2, 2))
+            np.add.at(S, ei, d[:, :, None] * rest[:, None, :])
+            np.add.at(S, ej, d[:, :, None] * rest[:, None, :])
+            U, _s, Vt = np.linalg.svd(S)
+            R = U @ Vt
+            det = np.linalg.det(R)
+            R[det < 0, :, 1] *= -1.0
+            # Global: (L + C) p = b, solved matrix-free with conjugate gradients.
+            half = 0.5 * (R[ei] + R[ej])
+            b = np.zeros((n, 2))
+            np.add.at(b, ei, np.einsum("nij,nj->ni", half, rest))
+            np.add.at(b, ej, -np.einsum("nij,nj->ni", half, rest))
+            b += c[:, None] * t
+
+            def matvec(x):
+                y = c[:, None] * x
+                diff = x[ei] - x[ej]
+                np.add.at(y, ei, diff)
+                np.add.at(y, ej, -diff)
+                return y
+
+            x = p.copy()
+            rvec = b - matvec(x)
+            pvec = rvec.copy()
+            rs = float((rvec * rvec).sum())
+            for _cg in range(160):
+                ap = matvec(pvec)
+                denom = float((pvec * ap).sum())
+                if abs(denom) < 1e-18:
+                    break
+                alpha = rs / denom
+                x += alpha * pvec
+                rvec -= alpha * ap
+                rs_new = float((rvec * rvec).sum())
+                if rs_new <= 1e-10 * max(1.0, float((b * b).sum())):
+                    break
+                pvec = rvec + (rs_new / rs) * pvec
+                rs = rs_new
+            p = x
+        out = []
+        at = 0
+        for ring in paint.rings:
+            m = len(ring)
+            out.append([(float(p[at + i, 0]), float(p[at + i, 1])) for i in range(m)])
+            at += m
+        paint.rings = out
+
     def opacity_of(item, local_env) -> float:
         expr = getattr(item, "opacity", None)
         if expr is None or not spec04:
@@ -383,7 +474,10 @@ def _expand_paint(
                     raise NorthCelEvaluationError(f"Warp target '{item.target_name}' has not been painted",
                                                   item.span.line, item.span.column)
                 for paint in targets:
-                    apply_warp(paint, item.handles, item.radius, local_env)
+                    if getattr(item, "mode", "smooth") == "arap":
+                        apply_arap(paint, item.handles, item.radius, local_env)
+                    else:
+                        apply_warp(paint, item.handles, item.radius, local_env)
                 continue
             if isinstance(item, NudgeNode):
                 targets = [p for p in layers_out if p.name == item.target_name]

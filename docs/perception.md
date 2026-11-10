@@ -1,9 +1,11 @@
 # Optional perception helpers
 
-**Source-only / unreleased tools 0.6.0.** These commands are in this checkout,
-not the published tools 0.5.0. Install the checkout in a virtual environment with
-`python3 -m pip install -e ./python`. Each backend is a separate, optional user
-install; no ML dependency has been added to the core package.
+**Tools 0.7.0.** These commands are in the package, but each backend remains a
+separate optional install. `pip install "northcel[perceive]"` adds the
+PyPI-installable pieces (VTracer, PyTorch/TorchVision, TensorFlow). SAM 2 itself
+is installed from its upstream git repository because it is not on PyPI, and
+model weights are always supplied as local paths. No ML dependency is required
+to import NorthCel or render ordinary documents.
 
 Tools suggest; the AI decides. Masks, vectors, motion hints and interpolation
 guides are observations to inspect, not semantic truth, animation recipes or
@@ -49,7 +51,7 @@ checkpoint's commercial terms.
 | Existing `fit --stacked` fallback | NorthCel MIT OR Apache-2.0; [OpenCV Apache-2.0](https://github.com/opencv/opencv/blob/5.x/LICENSE); [scikit-image BSD notices](https://github.com/scikit-image/scikit-image/blob/v0.26.0/LICENSE.txt) | Runs only if the already-existing `northcel[fit]` libraries are importable. Nothing is auto-installed. |
 | SEA-RAFT | [BSD-3-Clause](https://github.com/princeton-vl/SEA-RAFT/blob/main/LICENSE) | External alternative; no bundled adapter, weights or imports. |
 | RIFE (ECCV2022 upstream) | [MIT](https://github.com/hzwer/ECCV2022-RIFE/blob/main/LICENSE), **not Apache-2.0** | External alternative; this implementation selects FILM instead. Other forks/models require separate checks. |
-| SAM 3 | No compatibility determination made for its code/checkpoints | External opt-in only; no imports, text-prompt flag, download or redistribution. |
+| SAM 3 | Meta's **SAM License** (custom, last updated 2025-11-19; not Apache/MIT): royalty-free use/modification/redistribution with a copy of the agreement, no military/ITAR/sanctions use, no reverse engineering, publication acknowledgement, no MAU threshold | Redistribution *is* permitted under the SAM License, but it is not an OSI open-source licence and imposes use restrictions. NorthCel therefore keeps SAM 3 **external opt-in only**: no imports, text-prompt flag, download, dependency or redistribution in this package. |
 | Potrace / AutoTrace | GPL-family; see [Potrace](https://potrace.sourceforge.net/#license) and [AutoTrace](https://github.com/autotrace/autotrace) | External-only, never vendored, imported or invoked by these helpers. |
 | DiffVG / LIVE | Not audited for this integration | Not integrated; no imports or installs. |
 

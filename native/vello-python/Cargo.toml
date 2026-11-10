@@ -1,0 +1,16 @@
+[package]
+name = "northcel-vello"
+version = "0.7.0"
+edition = "2021"
+publish = false
+license = "MIT OR Apache-2.0"
+description = "Optional Vello/wgpu renderer for NorthCel NCIR v2 (tolerance tier)."
+
+[lib]
+name = "northcel_vello"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.30", features = ["extension-module"] }
+ncel-vello = { path = "../vello" }
+serde_json = "1"

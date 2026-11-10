@@ -207,6 +207,31 @@ def _color_text(c) -> str:
     return c.describe() if isinstance(c, ColorMix) else c.to_hex()
 
 
+def _vello_module():
+    try:
+        import northcel_vello  # noqa: F401
+    except ImportError as exc:  # pragma: no cover - install hint path
+        raise RuntimeError(
+            'the Vello renderer needs the optional extra: pip install "northcel[vello]"'
+        ) from exc
+    return northcel_vello
+
+
+def _render_vello_frame(doc, frame: int, seed_override, out_p: Path) -> dict:
+    import json as _json
+    import tempfile
+
+    from .ncir import build_frame
+
+    module = _vello_module()
+    data = build_frame(doc, frame, seed_override)
+    with tempfile.TemporaryDirectory(prefix="ncel-vello-") as tmp:
+        ncir_path = Path(tmp) / "frame.ncir"
+        ncir_path.write_bytes(data)
+        stats = _json.loads(module.render_frame(data, str(out_p)))
+        return {"ncir_bytes": len(data), **stats}
+
+
 def cmd_render(args: argparse.Namespace) -> int:
     path = Path(args.file)
     _, doc, diags = _load_and_validate(path)
@@ -221,12 +246,31 @@ def cmd_render(args: argparse.Namespace) -> int:
         return 1
 
     t0 = time.monotonic()
+    out_p = Path(args.out) if args.out else path.with_suffix(".png")
+    out_p.parent.mkdir(parents=True, exist_ok=True)
+    if getattr(args, "renderer", "reference") == "vello":
+        try:
+            stats = _render_vello_frame(doc, args.frame, args.seed, out_p)
+        except Exception as exc:  # noqa: BLE001 - install hint is the message
+            print(f"{path}: {exc}", file=sys.stderr)
+            return 1
+        elapsed = time.monotonic() - t0
+        if args.json:
+            print(json.dumps({
+                "ok": True, "input": str(path), "output": str(out_p),
+                "frame": args.frame, "width": stats["width"], "height": stats["height"],
+                "renderer": "vello", "tier": "tolerance", "native": False,
+                "paints": stats["paints"], "render_ms": round(stats["render_ms"], 2),
+                "ncir_bytes": stats["ncir_bytes"], "seconds": round(elapsed, 4),
+            }, indent=2))
+        else:
+            print(f"Rendered {out_p} with Vello ({stats['width']}x{stats['height']}, "
+                  f"frame {args.frame}) in {elapsed:.3f}s [tolerance tier]")
+        return 0
     try:
         rgb = render_document_frame(doc, frame_index=args.frame, seed_override=args.seed)
     except NorthCelEvaluationError as exc:
         return evaluation_error(path, exc, args.json)
-    out_p = Path(args.out) if args.out else path.with_suffix(".png")
-    out_p.parent.mkdir(parents=True, exist_ok=True)
     Image.fromarray(rgb, mode="RGB").save(out_p)
     elapsed = time.monotonic() - t0
     if args.json:
@@ -271,11 +315,66 @@ def cmd_film(args: argparse.Namespace) -> int:
             indices = [int(x.strip()) for x in args.frames.split(",") if x.strip()]
 
     t0 = time.monotonic()
+    if getattr(args, "renderer", "reference") == "vello":
+        return _cmd_film_vello(args, doc, indices, t0)
     try:
         res = render_film_frames(doc, out_dir=args.out_dir, frame_indices=indices, mp4_path=args.mp4)
     except NorthCelEvaluationError as exc:
         return evaluation_error(path, exc, False)
     res["seconds"] = round(time.monotonic() - t0, 4)
+    print(json.dumps(res, indent=2))
+    return 0
+
+
+def _cmd_film_vello(args, doc, indices, t0) -> int:
+    """Render film frames with NCIR v2 + Vello, then mux the MP4 with ffmpeg."""
+    import json as _json
+    import shutil
+    import subprocess
+    import tempfile
+
+    from .ncir import write_frame
+
+    module = _vello_module()
+    root = doc.root
+    total = root.frames if isinstance(root, FilmNode) else 1
+    frames = indices if indices is not None else list(range(total))
+    out_dir = Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="ncel-vello-film-") as tmp:
+        ncir_dir = Path(tmp)
+        by_frame = {}
+        for frame in frames:
+            name = f"f{frame:04d}"
+            write_frame(doc, frame, ncir_dir / f"{name}.ncir", getattr(args, "seed", None))
+            by_frame[name] = frame
+        paths = sorted(ncir_dir.glob("*.ncir"))
+        stats = _json.loads(module.render_sequence([str(p) for p in paths], str(out_dir)))
+    # Vello writes <stem>.png; keep the reference naming fNNNN.png.
+    written = [out_dir / f"f{frame:04d}.png" for frame in frames
+               if (out_dir / f"f{frame:04d}.png").is_file()]
+    mp4_written = None
+    if args.mp4 and written and shutil.which("ffmpeg"):
+        cmd = [shutil.which("ffmpeg"), "-y", "-framerate", str(root.fps),
+               "-i", str(out_dir / "f%04d.png"), "-c:v", "libx264", "-pix_fmt", "yuv420p",
+               str(args.mp4)]
+        proc = subprocess.run(cmd, capture_output=True, text=True)
+        if proc.returncode == 0:
+            mp4_written = str(args.mp4)
+    res = {
+        "frames": len(written),
+        "fps": root.fps,
+        "width": root.width,
+        "height": root.height,
+        "out_dir": str(out_dir),
+        "mp4": mp4_written,
+        "renderer": "vello",
+        "tier": "tolerance",
+        "native": False,
+        "ncir_version": 2,
+        "frame_ms": round(sum(s["render_ms"] for s in stats) / max(1, len(stats)), 2),
+        "seconds": round(time.monotonic() - t0, 4),
+    }
     print(json.dumps(res, indent=2))
     return 0
 
@@ -793,6 +892,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_render.add_argument("-o", "--out", help="Output PNG path (default: <file>.png)")
     p_render.add_argument("-f", "--frame", type=int, default=0, help="Frame index to render (default: 0)")
     p_render.add_argument("--seed", type=int, default=None, help="Optional seed override")
+    p_render.add_argument("--renderer", choices=["reference", "vello"], default="reference",
+                          help="reference (exact, default) or vello (tolerance tier; needs northcel[vello])")
     p_render.add_argument("--json", action="store_true", help="Output JSON summary")
     p_render.set_defaults(func=cmd_render)
 
@@ -801,6 +902,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_film.add_argument("-o", "--out-dir", required=True, help="Directory for rendered f0000.png frames")
     p_film.add_argument("--frames", help="Optional frame range '0..5' or comma list '0,1,2'")
     p_film.add_argument("--mp4", help="Optional output MP4 file path (muxed with ffmpeg if available)")
+    p_film.add_argument("--renderer", choices=["reference", "vello"], default="reference",
+                        help="reference (exact, default) or vello (tolerance tier; needs northcel[vello])")
     p_film.set_defaults(func=cmd_film)
 
     return p

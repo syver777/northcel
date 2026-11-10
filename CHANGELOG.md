@@ -10,6 +10,39 @@ move for packaging-only releases.
 
 ---
 
+## [0.7.0] — 2026-11-10
+
+### Added
+- **Spec 0.6.0-draft**: `warp(mode: arap)` — deterministic as-rigid-as-possible
+  deformation over a paint's ring graph, with handle anchors and the same
+  radius/falloff; `mode` is validated and formatted, and a 0.5 document using it
+  is a located validation error.
+- **NCIR v2** (`northcel.ncir`): per-frame binary paint list carrying ring
+  topology, group scopes with opacity, resolved clip rings, per-paint opacity,
+  paper RGB, antialias grid and grain. Documented layout plus a reference
+  reader (`read_frame`) for tests and diagnostics.
+- **Vello tolerance renderer**: `northcel render|film --renderer vello` renders
+  NCIR v2 through the optional `northcel-vello` package
+  (`pip install "northcel[vello]"`); `tests/conformance.py --vello` compares it
+  with the reference under a mean-absolute-error limit. The Python reference
+  remains the exact tier and never falls back silently.
+- **`northcel[perceive]`** installs the PyPI-installable perception parts
+  (VTracer, PyTorch/TorchVision, TensorFlow). SAM 2 is still installed from its
+  upstream repository; SAM 3 stays external opt-in because it uses Meta's
+  custom SAM License.
+- Fit keys can be measured from the drawing itself: `northcel.keys`
+  (`measure_figure`, `prepare_key`, `add_outline_backing`) and
+  `northcel fit --figure [--backing PX]`, which fits a figure without its paper,
+  sky or a cloud the ink touches and paints a 4 px ink outline backing under the
+  shapes (0.6.1).
+
+### Compatibility
+- 0.1–0.5 documents keep their pixels. Headerless documents are now
+  `0.6.0-draft`. The native runtime stays 0.4.0 / spec 0.3; both launchers route
+  0.4–0.6 documents to the labelled Python reference.
+- The Vello tier is never byte-identical at antialiased edges; it is a tolerance
+  tier and not a replacement for the exact reference.
+
 ## [0.6.1] — 2026-11-10
 
 ### Added

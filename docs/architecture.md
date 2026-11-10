@@ -5,6 +5,17 @@ product on Linux x86_64; the **Python reference** is the normative oracle and th
 labelled fallback everywhere else. This page describes the native pipeline and
 where the reference sits.
 
+## NCIR v2 and accelerated tiers (tools 0.7)
+
+The Python reference evaluates one frame into an ordered paint list and can
+serialise it as **NCIR v2** (`northcel/ncir.py`): ring topology, group scopes
+with opacity, resolved clip rings, per-paint opacity, paper and grain. The
+optional `northcel-vello` Rust/wgpu backend (`northcel render|film --renderer
+vello`) renders that IR as the tolerance tier. It never parses `.ncel`, never
+falls back silently, and is validated against the reference by the `--vello`
+conformance check. The native MoonBit/Bend/GLSL pipeline below remains the
+Linux x86_64 runtime for spec 0.3.
+
 ## The three stages
 
 ```text

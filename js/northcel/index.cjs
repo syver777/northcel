@@ -301,7 +301,7 @@ function checkNcelSource(source) {
   }
   result.ok = result.errors.length === 0;
   if (spec05Features(source).length) {
-    result.next = "Install tools 0.6.0 from this source checkout (unreleased): `python3 -m pip install -e ./python` at the repository root in a venv; then run `northcel check <file.ncel> --require-full`. Published pip tools 0.5.0 only supports spec 0.4.";
+    result.next = "Install current tools: `python3 -m pip install -U northcel`; then run `northcel check <file.ncel> --require-full`.";
   }
   return result;
 }

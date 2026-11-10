@@ -178,9 +178,54 @@ def check_native(manifest: dict, ref, results: dict, workdir: Path) -> None:
     results["native_agreement"] = {"ok": all(c["ok"] for c in cases), "binary": str(binary), "cases": cases}
 
 
+def check_vello(manifest: dict, ref, results: dict, workdir: Path) -> None:
+    """Tolerance tier: NCIR v2 through the Vello backend vs the reference."""
+    try:
+        import northcel_vello  # noqa: PLC0415
+    except ImportError:
+        say("  [SKIP] vello tier: northcel-vello is not installed (pip install 'northcel[vello]')")
+        results["vello_tier"] = {"ok": None, "detail": "northcel-vello not installed"}
+        return
+    import json as _json  # noqa: PLC0415
+
+    import numpy as np  # noqa: PLC0415
+    from PIL import Image  # noqa: PLC0415
+
+    from northcel.ncir import build_frame  # noqa: PLC0415
+
+    tolerance = float(manifest.get("vello_tolerance_mae", 1.0))
+    cases = []
+    for case in manifest["cases"]:
+        doc = _load(case["file"], ref)
+        frames = sorted(int(f) for f in case.get("probes_by_frame", {"0": []}))
+        for frame in frames:
+            data = build_frame(doc, frame)
+            out = workdir / f"vello_{case['name']}_{frame}.png"
+            try:
+                stats = _json.loads(northcel_vello.render_frame(data, str(out)))
+            except Exception as exc:  # noqa: BLE001
+                cases.append({"case": case["name"], "frame": frame, "ok": False,
+                              "detail": str(exc)[:300]})
+                say(f"  [FAIL] vello render: {case['name']} frame {frame}: {str(exc)[:200]}")
+                continue
+            vel = np.asarray(Image.open(out).convert("RGB"), dtype=np.int16)
+            ref_img = np.asarray(ref["render"](doc, frame_index=frame), dtype=np.int16)
+            mae = float(np.abs(vel - ref_img).mean())
+            limit = float(case.get("vello_tolerance_mae", tolerance))
+            ok = mae <= limit
+            cases.append({"case": case["name"], "frame": frame, "ok": ok,
+                          "mae": round(mae, 6), "limit": limit,
+                          "render_ms": round(stats.get("render_ms", 0.0), 3)})
+            say(f"  [{'PASS' if ok else 'FAIL'}] vello tier: {case['name']} frame {frame} "
+                f"MAE {mae:.6f} <= {limit}")
+    results["vello_tier"] = {"ok": all(c["ok"] for c in cases), "cases": cases,
+                             "backend_version": getattr(northcel_vello, "__version__", None)}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--native", action="store_true", help="also compare against the native runtime")
+    parser.add_argument("--vello", action="store_true", help="also compare the Vello tolerance tier")
     parser.add_argument("--json", action="store_true", help="print a JSON report")
     parser.add_argument("--keep", help="keep artifacts in this directory")
     args = parser.parse_args()
@@ -198,6 +243,8 @@ def main() -> int:
     check_determinism(manifest, ref, results)
     if args.native:
         check_native(manifest, ref, results, workdir)
+    if args.vello:
+        check_vello(manifest, ref, results, workdir)
 
     checked = [v for k, v in results.items() if isinstance(v, dict) and v.get("ok") is not None]
     failed = [k for k, v in results.items() if isinstance(v, dict) and v.get("ok") is False]

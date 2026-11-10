@@ -197,6 +197,8 @@ class WarpNode:
     target_name: str
     handles: tuple[tuple[Any, Any, Any, Any], ...]
     radius: Any = 120.0
+    #: "smooth" (spec 0.5 weighted falloff) or "arap" (spec 0.6 rigid energy).
+    mode: str = "smooth"
     span: SourceSpan = field(default_factory=lambda: SourceSpan(1, 1))
 
 

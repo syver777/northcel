@@ -622,7 +622,7 @@ class _Parser:
         target = self.expect("IDENT").value
         attrs = self.parse_attr_list()
         for key in attrs:
-            if key not in ("handles", "radius"):
+            if key not in ("handles", "radius", "mode"):
                 raise NorthCelSyntaxError(f"Unknown warp attribute '{key}'", kw.line, kw.column)
         handles = attrs.get("handles")
         if not isinstance(handles, tuple) or not handles:
@@ -632,7 +632,17 @@ class _Parser:
                 raise NorthCelSyntaxError("each warp handle needs 4 components (x, y, dx, dy)",
                                           kw.line, kw.column)
         self.match("PUNCT", ";")
-        return WarpNode(target, handles, attrs.get("radius", 120.0), SourceSpan(kw.line, kw.column))
+        mode = attrs.get("mode", "smooth")
+        if isinstance(mode, ExprValue):
+            if getattr(mode, "op", None) == "var" and len(mode.args) == 1:
+                mode = mode.args[0]
+            else:
+                mode = str(mode)
+        if mode not in ("smooth", "arap"):
+            raise NorthCelSyntaxError(f"warp mode must be smooth or arap, not {mode!r}",
+                                      kw.line, kw.column)
+        return WarpNode(target, handles, attrs.get("radius", 120.0), mode,
+                        SourceSpan(kw.line, kw.column))
 
     def parse_nudge(self) -> NudgeNode:
         kw = self.expect("IDENT", "nudge")

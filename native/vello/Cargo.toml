@@ -6,6 +6,14 @@ publish = false
 license = "MIT OR Apache-2.0"
 description = "NorthCel Vello renderer prototype (Phase 4): feeds a flattened NorthCel paint list to Vello/wgpu."
 
+[lib]
+name = "ncel_vello"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ncel-vello"
+path = "src/main.rs"
+
 [dependencies]
 vello = "0.11.0"
 wgpu = "30.0.1"
@@ -13,6 +21,7 @@ pollster = "1.0.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 png = "0.18.1"
+sha2 = "0.10"
 
 [profile.release]
 debug = true

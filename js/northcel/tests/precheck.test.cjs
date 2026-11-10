@@ -230,7 +230,7 @@ test("the npm launcher never hands a spec 0.4 document to the native runtime", (
   for (const command of ["render", "film"]) {
     const r = run([command, doc]);
     assert.equal(r.status, 3);
-    assert.match(r.stderr, /uses spec 0\.4\/0\.5 features \(.*morph/);
+    assert.match(r.stderr, /uses spec 0\.4\/0\.5\/0\.6 features \(.*morph/);
   }
 });
 
@@ -281,13 +281,13 @@ for (const [name, body] of Object.entries({
   for (const command of ["info", "render", "film"]) {
     const r = run([command, file]);
     assert.equal(r.status, 3);
-    assert.match(r.stderr, /spec 0\.4\/0\.5 features/);
-    assert.ok(r.stderr.includes(name === "headerless" ? "headerless-spec-0.5.0-draft" : name));
+    assert.match(r.stderr, /spec 0\.4\/0\.5\/0\.6 features/);
+    assert.ok(r.stderr.includes(name === "headerless" ? `headerless-spec-${CONFIG.SPEC_VERSION}` : name));
   }
   const partial = run(["check", file, "--require-full", "--json"]);
   assert.equal(partial.status, 2);
   assert.equal(JSON.parse(partial.stdout).validator, "js");
-  assert.match(JSON.parse(partial.stdout).next, /0\.6\.0.*source checkout.*unreleased/);
+  assert.match(JSON.parse(partial.stdout).next, /install.*northcel/);
 });
 
 test("spec 0.5 routing ignores comments and strings and retains explicit native headers", () => {
@@ -303,6 +303,6 @@ test("npm routing recognizes every supported newer header spelling", () => {
     fs.writeFileSync(file, source);
     const r = run(["info", file]);
     assert.equal(r.status, 3);
-    assert.match(r.stderr, /spec 0\.4\/0\.5 features/);
+    assert.match(r.stderr, /spec 0\.4\/0\.5\/0\.6 features/);
   }
 });

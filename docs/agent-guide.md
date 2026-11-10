@@ -2,7 +2,7 @@
 
 This guide instructs AI coding agents (Claude Code, OpenCode, Codex, Cursor, Gemini CLI) how to author, verify, and surgically edit AI-drawn images and videos in **NorthCel (`.ncel`)**.
 
-**Version scope:** spec 0.5 / tools 0.6.0 examples require this **source checkout
+**Version scope:** spec 0.6 / tools 0.7.0 examples
 (unreleased)**, installed in a venv with `python3 -m pip install -e './python[fit]'`.
 Published PyPI/Homebrew/install.sh installs are tools 0.5.0 (spec 0.4); published
 npm is 0.4.0. On published tools 0.5.0, use the writing guide's spec-0.4 examples,
@@ -39,7 +39,7 @@ Turn a set of shapes into a named unit and change only that unit. This is an
 illustration, not a template or a subject preset:
 
 ```ncel
-northcel "0.5.0-draft"
+northcel "0.6.0-draft"
 film Edit(width: 640, height: 360, fps: 24, frames: 3) {
   paper { color: #FFF8EC }
   def Face {
@@ -64,7 +64,7 @@ The blocks are general: a `group` may contain any primitives, nested groups,
 (`clip: mask`) and can opt into a parent (`parent: arm`). There is no head,
 flower or cloud preset. `transform` is for rigid moves; `warp` is for non-rigid
 squash/sway/cloth. The full contract is
-[SPEC-0.5.0-draft](spec/SPEC-0.5.0-draft.md).
+[SPEC-0.6.0-draft](spec/SPEC-0.6.0-draft.md).
 
 Fit ids identify fitted colour/geometry, not semantic objects tracked across new
 fits. Queries suggest regions; their containment heuristics are not `parent:`
@@ -85,6 +85,7 @@ faithfully express the change; a low automatic match score is not enough.
 ```console
 $ northcel check file.ncel --json          # exit 0 = this validator found no error
 $ northcel render file.ncel -o f3.png --frame 3
+$ northcel render file.ncel -o f3.png --frame 3 --renderer vello   # tolerance tier
 $ northcel film file.ncel -o frames/ --frames 0..5
 ```
 
@@ -116,12 +117,12 @@ reproduced by CI. The [architecture page](architecture.md) explains why the
 reference and native renderers can differ by a handful of edge pixels.
 
 <!-- npm-guide:start -->
-# NorthCel quick agent guide — tools 0.6.0 (source/unreleased), spec 0.5.0-draft
+# NorthCel quick agent guide — tools 0.7.0, spec 0.6.0-draft
 
 Published pip/Homebrew/install.sh installs are tools **0.5.0** (spec 0.4); npm is
 **0.4.0**. Spec-0.5 constructs below require this source checkout installed in a
 venv with `python3 -m pip install -e './python[fit]'`. Do not feed its 0.5 examples
-to published 0.5.0. Start new source-authored files at `northcel "0.5.0-draft"`;
+to published 0.6.0. Start new source-authored files at `northcel "0.6.0-draft"`;
 choose an older explicit header only for intentional compatibility.
 
 Discover this guide offline with `northcel guide` (or `npx northcel guide`). The
@@ -277,7 +278,7 @@ every in-between; unmatched shapes pop at u = 0.5.
 This complete illustration uses general constructs, not a subject preset:
 
 ```ncel
-northcel "0.5.0-draft"
+northcel "0.6.0-draft"
 film Edit(width: 64, height: 64, fps: 12, frames: 3) {
   paper { color: #FFFFFF }
   def Key {
@@ -317,10 +318,11 @@ The rows describe evaluated geometry, not semantic parts. Both launchers route
 ## 1. The Golden Rules of Authoring `.ncel`
 
 1. **Always Start with the Version Header:**
-   Start new source-authored files with the current `northcel "0.5.0-draft"`
-   (tools 0.6.0 from source, Python reference). On published tools 0.5.0 use
-   `northcel "0.4.0-draft"` for `mix`, `morph`, `frame A..B` and `opacity`;
-   do not use `group`, `warp` or `nudge` until you install the source release.
+   Start new source-authored files with the current `northcel "0.6.0-draft"`
+   (tools 0.7.0, Python reference). On published tools 0.6.0 use
+   `northcel "0.5.0-draft"` for `group`, `warp` and `nudge`; on 0.5.0 use
+   `northcel "0.4.0-draft"` for `mix`, `morph`, `frame A..B` and `opacity`.
+   `warp(mode: arap)` needs 0.6.
    Choose `northcel "0.3.0-draft"` only when deliberately targeting the native
    runtime with 0.3-only syntax. Explicit 0.1/0.2 headers remain supported.
 2. **Separate Washes, Ink Ribbons, and Parallel Swarms by Name:**

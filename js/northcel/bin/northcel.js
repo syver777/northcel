@@ -43,9 +43,9 @@ usage: northcel <command> [options]
 
 Not available from npm (use pip for these): fmt, fit, tween — Python authoring
 tools (\`pip install 'northcel[fit]'\`). Spec 0.3 files render natively; files that
-use spec 0.4/0.5 (morph, mix, opacity, frame A..B, group, warp, nudge), including
-headerless files (spec 0.5), need the Python reference. Spec 0.5 requires the
-unreleased tools 0.6.0 from a source checkout; published pip installs are 0.5.0.
+use spec 0.4/0.5/0.6 (morph, mix, opacity, frame A..B, group, warp, nudge, ARAP),
+including headerless files (spec 0.6), need the Python reference. Install current
+tools with pip install -U northcel.
 Platform: the native runtime is Linux x86_64 only, glibc >= 2.39, Mesa EGL/llvmpipe.
 macOS and Windows are not supported natively in this release; \`northcel doctor\`
 explains exactly what is missing.
@@ -110,11 +110,9 @@ function spec04In(args) {
 function refuseNative(command, features) {
   const needs05 = features.some((f) => ['group', 'warp', 'nudge'].includes(f)
     || f.startsWith('headerless-spec-') || /^spec-0\.(?:[5-9]|\d\d)/.test(f));
-  const install = needs05
-    ? 'tools 0.6.0 from a source checkout (`python3 -m pip install -e ./python` at the repository root; unreleased)'
-    : 'the Python reference (`pip install northcel`)';
+  const install = 'current tools (`python3 -m pip install -U northcel`)';
   fail(
-    `northcel: this document uses spec 0.4/0.5 features (${features.join(', ')}); the native runtime ` +
+    `northcel: this document uses spec 0.4/0.5/0.6 features (${features.join(', ')}); the native runtime ` +
       `${locate.NATIVE_RUNTIME_VERSION} implements spec 0.3 only and is not used for it.\n` +
       `northcel: install ${install} to ${command} it; its results are labelled python-reference.`,
     locate.EXIT_NO_NATIVE

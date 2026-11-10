@@ -1,9 +1,9 @@
-# NorthCel quick agent guide — tools 0.6.0 (source/unreleased), spec 0.5.0-draft
+# NorthCel quick agent guide — tools 0.7.0, spec 0.6.0-draft
 
 Published pip/Homebrew/install.sh installs are tools **0.5.0** (spec 0.4); npm is
 **0.4.0**. Spec-0.5 constructs below require this source checkout installed in a
 venv with `python3 -m pip install -e './python[fit]'`. Do not feed its 0.5 examples
-to published 0.5.0. Start new source-authored files at `northcel "0.5.0-draft"`;
+to published 0.6.0. Start new source-authored files at `northcel "0.6.0-draft"`;
 choose an older explicit header only for intentional compatibility.
 
 Discover this guide offline with `northcel guide` (or `npx northcel guide`). The
@@ -159,7 +159,7 @@ every in-between; unmatched shapes pop at u = 0.5.
 This complete illustration uses general constructs, not a subject preset:
 
 ```ncel
-northcel "0.5.0-draft"
+northcel "0.6.0-draft"
 film Edit(width: 64, height: 64, fps: 12, frames: 3) {
   paper { color: #FFFFFF }
   def Key {

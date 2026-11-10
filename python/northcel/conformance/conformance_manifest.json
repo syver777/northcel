@@ -1,5 +1,5 @@
 {
-  "spec_version": "0.5.0-draft",
+  "spec_version": "0.6.0-draft",
   "tolerance_mae": 1.0,
   "cases": [
     {
@@ -338,6 +338,65 @@
           "note": "paper outside the clip"
         }
       ]
+    },
+    {
+      "name": "07_spec06_arap",
+      "file": "07_spec06_arap.ncel",
+      "reference_only": true,
+      "reference_only_reason": "spec 0.6: warp mode arap; the native runtime 0.4.0 implements spec 0.3 and the launchers route this document to the Python reference",
+      "probes": [
+        {
+          "x": 5,
+          "y": 5,
+          "rgb": [
+            255,
+            255,
+            255
+          ],
+          "note": "paper outside the deformed box"
+        },
+        {
+          "x": 30,
+          "y": 30,
+          "rgb": [
+            255,
+            255,
+            255
+          ],
+          "note": "ARAP pulls the top-left corner away"
+        },
+        {
+          "x": 75,
+          "y": 75,
+          "rgb": [
+            255,
+            0,
+            0
+          ],
+          "note": "box interior unaffected"
+        },
+        {
+          "x": 50,
+          "y": 60,
+          "rgb": [
+            255,
+            0,
+            0
+          ],
+          "note": "box interior near the handle"
+        },
+        {
+          "x": 60,
+          "y": 30,
+          "rgb": [
+            255,
+            255,
+            255
+          ],
+          "note": "top edge follows the rigid deformation"
+        }
+      ]
     }
-  ]
+  ],
+  "vello_tolerance_mae": 1.0
 }

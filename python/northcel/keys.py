@@ -40,6 +40,32 @@ def border_background(image: Image.Image) -> np.ndarray:
     return np.median(border, axis=0)
 
 
+def _border_samples(image: Image.Image, count: int = 8) -> list[np.ndarray]:
+    """Border colours sampled around the frame (a gradient is not one colour)."""
+    rgb = _rgb(image)
+    if count <= 1:
+        return [border_background(image)]
+    h, w = rgb.shape[:2]
+    picks = []
+    for i in range(count):
+        t = i / (count - 1)
+        picks.append(rgb[0, int(round(t * (w - 1)))])
+        picks.append(rgb[h - 1, int(round(t * (w - 1)))])
+        picks.append(rgb[int(round(t * (h - 1))), 0])
+        picks.append(rgb[int(round(t * (h - 1))), w - 1])
+    return picks
+
+
+def _distance_to_border(image: Image.Image, tolerance: float) -> tuple[np.ndarray, bool]:
+    """Per-pixel distance to the nearest border colour, and whether it is close."""
+    rgb = _rgb(image)
+    samples = _border_samples(image)
+    best = np.full(rgb.shape[:2], 1 << 20, dtype=np.int32)
+    for colour in samples:
+        best = np.minimum(best, np.abs(rgb - colour).max(axis=2))
+    return best.astype(np.int16)
+
+
 def _components(mask: np.ndarray):
     try:
         import cv2
@@ -63,7 +89,7 @@ def _open_mask(mask: np.ndarray, pixels: int = 2) -> np.ndarray:
 
 
 def measure_figure(image: Image.Image, *, background=None, tolerance: float = 42.0,
-                   min_component: int = 1200, attach_px: int = 14,
+                   min_component: int | None = None, attach_px: int = 14,
                    max_hole: int = 18000, white_min: int = 400,
                    white_max: int = 26000, with_core: bool = False):
     """Boolean mask of the drawing's figure, without its paper or sky.
@@ -77,9 +103,15 @@ def measure_figure(image: Image.Image, *, background=None, tolerance: float = 42
     material fill without outlines or thin edges; its box is the accurate
     figure extent for scale/position checks.
     """
+    if min_component is None:
+        # 0.08% of the canvas: 1200 px on a 1536x1024 drawing, 46 px on 320x180.
+        min_component = max(48, int(round(0.0008 * image.width * image.height)))
     rgb = _rgb(image)
     bg = border_background(image) if background is None else np.asarray(background, dtype=np.int16)
-    distance = np.abs(rgb - bg).max(axis=2)
+    if background is None:
+        distance = _distance_to_border(image, tolerance)
+    else:
+        distance = np.abs(rgb - bg).max(axis=2)
     luma = (0.299 * rgb[:, :, 0] + 0.587 * rgb[:, :, 1] + 0.114 * rgb[:, :, 2])
     chroma = rgb.max(axis=2) - rgb.min(axis=2)
     # Paper, sky and cloud white are all background: near the border colour, or
@@ -91,13 +123,19 @@ def measure_figure(image: Image.Image, *, background=None, tolerance: float = 42
     ink = dark & (distance > tolerance)
 
     count, labels, stats = _components(material)
-    if count > 1 and int(stats[1:, 4].max()) >= min_component:
-        # Only fills count: anti-aliasing rings between sky and cloud are thin.
-        core = _open_mask(material, 2)
-        count, labels, stats = _components(core)
-        if count <= 1:
-            empty = np.zeros((image.height, image.width), bool)
-            return (empty, empty) if with_core else empty
+    # Only fills count: anti-aliasing rings between sky and cloud are thin.
+    core = _open_mask(material, 2)
+    ccount, clabels, cstats = _components(core)
+    icount, ilabels, istats = _components(ink)
+    max_ink = int(istats[1:, 4].max()) if icount > 1 else 0
+    max_core = int(cstats[1:, 4].max()) if ccount > 1 else 0
+    core_area = int(cstats[1:, 4][cstats[1:, 4] >= max(80, min_component // 8)].sum()) \
+        if ccount > 1 else 0
+    # A coloured figure covers more area than its outline; a line drawing is
+    # mostly thick ink, so only choose the material path when the fill wins.
+    use_material = max_core >= min_component and core_area >= 0.5 * max_ink
+    if use_material:
+        count, labels, stats = ccount, clabels, cstats
         h, w = material.shape
         canvas = float(w * h)
         candidates = []
@@ -156,7 +194,10 @@ def measure_figure(image: Image.Image, *, background=None, tolerance: float = 42
         areas = stats[1:, 4]
         biggest = int(np.argmax(areas)) + 1
         keep = labels == biggest
-        near = dilate_mask(keep, attach_px * 2)
+        # A line drawing's face and folds often form their own strokes; they sit
+        # inside the body outline, so grow over the filled outline, not just a
+        # near band around the largest stroke.
+        near = dilate_mask(_fill_holes(keep), attach_px * 2)
         for i in range(1, count):
             if i != biggest and int(stats[i, 4]) >= max(80, min_component // 20) \
                     and (labels == i)[near].any():
@@ -307,7 +348,15 @@ def prepare_key(image: Image.Image, *, palette=None, colors: int = 32,
         measured = np.asarray(mask, dtype=bool)
         core = measured
     if not measured.any():
-        raise ValueError("no figure pixels were measured; check the drawing's border/background")
+        # Never stop a film for one unmeasurable key: fit it whole, label it,
+        # and let the key gate reject it with a replacement prompt.
+        drawing, receipt = fit_stacked(
+            image, colors=colors, tolerance=tolerance, min_area=min_area, palette=palette,
+            name=name, gap_fraction=gap_fraction, underpaint_min_area=underpaint_min_area)
+        receipt = dict(receipt, figure_mask={"box": [0.0, 0.0, float(image.width), float(image.height)],
+                                             "material_box": None, "pixels": 0,
+                                             "backing_px": 0, "source": "fallback"})
+        return drawing, receipt
     drawing, receipt = fit_stacked(
         image, colors=colors, tolerance=tolerance, min_area=min_area, palette=palette,
         name=name, gap_fraction=gap_fraction, underpaint_min_area=underpaint_min_area,
