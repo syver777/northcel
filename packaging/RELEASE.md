@@ -57,9 +57,9 @@ published on PyPI; record the verified values here after upload:
 
 | File | sha256 |
 | --- | --- |
-| `northcel-0.7.1-py3-none-any.whl` | _filled after upload_ |
-| `northcel-0.7.1.tar.gz` | _filled after upload_ |
-| `ncel-0.7.1` wheel/sdist (deprecated) | depends on `northcel==0.7.1` |
+| `northcel-0.7.1-py3-none-any.whl` | `1e209376236bb5c8dede48f08ae7dd6633dd27c1d09691139410a152003cd565` |
+| `northcel-0.7.1.tar.gz` | `5a6c1c6b3362d4309a1ce2222d0267e677566fc301aa810e64a41f9806a6b5f7` |
+| `ncel-0.7.1` wheel/sdist (deprecated) | `b51e68ae34dffaba75f30b806e2e02528d164773b5cdba77001ad31c3602cdf3` / `2d5eac1c642bc69cc8362221413d01ac5628fe801e95de4e6d494affc73d82b3` |
 
 ## Publish, in this order
 
