@@ -42,14 +42,14 @@ no `northcel` formula there. The tap is the supported Homebrew path.
 
 ## What the formula installs
 
-Since 0.3.1 there is **one Python distribution**, so the formula pins two
-artifacts. Everything goes into a private Homebrew venv (`libexec`); **nothing is
-compiled and nothing is downloaded on first run**:
+There is **one Python distribution**, so the formula pins two artifacts.
+Everything goes into a private Homebrew venv (`libexec`); **nothing is compiled
+and nothing is downloaded on first run**:
 
 | Artifact | Size | Role |
 | --- | ---: | --- |
-| `northcel` 0.3.1 (sdist, this formula's `url`) | 161 KB | the reference implementation (parser, validator, formatter, renderer — the conformance oracle, `fmt`, `--no-native`) **and** the launcher (doctor/verify/check/info/render/film/guide); scripts `northcel` and `ncel` |
-| `northcel-native` 0.3.1 (`manylinux_2_39_x86_64`) | 2.8 MB | MoonBit stage, Bend 0.2.38, HVM 2.0.22, EGL GL host, GLSL shaders |
+| `northcel` 0.7.1 (sdist, this formula's `url`) | 161 KB | the reference implementation (parser, validator, formatter, renderer — the conformance oracle, `fmt`, `--no-native`) **and** the launcher (doctor/verify/check/info/render/film/guide); scripts `northcel` and `ncel` |
+| `northcel-native` 0.4.0 (`manylinux_2_39_x86_64`) | 2.8 MB | MoonBit stage, Bend 0.2.38, HVM 2.0.22, EGL GL host, GLSL shaders |
 | `setuptools` 84.2.1, `wheel` 0.48.0 | 0.9 MB | build tools for the pinned sdist |
 | `numpy` 2.5.4, `pillow` 13.0.0 | 22 MB | required by the reference renderer |
 
@@ -59,11 +59,10 @@ llvmpipe — the GL driver that compiles the GLSL), `linux`, `x86_64`.
 The formula wraps the launcher with `LD_LIBRARY_PATH=#{formula_opt_lib("mesa")}`, so
 the Mesa that Homebrew installs is the one actually used (`doctor` reports that
 Mesa, its GL version and llvmpipe) instead of silently borrowing the distribution's
-Mesa. Since 0.3.1 the launcher's own EGL probe reads `LD_LIBRARY_PATH` and
-`HOMEBREW_PREFIX` too, so it sees that Mesa as well — see Troubleshooting.
+Mesa. The launcher's own EGL probe also reads `LD_LIBRARY_PATH` and
+`HOMEBREW_PREFIX`, so it sees that Mesa as well — see Troubleshooting.
 
-Installed size: **≈89 MB** in the Cellar for `northcel` (the 0.3.1 layout has one
-distribution instead of two and is the same order of size).
+Installed size is dominated by NumPy and Pillow in the private venv.
 
 ## Platform support
 
@@ -81,7 +80,7 @@ still works on macOS for that fallback.
 
 ## Troubleshooting
 
-`northcel doctor` says `no libEGL.so.1 found`: since 0.3.1 the launcher searches
+`northcel doctor` says `no libEGL.so.1 found`: the launcher searches
 `LD_LIBRARY_PATH`, `$HOMEBREW_PREFIX`, `/home/linuxbrew/.linuxbrew`,
 `~/.linuxbrew`, `/usr/local` (including keg-only `opt/*/lib`), the Python prefix,
 and only then the distribution paths and `ldconfig -p`. This formula sets
@@ -125,4 +124,4 @@ build, whose bytes can differ.
 
 The formula and this tap are MIT. The installed packages are dual licensed
 `MIT OR Apache-2.0`; the formula declares `license any_of: ["MIT",
-"Apache-2.0"]`. Every published 0.3.1 package carries the dual licence.
+"Apache-2.0"]`. Every published package carries the dual licence.

@@ -43,64 +43,50 @@ launcher's job, and the launcher labels the result.
 
 ## What each stage owns
 
-### Spec 0.5 / tools 0.6 additions: source/unreleased, reference only
+### Reference-only language features
 
 Named `group` paths carry pivots, opacity scopes, clip coverage and optional
-parent links. Group transforms, handle-based `warp` and vertex `nudge` operate
-on the evaluated paint list in source order. The reference resolves parent
-pivots at transform time and clip targets after the whole paint list exists.
-Fit ids and `shapes` queries are offline/evaluated geometry tools, not semantic
-part detectors. The native runtime remains 0.4.0 / spec 0.3: both launchers route
-0.4/0.5 constructs and interpreted newer specs, including headerless files
-(now spec 0.5), to Python. Conformance cases `05` and `06` are reference-only.
-Published installs still ship tools 0.5.0 / spec 0.4; this section requires the
-source checkout until Phase 7. No native stage has been changed for spec 0.5.
+parent links. Group transforms, handle-based `warp` (including ARAP), vertex
+`nudge`, `mix` colours, `morph`, `frame A..B` ranges and layer/group `opacity`
+are implemented in the Python reference. The reference resolves parent pivots at
+transform time and clip targets after the whole paint list exists, and composites
+with the spec's `floor(c + (s − c)·α + 0.5)` rule per 8-bit subpixel. Fit ids and
+`shapes` queries are offline/evaluated geometry tools, not semantic part
+detectors.
 
-### Spec 0.4 / tools 0.5 additions: reference only
+The native runtime 0.4.0 implements spec 0.3. Both launchers route newer
+constructs and interpreted newer specs, including headerless files, to Python and
+label the receipt `python-reference`; the npm launcher without Python exits 3
+naming the features. No native stage is handed a document it cannot evaluate.
+Conformance cases `05` and `06` are reference-only.
 
-`mix` colour expressions, `morph`, `frame A..B` ranges and layer/group
-`opacity` are implemented in the Python reference only. **No native stage was
-changed and the native runtime 0.4.0 implements spec 0.3.** The launchers detect
-spec 0.4 documents (the constructs, or a 0.4 header) and render them with the
-labelled reference even on Linux x86_64; the npm launcher without Python exits 3
-naming the features. They never pass such a document to `ncel-native`, which
-would reject it or, worse, ignore an attribute it does not know (`opacity` was
-silently ignored before 0.4). The conformance case `05` is reference-only and
-reported as SKIP against native. Porting means: MoonBit parses and evaluates
-`mix`/`morph`/ranges and emits per-entry opacity and group markers in the IR; the
-GL host composites with the spec's `floor(c + (s − c)·α + 0.5)` rule on its
-RGBA32F framebuffer per subpixel; then case `05` must pass in both directions.
+The reference fill path computes all crossings of a layer at once, sorts them per
+row, paints spans, and sums subpixel rows in `uint16`. The arithmetic and the
+even-odd pairing match the native rule, so every committed golden, conformance
+probe and docs image is byte-identical; on an Apple M1, 1920×1080 fitted frames
+render in 0.21–0.52 s.
 
-The reference fill path was also vectorised in tools 0.5: all crossings of a
-layer are computed at once, sorted per row and painted as spans, and the box
-filter sums subpixel rows in `uint16`. The arithmetic and the even-odd pairing
-are unchanged, so every committed golden, conformance probe and docs image is
-byte-identical; on an Apple M1, 1920×1080 fitted frames render in 0.21–0.52 s
-instead of 0.75–1.93 s.
-
-`fit --stacked` and `tween --match` are offline Python authoring tools like
-`fit` and `tween` (next section). Stacked output is spec 0.3 and renders
-natively; `tween --match` output is spec 0.4.
-
-### Spec 0.3 / tools 0.4 additions
+### Native path: spec 0.3
 
 MoonBit parses typed `TransformNode`, `ease` and `smoothstep`, evaluates them
 after the applicable swarm/boil/outline stages, and emits transformed f64 edges
 in unchanged NCIR v1. The reference has the same AST, operation order and maths.
 `transform all` is an immediate camera/stage operation, not mutable frame state.
 
+The GL host partitions each 8-row band into 32px-wide cells. Edges wholly right
+of a cell contribute a y-only parity seed; GLSL evaluates the original crossing
+formula for local edges, starting with that seed. This exactly partitions the
+same ray test. It is an acceleration structure derived from geometry, not a
+stored image or a new paint rule. Both GLSL 4.30 and 4.10 use it; the reference
+and golden images remain the conformance oracle.
+
 `fit` and `tween` are **offline Python authoring tools**, not renderers or image
 models. Optional OpenCV/scikit-image libraries trace palette-region contours;
 NumPy resamples explicit vector rings. They emit ordinary vector `.ncel`. No
 image or raster table is embedded or read by any native render stage. The author
-chooses masks, correspondence, timing and acceptance.
-
-The GL host now partitions each 8-row band into 32px-wide cells. Edges wholly
-right of a cell contribute a y-only parity seed; GLSL evaluates the original
-crossing formula for local edges, starting with that seed. This exactly
-partitions the same ray test. It is an acceleration structure derived from
-geometry, not a stored image or a new paint rule. Both GLSL 4.30 and 4.10 use it;
-the reference and old golden images remain the conformance oracle.
+chooses masks, correspondence, timing and acceptance. `fit --stacked` and
+`tween --match` follow the same rule: stacked output is spec 0.3 geometry and
+renders natively; `tween --match` output uses newer constructs and needs Python.
 
 | Stage | Owns | Does not own |
 | --- | --- | --- |
@@ -302,8 +288,7 @@ language is an execution paradigm, not extra visual information:
 
 The full decision record, with the rejected alternatives and measured numbers, is
 in [DECISIONS.md](DECISIONS.md). The normative grammar is
-[SPEC-0.5.0-draft](spec/SPEC-0.5.0-draft.md) (source/unreleased additions to
-published spec 0.4); the native runtime implements
+[SPEC-0.6.0-draft](spec/SPEC-0.6.0-draft.md); the native runtime implements
 [SPEC-0.3.0-draft](spec/SPEC-0.3.0-draft.md).
 
 ## The docs check

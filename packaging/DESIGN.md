@@ -1,30 +1,25 @@
 # NorthCel install graph — design
 
-## Tools 0.5.0 / spec 0.4
+## Tools 0.7.1 / spec 0.6.0-draft
 
-The install graph is unchanged. Only the Python and npm tools move to 0.5.0; they
-still depend on the 0.4.0 native packages, which implement spec 0.3. Spec 0.4
-(`mix`, `morph`, frame ranges, opacity) is implemented in the Python reference,
-and both launchers route spec 0.4 documents there with the usual label.
+The install graph has one wheel for the tools and one platform bundle. The Python
+and npm tools depend on the 0.4.0 native packages, which implement spec 0.3. The
+newer spec features (`mix`, `morph`, frame ranges, opacity, groups, warp, nudge,
+ARAP, NCIR v2) are implemented in the Python reference, and both launchers route
+newer documents there with the usual label.
 
-## Previous extension: 0.4.0 / spec 0.3
-
-The install graph is unchanged. Both tools and bundled runtime are now 0.4.0;
-MoonBit parses/evaluates anchored transforms and easing, Bend/HVM2 still handles
-independent rings, and GLSL still computes subpixel coverage. `fit`/`tween` are
-optional **Python authoring** tools that emit vector source; they do not replace a
-native stage or add a runtime image dependency. The GL spatial-cell structure is
-derived from vector edges, not an embedded image. Old 0.2 programs are golden
-regressions. The versioned 0.3.1 measurements below remain a historical baseline,
-not current artifact sizes or registry claims; see [RELEASE.md](RELEASE.md).
+MoonBit parses/evaluates anchored transforms and easing, Bend/HVM2 handles
+independent rings, and GLSL computes subpixel coverage. `fit`/`tween` are optional
+**Python authoring** tools that emit vector source; they do not replace a native
+stage or add a runtime image dependency. The GL spatial-cell structure is derived
+from vector edges, not an embedded image. See [RELEASE.md](RELEASE.md) for current
+artifact sizes and registry state.
 
 Status: **implemented and verified on Linux x86_64**; macOS/Windows are a later
 phase and fail honestly.
 
 Everything a user installs is called **`northcel`**. `ncel` is a short *command*
-alias, never a package name: npm rejected the bare `ncel` name, and a scoped
-`@ncel/...` or a `...-cli` suffix would make users learn a second name for no
-reason.
+alias; on PyPI it is a deprecated alias package that depends on `northcel`.
 
 This note is the contract that the packaging, the CLI and the installers implement.
 Every figure was measured on Ubuntu 24.04 (x86_64, Mesa 25.2.8 llvmpipe,
@@ -50,11 +45,11 @@ never falls back (`native/BUILD.md` §7).
 
 ## 2. Packages, versions, contents
 
-The language spec stays `0.2.0-draft`; the tools version is **0.3.1**. The bundled
-native runtime is the `0.2.0` build from commit `3ad5f7e`; `northcel doctor` prints
-both numbers so they can never be confused.
+The language spec is `0.6.0-draft`; the tools version is **0.7.1**. The bundled
+native runtime is the `0.4.0` build; `northcel doctor` prints both numbers so they
+can never be confused.
 
-### 2.1 PyPI `northcel` 0.3.1 — reference + launcher (`py3-none-any`)
+### 2.1 PyPI `northcel` 0.7.1 — reference + launcher (`py3-none-any`)
 
 One distribution, two roles: the reference implementation *and* the launcher.
 This replaces the old pair (`ncel` → `northcel` + `ncel-native`), which is why
@@ -88,7 +83,7 @@ ncel     = "northcel.launcher.cli:main"
 dependencies = [
   "numpy>=1.24",
   "Pillow>=10.0",
-  "northcel-native==0.3.1; sys_platform == 'linux' and platform_machine == 'x86_64'",
+  "northcel-native==0.4.0; sys_platform == 'linux' and platform_machine == 'x86_64'",
 ]
 ```
 
@@ -98,14 +93,11 @@ launcher and the reference without a native bundle, and `doctor`/`render` report
 There is no second "fallback wheel" with different code — one wheel, one honest
 behaviour switch.
 
-Measured (0.2.1 artifacts, identical content apart from the merged modules): the
-launcher wheel was **49,709 B**; a full `pip install` downloads **26.8 MB**
-(northcel 140 KB + northcel-native 2.8 MB + numpy 16.7 MB + Pillow 7.1 MB) and
-occupies **58 MB** of site-packages (43 MB of it numpy), 110 MB for the whole venv.
-Merging the launcher into `northcel` removes one distribution and one dependency
-edge; the download size is unchanged.
+One wheel carries the launcher and the reference. A full `pip install` also pulls
+`northcel-native` on Linux x86_64, plus NumPy and Pillow; the native bundle keeps
+every runtime file local, so a render never downloads anything.
 
-### 2.2 PyPI `northcel-native` 0.3.1 — platform wheel (`py3-none-manylinux_2_39_x86_64`)
+### 2.2 PyPI `northcel-native` 0.4.0 — platform wheel (`py3-none-manylinux_2_39_x86_64`)
 
 ```
 northcel_native_bundle/
@@ -122,17 +114,16 @@ northcel_native_bundle/
   Claiming `manylinux_2_17` would be a lie; Ubuntu 24.04, Debian 13, Fedora 40+,
   RHEL 10 satisfy 2.39 and older distributions get a clear pip error plus the
   installer's explicit glibc message.
-* Size: **~2.8 MB** compressed (7.4 MB unpacked, 13 files). This is the whole
-  runtime — no first-run download.
+* The wheel carries the whole runtime — no first-run download.
 * The `ncel-*` executable names are internal and unchanged.
 
-### 2.3 npm `northcel` 0.3.1 + `northcel-linux-x64` 0.3.1
+### 2.3 npm `northcel` launcher + `northcel-linux-x64`
 
 ```
 northcel                    bin/northcel.js (one CLI: northcel + ncel),
                             lib/locate.js, index.cjs + rules.json (JS pre-check),
                             northcel/AGENT-GUIDE.md, data/{pins,fixtures}
-  optionalDependencies: { "northcel-linux-x64": "0.3.1" }
+  optionalDependencies: { "northcel-linux-x64": "matching bundle release" }
 northcel-linux-x64          os:["linux"], cpu:["x64"], libc:["glibc"],
                             bundle/{bin,share,manifest}
 ```
@@ -143,8 +134,7 @@ and passes argv/stdout/stderr/exit code through. Missing optional dep → honest
 message with the platform verdict and exit 3. `check` falls back to the
 zero-dependency **PARTIAL** pre-check when neither the bundle nor a Python
 reference is reachable — it never claims a document is valid. `fmt` explains that
-formatting is the Python reference (`pip install northcel`). The main tarball is
-**~36 KB**, the platform tarball **~2.85 MB**.
+formatting is the Python reference (`pip install northcel`).
 
 Publish order: `northcel-linux-x64` first, then `northcel` (the optional
 dependency must already resolve).
@@ -179,7 +169,7 @@ between releases; it is not the documented URL.)
 
 Behaviour: detect OS/arch/glibc, verify the GL runtime, create
 `~/.local/share/ncel/venv` with the system `python3`, `pip install
---only-binary=:all: northcel==0.3.1` (PyPI hashes are enforced by pip),
+--only-binary=:all: northcel==0.7.1` (PyPI hashes are enforced by pip),
 checksum-verify the installed bundle against `bundle-manifest.json`, link
 `~/.local/bin/northcel` (and `ncel`), then run the real conformance self-test.
 Idempotent; `--dry-run` prints every action without doing it; `--uninstall`
@@ -232,9 +222,9 @@ Human output plus `--json` with the same fields:
 
 ```json
 {
-  "ok": true, "northcel_version": "0.3.1",
+  "ok": true, "northcel_version": "0.7.1",
   "platform": {"os":"linux","arch":"x86_64","glibc":"2.39","supported":true},
-  "native": {"available": true, "runtime_version": "0.2.0", "spec_version": "0.2.0-draft",
+  "native": {"available": true, "runtime_version": "0.4.0", "spec_version": "0.3.0-draft",
              "bundle": "/…/northcel_native_bundle", "checksums": {"verified": 13, "failed": []},
              "stage": "MoonBit+Bend+GLSL"},
   "stages": {
@@ -245,7 +235,7 @@ Human output plus `--json` with the same fields:
     "glsl_shaders": {"draw430": {"sha256": "14829a…", "compiles": true}, "draw410": {"sha256": "fe4d0c…", "compiles": true}},
     "ffmpeg": {"present": true, "optional": true}
   },
-  "reference": {"package": "northcel", "version": "0.3.1", "role": "fallback only — non-native"},
+  "reference": {"package": "northcel", "version": "0.7.1", "role": "fallback only — non-native"},
   "errors": []
 }
 ```
@@ -255,8 +245,8 @@ still prints the full, honest report), `1` internal failure.
 
 ## 6. macOS / Windows
 
-Both are **not supported natively in this release**. The launcher and every
-installer say so, by name, and never claim otherwise:
+Both are **not supported natively**. The launcher and every installer say so,
+by name, and never claim otherwise:
 
 * `northcel doctor` → `platform supported: false`, reason `native stages require
   Linux x86_64 with glibc >= 2.39 and Mesa EGL; macOS needs Vulkan/MoltenVK or a

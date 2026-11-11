@@ -9,11 +9,10 @@ observe → decompose → decide → edit the delta → verify → iterate. The 
 illustrations use different general mechanisms, not subject templates. Start
 with copies of good geometry; automatic `tween --match` is an optional alternative.
 
-**Version scope:** tools **0.7.0**, spec **0.6.0-draft**, are
-**source / unreleased**. PyPI, Homebrew and install.sh publish **0.5.0** (spec 0.4);
-npm publishes **0.4.0**. `shapes`, fit ids and the spec-0.5 syntax below need this
-checkout (`python3 -m pip install -e './python[fit]'` in a venv), not a published
-0.6.0 install. [Release copy](release-0.7.0.md) is reserved for Phase 7.
+**Version scope:** tools **0.7.1**, spec **0.6.0-draft**. PyPI, Homebrew and
+install.sh publish the same tools; npm ships the launcher. The native runtime
+implements spec 0.3, so newer documents render with the labelled Python
+reference (or Vello when chosen).
 
 ## CLI (`northcel` / `ncel`)
 
@@ -26,7 +25,7 @@ checkout (`python3 -m pip install -e './python[fit]'` in a venv), not a publishe
 | `northcel render FILE [-o OUT.png] [--frame N] [--seed N] [--json]` | one frame to PNG |
 | `northcel render FILE --renderer vello ...` | NCIR v2 -> Vello tolerance renderer (`northcel[vello]`); never a silent fallback |
 | `northcel film FILE -o OUTDIR [--frames 0..N] [--mp4 OUT.mp4] [--json]` | frame sequence and optional MP4 |
-| `northcel fmt FILE [-w] [--check]` | canonical formatting (reference only); round-trips every spec 0.4 and 0.5 construct |
+| `northcel fmt FILE [-w] [--check]` | canonical formatting (reference only); round-trips the spec 0.6 constructs |
 | `northcel shapes FILE [--frame N] [--ids …] [--color #RRGGBB] [--area-min N] [--area-max N] [--bbox x0,y0,x1,y1] [--centroid x,y,r] [--parent ID] [--mask IMAGE]` | JSON ids, colours, areas, bboxes, centroids, parents, children and neighbours of evaluated shapes |
 | `northcel diff FILE --against IMAGE [--frame N] [-o HEATMAP.png] [--region NAME:x0,y0,x1,y1]… [--json]` | reference render vs same-size image: overall and per-group/per-region MAE, RMSE and PSNR; group errors measure the canvas-clipped geometric bbox, not a coverage mask; optional error heatmap |
 | `northcel onion FILE -o OUT.png [--frame N] [--against IMAGE] [--json]` | previous frame (red) and this frame (blue); frame 0 uses frames 0/1, a scene uses its only frame; optionally compare against a same-size reference |
@@ -49,20 +48,20 @@ are Python-only authoring tools and do not take it. On a platform without a nati
 two-line notice and labels the receipt `"renderer": "python-reference"`; it never
 claims a native render.
 
-**Spec 0.4/0.5 routing.** The native runtime 0.4.0 implements spec 0.3. When a
-document uses `mix`, `morph`, `frame A..B` or `opacity` (0.4), or `group`,
-`warp` or `nudge` (0.5), or declares a 0.4/0.5 header, `check`, `info`, `render`
-and `film` use the Python reference even where native is available, print why
-(`… uses spec 0.4/0.5 features (group); the native runtime 0.4.0 implements spec
-0.3 only`) and label the receipt `python-reference`. The npm launcher does the same through its Python bridge.
-Without Python, `render`/`film`/`info` exit `3` naming the features instead of
-calling native; `check` falls back to the PARTIAL JS pre-check instead.
-Headerless files default to spec 0.5 in this checkout and also use the reference,
-including files whose statements happen to exist in spec 0.3.
+**Spec 0.4–0.6 routing.** The native runtime 0.4.0 implements spec 0.3. When a
+document uses `mix`, `morph`, `frame A..B` or `opacity` (0.4), `group`, `warp`
+or `nudge` (0.5), ARAP or NCIR v2 (0.6), or declares a newer header, `check`,
+`info`, `render` and `film` use the Python reference even where native is
+available, print why (`… uses spec 0.6 features (group); the native runtime 0.4.0
+implements spec 0.3 only`) and label the receipt `python-reference`. The npm
+launcher does the same through its Python bridge. Without Python,
+`render`/`film`/`info` exit `3` naming the features instead of calling native;
+`check` falls back to the PARTIAL JS pre-check instead. Headerless files default
+to the current spec and also use the reference.
 
 ## Optional perception
 
-The source-only `perceive` helpers return JSON receipts and artifacts for the AI
+The optional `perceive` helpers return JSON receipts and artifacts for the AI
 to inspect: tools suggest, the AI decides. Backends are lazy, optional user
 installs; no heavyweight core dependency or automatic model download is added.
 See [perception.md](perception.md) for local-model configuration, output formats,
@@ -71,10 +70,8 @@ RIFE and GPL tracing tools remain external alternatives, not bundled backends.
 
 ## Validation contract
 
-**Tools 0.7.0, spec 0.6.0-draft** (published 0.6.0 adds groups, warp, nudge and
-shape queries; 0.7.0 adds ARAP, NCIR v2 and the Vello tier). Use PyPI or, on Linux
-x86_64 only, Homebrew for published **0.5.0**, which supports spec 0.4 only;
-macOS uses pipx/pip. The `northcel` distribution is the reference
+**Tools 0.7.1, spec 0.6.0-draft.** Use PyPI or, on Linux x86_64 only,
+Homebrew; macOS uses pipx/pip. The `northcel` distribution is the reference
 parser, validator, formatter and CPU renderer *and* the launcher that runs the
 native runtime. The npm `northcel` package runs the same launcher and adds a
 zero-dependency structural JS pre-check, the embedded guide and a Python bridge;
@@ -136,7 +133,7 @@ and package tests prevent stale copies at release time. Run
 
 `northcel tween --match` is a thin CLI over three modules that other tools may
 import. They are part of the tools release (semantic versioning applies to these
-names and signatures from 0.5.0). Everything is offline NumPy arithmetic; `cv2`
+names and signatures from the current package). Everything is offline NumPy arithmetic; `cv2`
 and `scikit-image` (`northcel[fit]`) are only needed to trace images.
 
 ```python

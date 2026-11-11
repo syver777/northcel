@@ -1,13 +1,13 @@
 # 16. Colour expressions, morph, frame ranges and opacity
 
-Published tools 0.5.0 implements spec [0.4.0-draft](../spec/SPEC-0.4.0-draft.md).
-These constructs also work in source/unreleased tools 0.6.0 / spec 0.5. These four
-constructs let one film hold each drawing once and describe the frames between
-drawings as expressions, instead of a separate scene per frame.
+These constructs are part of spec [0.6.0-draft](../spec/SPEC-0.6.0-draft.md),
+implemented by tools 0.7.1. They let one film hold each drawing once and describe
+the frames between drawings as expressions, instead of a separate scene per
+frame.
 
 **They need the Python reference renderer.** The native runtime 0.4.0
 implements spec 0.3. A document that uses any of them, or declares
-`northcel "0.4.0-draft"`, is rendered by the labelled Python reference
+`northcel "0.6.0-draft"` or newer, is rendered by the labelled Python reference
 (`"renderer": "python-reference"`), on Linux too. A 0.3 document is unaffected.
 
 ## `mix`: a colour that changes
@@ -65,7 +65,7 @@ full-canvas layer in its paper colour.
 
 <!-- render: assets/guide/16-mix-morph-opacity.png frames=0,2,4,6 -->
 ```ncel
-northcel "0.4.0-draft"
+northcel "0.6.0-draft"
 film Beat(width: 320, height: 180, fps: 12, frames: 7, precision: 0.25px) {
   palette { sky: #BFE6F4, dusk: #F0B080, ink: #202830, white: #FEFEFE, red: #D65C52 }
   paper { color: mix($sky, $dusk, t), antialias_grid: 4 }
@@ -94,7 +94,7 @@ together, not one through the other) and holds from frame 5.
 
 <!-- expect-error: 3:3: error: Morph 'm' pairs ring i with ring i, but its sides have 2 and 1 rings -->
 ```text
-northcel "0.4.0-draft"
+northcel "0.6.0-draft"
 scene Pair(width: 320, height: 180) {
   morph m(tone: 0, u: 0.5) { "0,0 40,0 0,40|80,80 40,0 0,40" => "0,0 80,0 0,80" }
 }

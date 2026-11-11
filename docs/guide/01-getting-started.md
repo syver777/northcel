@@ -15,26 +15,19 @@ same binary.
 | You have | Run | Native runtime? |
 | --- | --- | --- |
 | Python 3.10–3.13 | `pip install northcel` (or `pipx install northcel`) | Yes on Linux x86_64; the labelled reference renderer elsewhere |
-| Node 20+ | `npm install -g northcel` | **0.4.0 launcher only** — older than 0.5.0; use PyPI or Homebrew for the current version |
+| Node 20+ | `npm install -g northcel` | Launcher with a structural JS pre-check; delegates full validation and rendering to Python |
 | Homebrew on Linux | `brew tap syver777/northcel && brew install northcel` | Yes |
 | A shell + curl | `curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh \| bash` | Yes on Linux x86_64 |
 
-Published tools version **0.5.0**, specification **0.4.0-draft**. `0.1.0-draft`, `0.2.0-draft` and
-`0.3.0-draft` files still load and render as before. The native runtime 0.4.0 implements spec
-0.3; spec 0.4 documents render with the labelled Python reference (the sample below is from a
-0.4.0 install).
-
-This numbered guide targets the published install. **Tools 0.6.0 / spec 0.5 are
-source-only and unreleased**; the [current spec additions](../spec/SPEC-0.5.0-draft.md)
-and [agent guide](../agent-guide.md) require this checkout installed in a venv
-with `python3 -m pip install -e './python[fit]'`. A published 0.5.0 install must not
-be given a 0.5-header example with `group`, `warp` or `nudge`.
+Published tools version **0.7.1**, specification **0.6.0-draft**. The native
+runtime 0.4.0 implements spec 0.3; newer documents render with the labelled Python
+reference (or Vello when chosen).
 
 ## Prove the install
 
 ```console
 $ northcel doctor
-northcel 0.4.0  (NorthCel spec 0.3.0-draft)
+northcel 0.7.1  (NorthCel spec 0.6.0-draft)
 platform      linux-x86_64 glibc 2.39
 supported     yes
 native        0.4.0  (bundle checksums verified, stage MoonBit+Bend+GLSL)
@@ -57,7 +50,7 @@ Save this as `first_light.ncel`. Coordinates are pixels, origin at the top-left,
 
 <!-- render: assets/guide/01-first-light.png -->
 ```ncel
-northcel "0.2.0-draft"
+northcel "0.6.0-draft"
 
 scene FirstLight(width: 640, height: 360, fps: 12, precision: 0.25px, seed: 7) {
   paper { color: #F6F1E7, antialias_grid: 4, grain: 0.008 }
@@ -79,7 +72,7 @@ $ northcel fmt -w first_light.ncel        # optional: canonical formatting
 
 Three things are worth noticing now, because every later page builds on them:
 
-1. The file starts with `northcel "0.2.0-draft"`. The version is a claim about
+1. The file starts with `northcel "0.6.0-draft"`. The version is a claim about
    the grammar you used, and the checker verifies it.
 2. `scene` holds one frame. A `film` holds a timeline; page
    [8](08-films-and-frame-overrides.md) covers it.
@@ -93,7 +86,7 @@ most common first-file mistake: the parser does not know the statement there.
 
 <!-- expect-error: 5:3: error: Unknown scene statement 'frames' -->
 ```text
-northcel "0.2.0-draft"
+northcel "0.6.0-draft"
 
 scene FirstLight(width: 640, height: 360, fps: 12, precision: 0.25px, seed: 7) {
   paper { color: #F6F1E7, antialias_grid: 4, grain: 0.008 }

@@ -1,8 +1,8 @@
 # 15. Fit a drawing, move it intact, inspect the in-betweens
 
-Tools 0.4.0 implements spec [0.3.0-draft](../spec/SPEC-0.3.0-draft.md).
-Older 0.2 programs keep their pixels. This chapter adds no rig and no image model:
-it moves an existing drawing without changing its wardrobe or inventing a pose.
+Tools 0.7.1 implements spec [0.6.0-draft](../spec/SPEC-0.6.0-draft.md).
+This chapter adds no rig and no image model: it moves an existing drawing without
+changing its wardrobe or inventing a pose.
 
 ## Fit is an authoring tool, not an image input to the renderer
 

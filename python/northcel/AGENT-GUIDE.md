@@ -1,20 +1,20 @@
-# NorthCel quick agent guide — tools 0.7.0, spec 0.6.0-draft
+# NorthCel quick agent guide — tools 0.7.1, spec 0.6.0-draft
 
-Published pip/Homebrew/install.sh installs are tools **0.5.0** (spec 0.4); npm is
-**0.4.0**. Spec-0.5 constructs below require this source checkout installed in a
-venv with `python3 -m pip install -e './python[fit]'`. Do not feed its 0.5 examples
-to published 0.6.0. Start new source-authored files at `northcel "0.6.0-draft"`;
-choose an older explicit header only for intentional compatibility.
+Install `pipx install "northcel[fit]"` (or `pip install "northcel[fit]"` in a
+venv) for full validation and rendering. The npm package is a launcher with a
+zero-dependency structural pre-check. Start new files at
+`northcel "0.6.0-draft"`; choose an older explicit header only for intentional
+compatibility.
 
 Discover this guide offline with `northcel guide` (or `npx northcel guide`). The
 npm package runs the native runtime on Linux x86_64 and otherwise falls back to the
 Python reference, with a zero-dependency **partial JS pre-check** for `check` when
 neither is available. There is no JavaScript renderer.
 
-## Start here (a complete 3-second film, published-compatible spec 0.4)
+## Start here (a complete 3-second film)
 
 ```ncel
-northcel "0.4.0-draft"
+northcel "0.6.0-draft"
 film Kite(width: 320, height: 180, fps: 12, frames: 36, precision: 0.25px, seed: 42) {
   palette { ink: #202830, red: #D65C52 }
   paper { color: #FFF8EC, antialias_grid: 4 }
@@ -38,9 +38,9 @@ Never put expressions inside a quoted ring: move it with `translate: (x, y)`.
 ## Five language features to combine
 
 1. **Reusable shapes:** `def Mark(dx: 0, dy: 0) { stroke line(width: 2) { (0, 0), (8, 4) } }`
-   then `use Mark(dx: 20, dy: 30)`. In 0.5, defs may also contain groups,
-   transforms, warps and nudges; groups may contain `use`. Top-level nested `use`
-   in a def is still unsupported.
+   then `use Mark(dx: 20, dy: 30)`. Defs may also contain groups, transforms,
+   warps and nudges; groups may contain `use`. Top-level nested `use` in a def is
+   still unsupported.
    `dx/dy` auto-translate expanded geometry; don't also add them to coordinates.
    Same-named cels in repeated uses replace one another; use distinct named defs
    for independent cel instances (stroke/ribbon uses append).
@@ -67,9 +67,9 @@ Never put expressions inside a quoted ring: move it with `translate: (x, y)`.
    numeric ranges, expression evaluation, def resolution and render quality remain unchecked.
 2. Run `npx northcel check film.ncel --require-full --json` before claiming full
    validation. Exit 2 = no full validator (clean partial); exit 1 = detected error;
-   exit 0 = Python full check succeeded. For spec 0.4 install `pipx install northcel`
-   (or `pip install northcel` in a venv); for spec 0.5 install this unreleased
-   source checkout as above. Expose its Python CLI on PATH, then repeat.
+   exit 0 = Python full check succeeded. Install the Python CLI with
+   `pipx install "northcel[fit]"` (or `pip install "northcel[fit]"` in a venv),
+   expose it on PATH, then repeat.
    The npm bridge finds importable Python modules or pipx-style Python entrypoints.
    Never suppress exit 2 or call a partial check fully validated.
 3. Python: `northcel render film.ncel -o frame0.png --frame 0`, inspect the PNG;
@@ -120,7 +120,7 @@ and pivot), colour flood (`mix`), squash (nonuniform scale) and ripple (clip/nud
   leaving stale ink. For moving ink use cels or time expressions instead.
 - Undefined def, bad sizes/fps, expression variable errors: JS may miss these;
   use Python full check **and real renders**. No JS success authorizes shipping.
-## Existing drawings and intact-cel motion (spec 0.3)
+## Existing drawings and intact-cel motion
 
 `northcel fit drawing.png -o drawing.ncel` (pip `northcel[fit]`) traces ordinary
 vector contours; it never embeds the image. Compare the round trip. For texture,
@@ -138,23 +138,23 @@ experiment, not an anatomy judge. Topology mismatch errors unless `--fallback
 hold` is requested; inspect every inserted frame and reject doubled/folded lines.
 Matching topology alone proves nothing. Source endpoints remain original geometry.
 
-## In-betweens for independently drawn keys (spec 0.4, Python reference)
+## In-betweens for independently drawn keys
 
-Spec 0.4 adds `color: mix($a, $b, u)` (also outlines and paper; u clamped),
+`color: mix($a, $b, u)` (also outlines and paper; u clamped),
 `morph name(color: $c, u: expr) { "ringsA" => "ringsB" }` (ring i pairs ring i,
 vertex counts may differ, exact A at u<=0 and B at u>=1), `frame 12..18 { ... }`
 (exact `frame N` wins, else the last range) and `opacity: expr` on primitives or
 `use D(opacity: u)` for a group (dissolve: `use A` then `use B(opacity: u)`).
-They need `northcel "0.4.0-draft"` and render with the labelled Python reference;
-the native runtime implements spec 0.3, and the npm launcher without Python
-refuses them (exit 3). `northcel fit img.png -o key.ncel --stacked --palette p.json`
+They need a spec 0.4 or newer header and render with the labelled Python
+reference; the native runtime implements spec 0.3, and the npm launcher without
+Python refuses them (exit 3). `northcel fit img.png -o key.ncel --stacked --palette p.json`
 writes painter's-order shapes; `northcel tween a.ncel b.ncel -o t.ncel --match
 --steps 6` matches shapes across topology mismatch and writes one film. Read the
 receipt: below `--min-match`/`--max-displacement` it cuts (or `--fallback
 dissolve`). A match proves no anatomy: a crouch→jump needs a drawn key. Inspect
 every in-between; unmatched shapes pop at u = 0.5.
 
-## Addressable edits (spec 0.5, source/unreleased Python reference)
+## Addressable edits (Python reference)
 
 This complete illustration uses general constructs, not a subject preset:
 
@@ -191,4 +191,4 @@ and adds `shape_manifest` rows. Inspect with `northcel shapes drawing.ncel`,
 `northcel shapes drawing.ncel --ids ID`, or filter with `--color`, `--area-min`,
 `--bbox x0,y0,x1,y1`, `--centroid x,y,r`, `--parent ID` or `--mask IMAGE`.
 The rows describe evaluated geometry, not semantic parts. Both launchers route
-0.4/0.5 (also headerless) documents to Python; JS-only `check` stays PARTIAL.
+newer (also headerless) documents to Python; JS-only `check` stays PARTIAL.

@@ -8,7 +8,7 @@ implementations, and the tests say so.**
 
 1. **Specification changes come first.** Any change to the lexical grammar, the
    EBNF, ring-chain encoding, or rendering semantics must be proposed against
-    [`docs/spec/SPEC-0.4.0-draft.md`](docs/spec/SPEC-0.4.0-draft.md) (never edit an
+    [`docs/spec/SPEC-0.6.0-draft.md`](docs/spec/SPEC-0.6.0-draft.md) (never edit an
    archived spec in place — add a new draft) and recorded in
    [`docs/DECISIONS.md`](docs/DECISIONS.md) and [`CHANGELOG.md`](CHANGELOG.md).
 2. **Determinism is not negotiable.** Every change to
@@ -137,9 +137,9 @@ publish order, deprecation aliases and the Homebrew formula bump are documented 
 [`packaging/RELEASE.md`](packaging/RELEASE.md), and the install graph contract is
 in [`packaging/DESIGN.md`](packaging/DESIGN.md).
 
-- The **tools** version moves (`0.4.0`, `0.4.1`, …).
+- The **tools** version moves (`0.7.1`, `0.7.2`, …).
 - The **language specification** moves only when the grammar or rendering
-  semantics change (`0.4.0-draft` today), and an archived draft is never edited.
+  semantics change (`0.6.0-draft` today), and an archived draft is never edited.
 - A packaging-only release keeps `spec_version` and the native runtime build
   identical; `northcel doctor` prints both numbers so they cannot be confused.
 

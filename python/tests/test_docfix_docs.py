@@ -109,17 +109,20 @@ def test_offline_guide_teaches_current_constructs_and_stays_in_sync():
     for path in [REPO / "python/northcel/AGENT-GUIDE.md", REPO / "js/northcel/northcel/AGENT-GUIDE.md"]:
         assert path.read_text() == compact
     for fragment in ('northcel "0.6.0-draft"', "group part", "warp part", "nudge mark",
-                     "northcel shapes", "--stacked -o", "tools 0.7.0"):
+                     "northcel shapes", "--stacked -o", "tools 0.7.1"):
         assert fragment in compact
     golden = guide.split("## 1. The Golden Rules", 1)[1]
     assert 'current `northcel "0.6.0-draft"`' in golden
 
 
-def test_install_docs_distinguish_published_and_source_versions():
+def test_install_docs_name_the_current_version_and_have_no_unreleased_copy():
     for path in PAGES[:2] + [REPO / "docs/README.md", REPO / "docs/reference.md"]:
         text = path.read_text().lower()
-        assert "0.5.0" in text and "0.6.0" in text
-        assert "published" in text and "unreleased" in text
-    # The public starter must use a header understood by published tools 0.5.0.
+        assert "0.7.1" in text
+        assert "unreleased" not in text
+        assert "source-only" not in text
+    # The public starter must use the current header and pass the real check.
     starter = re.search(r"```ncel\n(.*?)```", PAGES[0].read_text(), re.S).group(1)
-    assert parse_ncel(starter).spec_version == "0.4.0-draft"
+    assert parse_ncel(starter).spec_version == "0.6.0-draft"
+    doc = parse_ncel(starter)
+    assert not [d for d in validate_document(doc) if d.level == "error"]

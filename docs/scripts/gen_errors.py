@@ -73,10 +73,10 @@ CASES = [
          fix="Make the ranges disjoint, or keep the overlap on purpose: the warning names the frames where the later block wins.",
          warning_only=True,
          source='northcel "0.4.0-draft"\nfilm F(frames: 10) {\n  frame 0..5 { layer a(tone: 0) { "0,0 4,0 0,4" } }\n  frame 4..9 { layer a(tone: 90) { "0,0 4,0 0,4" } }\n}\n'),
-    # --- spec 0.5 (tools 0.6.0 source/unreleased) -----------------------------
+    # --- spec 0.5 addressable edits -------------------------------------------
     dict(id="p-nudge-vertex-integer", title="A fractional nudge vertex index",
          cause="Nudge vertex and ring indices are integers; fractions are not silently truncated.",
-         fix="Use a zero-based integer vertex index (tools 0.6.0 from source, unreleased).",
+         fix="Use a zero-based integer vertex index (tools 0.7.1).",
          source='northcel "0.5.0-draft"\nscene S {\n  nudge a(vertex: 1.9, dx: 2px)\n}\n'),
     dict(id="p-nudge-ring-integer", title="A fractional nudge ring index",
          cause="A ring index must be a whole integer, not a fractional ring selection.",
@@ -88,7 +88,7 @@ CASES = [
          source='northcel "0.5.0-draft"\nscene S {\n  nudge a(vertex: -1)\n}\n'),
     dict(id="v-spec05-def-header", title="A spec 0.5 construct inside an older-header def",
          cause="The version contract includes def bodies and nested groups, even unused definitions.",
-         fix='Use tools 0.6.0 from source (unreleased) and `northcel "0.5.0-draft"`, or remove the 0.5 construct on published tools 0.5.0.',
+         fix='Use `northcel "0.5.0-draft"` or newer, or remove the newer construct.',
          source='northcel "0.4.0-draft"\nscene S {\n  def D {\n    group g {}\n  }\n}\n'),
     # --- parser -------------------------------------------------------------
     dict(
@@ -746,9 +746,8 @@ def build() -> str:
     )
     lines.append("## How a diagnostic is shaped\n")
     lines.append(
-        "**Version scope:** spec 0.5 diagnostics require tools 0.6.0 from this "
-        "source checkout (unreleased). Published tools 0.5.0 supports spec 0.4; "
-        "do not run the 0.5-header examples on that install.\n"
+        "**Version scope:** tools 0.7.1, spec 0.6.0-draft. Cases that declare an "
+        "older header show the compatibility diagnostic for that header.\n"
     )
     lines.append(
         "```text\npath.ncel:5:20: error: Unknown function 'oklch'\n"

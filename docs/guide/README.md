@@ -10,14 +10,12 @@ and still have their exact diagnostics checked.
 
 New to NorthCel? Read 1–3, then jump to the construct you need. Writing an
 animation? Read 8–10 and 14, then the [editable-drawing method](17-editable-drawings.md)
-for source-only addressable edits. Writing an AI agent prompt? Read
+for addressable edits. Writing an AI agent prompt? Read
 [the agent guide](../agent-guide.md) after 1–3.
 
-Pages 1–16 target **published tools 0.5.0 / spec 0.4**. Page 17 teaches the
-**source/unreleased tools 0.6.0 / spec 0.5** method with five worked illustrations,
-not templates. Its `group`, `warp`, `nudge` and shape queries require this checkout,
-not the current published install. The [spec additions](../spec/SPEC-0.5.0-draft.md)
-define their exact contract.
+The guide targets **tools 0.7.1 / spec 0.6.0-draft**. Page 17 teaches the
+addressable-edit method with five worked illustrations, not templates. The
+[current specification](../spec/SPEC-0.6.0-draft.md) defines the exact contract.
 
 | # | Page | What it covers |
 | ---: | --- | --- |
@@ -37,7 +35,7 @@ define their exact contract.
 | 14 | [Editing one frame surgically](14-editing-one-frame.md) | the delta recipe, neighbours, the shortened-film trap |
 | 15 | [Fitting, transforms and in-betweens](15-fitting-transforms-and-inbetweens.md) | offline contour fitting, intact-cel/camera transforms, easing, explicit tween fallback |
 | 16 | [Colour expressions, morph, frame ranges and opacity](16-colour-morph-ranges-opacity.md) | spec 0.4: `mix`, `morph`, `frame A..B`, layer and group `opacity`, dissolves |
-| 17 | [Editable drawings](17-editable-drawings.md) | source-only spec 0.5: choose regions, copy + delta, five illustrations, diff/onion/contact/continuity/distinct |
+| 17 | [Editable drawings](17-editable-drawings.md) | choose regions, copy + delta, five illustrations, diff/onion/contact/continuity/distinct |
 
 After the guide:
 
@@ -48,7 +46,6 @@ After the guide:
 - [Common errors](../errors.md) — every diagnostic, generated from the source.
 - [Architecture](../architecture.md) — what MoonBit, Bend and GLSL each own.
 
-The published normative grammar is [SPEC-0.4.0-draft](../spec/SPEC-0.4.0-draft.md), a complete restatement;
-the current source adds [SPEC-0.5.0-draft](../spec/SPEC-0.5.0-draft.md). Where
+The normative grammar is [SPEC-0.6.0-draft](../spec/SPEC-0.6.0-draft.md). Where
 this guide and the spec disagree, the spec wins and the guide has a bug — please
 open an issue.

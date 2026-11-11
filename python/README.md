@@ -4,11 +4,9 @@ This directory is one Python distribution: the **normative reference implementat
 (parser, semantic validator, formatter, CPU renderer) *and* the **launcher** that
 runs the native runtime whenever the platform supports it.
 
-**This checkout is tools 0.6.0 / spec 0.5, source-only and unreleased.** Published
-`pip install northcel` still installs **0.5.0** (spec 0.4); Homebrew/install.sh
-also ship 0.5.0 and npm is 0.4.0. To run `group`, `warp`, `nudge` and `shapes`,
-install this checkout in a venv with `python3 -m pip install -e './python[fit]'`
-from the repository root. Do not feed spec-0.5 examples to a published install.
+**This distribution is tools 0.7.1 / spec 0.6.0-draft.** `pip install northcel`
+installs the same tools from PyPI; Homebrew and install.sh pin them too. The npm
+package is a launcher with a structural pre-check, not a renderer.
 
 ```
 pip install northcel        # installs this package + the northcel-native bundle
@@ -19,17 +17,17 @@ ncel doctor                 # short alias, same program
 
 ## Two implementations, one command
 
-**Tools 0.5.0, spec 0.4.0-draft:** `mix` colour expressions, `morph`, `frame A..B`
-ranges and `opacity`; `fit --stacked` and `tween --match` for in-betweens between
-independently drawn keys (Python API: `northcel.correspond`). Spec 0.4 documents
-render with the labelled Python reference; the bundled native runtime 0.4.0
-implements spec 0.3. See the
-[polishing pattern](https://github.com/syver777/northcel/blob/main/docs/patterns/12-polishing-ai-frames.md).
-
-**Tools/native 0.4.0, spec 0.3.0-draft:** anchored named/whole-stage transforms,
-clamped easing, optional offline vector fitting and explicit contour-tween
-authoring. Valid 0.1/0.2 files keep their rendering semantics. Start with the
-[fitting and motion guide](https://github.com/syver777/northcel/blob/main/docs/guide/15-fitting-transforms-and-inbetweens.md).
+**Tools 0.7.1, spec 0.6.0-draft:** addressable `group` blocks with pivots,
+opacity, clipping and parenting; group-wide `transform`; handle-based `warp`
+(including `warp(mode: arap)`) and per-vertex `nudge`; `use` plus delta frames;
+`mix` colour expressions, `morph`, `frame A..B` ranges and `opacity`;
+`fit --stacked` with stable ids and `shapes` queries, `fit --figure`, and
+`tween --match` (Python API: `northcel.correspond`). Newer-spec documents render
+with the labelled Python reference; the bundled native runtime 0.4.0 implements
+spec 0.3. See the
+[polishing pattern](https://github.com/syver777/northcel/blob/main/docs/patterns/12-polishing-ai-frames.md)
+and the
+[editable-drawing guide](https://github.com/syver777/northcel/blob/main/docs/guide/17-editable-drawings.md).
 
 ```
 pip install 'northcel[fit]'
@@ -88,7 +86,7 @@ reason, and `render`/`film`/`check` run the Python reference, marked
 ## What `doctor` prints
 
 ```
-northcel 0.4.0  (native runtime 0.4.0, spec 0.3.0-draft, native)
+northcel 0.7.1  (native runtime 0.4.0, spec 0.3.0-draft, native)
 platform      linux-x86_64 glibc 2.39
 supported     yes
 native        0.4.0  (bundle checksums verified, stage MoonBit+Bend+GLSL)
