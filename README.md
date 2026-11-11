@@ -13,7 +13,7 @@ frame of timing and re-render only what changed.
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#licence)
 
 ```ncel
-northcel "0.4.0-draft"
+northcel "0.6.0-draft"
 
 scene StarterScene(width: 320, height: 180, fps: 12, precision: 0.25px) {
   paper { color: #F6F1E7, antialias_grid: 4, grain: 0.01 }
@@ -48,7 +48,8 @@ same bytes, independent of frame order or thread count.
 ## Install
 
 **One name everywhere: `northcel`.** The command `ncel` is a short alias for the
-same binary — it is never a separate package.
+same binary. On PyPI, `ncel` is a deprecated alias package that installs
+`northcel`.
 
 ```console
 $ pip install northcel          # or: pipx install northcel
@@ -56,22 +57,15 @@ $ brew tap syver777/northcel && brew install northcel
 $ curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh | bash
 ```
 
-These install the current published **0.5.0** CLI (spec **0.4.0-draft**), which uses the native runtime where it can
-and the labelled Python reference everywhere else. **Homebrew is for Linux
-x86_64 only** (the formula pins the manylinux native wheel); on macOS use
-`pipx install northcel` or `pip install northcel`, which run the labelled Python
-reference. The one-line installer is also Linux x86_64 only.
+These install tools **0.7.1** (spec **0.6.0-draft**), which use the native
+runtime where it can and the labelled Python reference everywhere else.
+**Homebrew is for Linux x86_64 only** (the formula pins the manylinux native
+wheel); on macOS use `pipx install northcel` or `pip install northcel`, which run
+the labelled Python reference. The one-line installer is also Linux x86_64 only.
 
-**npm:** the npm package currently ships the older **0.4.0** launcher. Use PyPI
-or Homebrew for published 0.5.0. The starter above works with published 0.5.0.
-
-**Current:** this checkout targets tools **0.7.0**, spec **0.6.0-draft**; PyPI,
-Homebrew and the installer publish 0.7.0 after the release gate.
-For the 0.5-spec examples below and in the agent guide, install this checkout
-in a fresh venv with `python3 -m pip install -e './python[fit]'` and use its
-`northcel` command. Stay with the writing guide's spec-0.4 examples on a
-published 0.6.0 install. [Phase 7 release copy and checklist](docs/release-0.7.0.md)
-are kept separately until publication.
+**npm:** the npm package is a launcher with a zero-dependency structural JS
+pre-check; it delegates full validation and rendering to a Python install. PyPI
+or Homebrew are the recommended paths.
 
 ## First steps
 
@@ -79,32 +73,29 @@ are kept separately until publication.
 teaches observe → decompose → decide → edit the delta → verify → iterate, with
 five labelled illustrations (not templates). Start from a key, copy what stays,
 and change only the regions that need it. The AI decides per video; the language
-provides general operations and checks. This method needs the unreleased source
-tools described above; it is not a promise about the published install.
+provides general operations and checks.
 
-**0.7.0 (spec 0.6):** `warp(mode: arap)`, NCIR v2 and the Vello tolerance tier; 0.6 added addressable drawings — named `group` blocks with
-pivots, opacity, clipping and optional parenting; group-wide `transform`; a
-handle-based smooth `warp` for petals, cloth and squash; per-vertex `nudge`; and
-cheap `use` + delta frame blocks. `fit --stacked` now gives every shape a stable
-id and a `shape_manifest` receipt, and `northcel shapes` queries by id, colour,
-area, location, parent or mask. Spec 0.5 is Python-reference only; the native
-runtime stays at spec 0.3 and the launchers route honestly. See the
-[spec](docs/spec/SPEC-0.6.0-draft.md).
+**Addressable drawings.** Named `group` blocks carry a pivot, opacity, clipping
+and optional parenting; a group-wide `transform` moves them rigidly, a
+handle-based `warp` bends petals, cloth and squash (including
+`warp(mode: arap)`), and per-vertex `nudge` fixes a single contour. `use` plus
+delta frame blocks reuse a key and change only the named geometry.
+`fit --stacked` gives every shape a stable id and a `shape_manifest` receipt, and
+`northcel shapes` queries by id, colour, area, location, parent or mask;
+`fit --figure` fits just the measured figure with an ink backing.
 
-**0.5.0 (spec 0.4):** `mix(a, b, u)` colour expressions, a `morph`
-primitive, inclusive `frame A..B` blocks and layer/group `opacity`; `fit --stacked`
-writes painter's-order shapes and `tween --match` fills the gaps between
-independently drawn keys with one compact film, falling back to an explicit cut or
-dissolve when the match is weak. Spec 0.4 documents render with the labelled Python
-reference (the native runtime implements spec 0.3); the reference fill is also
-about three times faster. See [guide 16](docs/guide/16-colour-morph-ranges-opacity.md)
-and [pattern 12](docs/patterns/12-polishing-ai-frames.md).
+**Colour and timing.** `mix(a, b, u)` colour expressions, a `morph` primitive,
+inclusive `frame A..B` blocks and layer/group `opacity`. `tween --match` fills the
+gaps between independently drawn keys with one compact film, falling back to an
+explicit cut or dissolve when the match is weak.
 
-**0.4.0 (spec 0.3):** fit existing drawings to vector contours with
-`northcel fit`, move a named drawing or whole stage with anchored scale/rotation,
-and author bounded easing and explicit contour-tween experiments. No image model
-or raster embedding. [The look-and-fix workflow](docs/guide/15-fitting-transforms-and-inbetweens.md)
-explains the fidelity/source-size trade-off and why bad tweens must be rejected.
+**Verification.** `northcel diff`, `onion`, `contact`, `continuity` and
+`distinct` measure a render against neighbouring keys and the whole film. The
+optional `perceive` extra exposes segmentation, vectorisation, optical-flow and
+midpoint helpers; `northcel[vello]` adds the Vello tolerance renderer
+(`--renderer vello`) backed by NCIR v2. The native runtime implements spec 0.3,
+so newer documents render on the labelled Python reference (or Vello when
+chosen). See the [spec](docs/spec/SPEC-0.6.0-draft.md).
 
 ```console
 $ northcel doctor     # every stage, version, shader hash and the platform verdict

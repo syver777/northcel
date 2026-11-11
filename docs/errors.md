@@ -4,7 +4,7 @@ This page is **generated** by `docs/scripts/gen_errors.py` from the real parser,
 
 ## How a diagnostic is shaped
 
-**Version scope:** spec 0.5 diagnostics require tools 0.6.0 from this source checkout (unreleased). Published tools 0.5.0 supports spec 0.4; do not run the 0.5-header examples on that install.
+**Version scope:** tools 0.7.1, spec 0.6.0-draft. Cases that declare an older header show the compatibility diagnostic for that header.
 
 ```text
 path.ncel:5:20: error: Unknown function 'oklch'
@@ -396,7 +396,7 @@ broken.ncel:3:3: error: nudge vertex must be an integer
 
 **Cause.** Nudge vertex and ring indices are integers; fractions are not silently truncated.
 
-**Fix.** Use a zero-based integer vertex index (tools 0.6.0 from source, unreleased).
+**Fix.** Use a zero-based integer vertex index (tools 0.7.1).
 
 ### 14. A fractional nudge ring index
 
@@ -464,7 +464,7 @@ broken.ncel:4:5: error: group requires northcel "0.5.0-draft" (this document dec
 
 **Cause.** The version contract includes def bodies and nested groups, even unused definitions.
 
-**Fix.** Use tools 0.6.0 from source (unreleased) and `northcel "0.5.0-draft"`, or remove the 0.5 construct on published tools 0.5.0.
+**Fix.** Use `northcel "0.5.0-draft"` or newer, or remove the newer construct.
 
 ### 17. A number that starts with a dot
 

@@ -1,9 +1,8 @@
 # Patterns cookbook
 
 For the current delta-first authoring method, start with
-[editable drawings](../guide/17-editable-drawings.md) (source/unreleased). The
-programs below are historical language illustrations, **not subject templates**
-or a rig library. Choose regions and motion from the actual keys, not from the
+[editable drawings](../guide/17-editable-drawings.md). The programs below are
+language illustrations, **not subject templates** or a rig library. Choose regions and motion from the actual keys, not from the
 name of a pattern. In particular, automatic contour matching in pattern 12 is
 an optional tool, not the default in-between method.
 

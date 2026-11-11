@@ -8,8 +8,8 @@ Mesa/EGL (llvmpipe) context. One command should be enough.
 
 | Path | Command | Status |
 | --- | --- | --- |
-| PyPI (primary) | `pip install northcel` | **0.5.0 published** — one distribution with the reference implementation and the launcher, depending on `northcel-native` 0.4.0 (tools-only release) |
-| npm | `npm install -g northcel` | **0.4.0** — older launcher; 0.5.0 is not published on npm, so use PyPI or Homebrew for the current version |
+| PyPI (primary) | `pip install northcel` | **0.7.1 published** — one distribution with the reference implementation and the launcher, depending on `northcel-native` 0.4.0 (tools-only release) |
+| npm | `npm install -g northcel` | launcher with a structural pre-check; delegates full validation and rendering to Python. Use PyPI or Homebrew for the complete install |
 | Homebrew tap | `brew tap syver777/northcel && brew install northcel` | formula in `packaging/homebrew/`; the tap repository is `syver777/homebrew-northcel` |
 | One-line curl | `curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh \| bash` | the URL is a release asset of the latest published release |
 
@@ -37,15 +37,15 @@ phase, not a packaging toggle.
 
 ## What gets installed, and how big it is
 
-Sizes are for the published artifacts; the 0.5.0 layout merges the launcher into
-`northcel`, which removes one distribution without changing the download.
+Sizes are approximate for the published artifacts; one `northcel` wheel carries
+the reference implementation and the launcher.
 
 | Artifact | Size | Contents |
 | --- | ---: | --- |
 | `northcel` wheel (PyPI) | ~200 KB | reference implementation *and* the CLI: doctor/verify/check/info/render/film/fmt/guide, fixtures, pins |
 | `northcel-native` wheel (PyPI, manylinux_2_39_x86_64) | 2.8 MB | `ncel-native`, `ncel-ast` (MoonBit), `ncel-gl`, `bend`, `hvm`, GLSL shaders, manifest |
-| numpy + Pillow (PyPI, for the reference) | 23.8 MB download (50 MB installed) | required by the Python reference; total `pip install northcel`: 26.8 MB download, 58 MB installed |
-| npm `northcel` tarball | ~23 KB | one launcher (`northcel` + `ncel`), JS pre-check, guide, fixtures, pins |
+| numpy + Pillow (PyPI, for the reference) | depends on the platform | required by the Python reference |
+| npm `northcel` tarball | small | one launcher (`northcel` + `ncel`), JS pre-check, guide, fixtures, pins |
 | npm `northcel-linux-x64` tarball | 2.85 MB | the same native bundle |
 | `install.sh` | 12 KB | provisioning script |
 
@@ -83,15 +83,15 @@ with 6 distinct frames, determinism, and distinct frames.
 curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh | bash
 ```
 
-That URL is the `install.sh` asset of the latest published release (`v0.5.0` today,
-12,193 bytes, sha256 `0f8875e9…`), so it keeps working when `main` moves. The raw URL
+That URL is the `install.sh` asset of the latest published release, so it keeps
+working when `main` moves. The raw URL
 `raw.githubusercontent.com/syver777/northcel/main/packaging/install.sh` tracks `main`
 and may change between releases; use it only if you deliberately want the development
 copy. From a checkout you can also run
 `bash packaging/install.sh` (add `--dry-run` to see every action first).
 
 The script checks arch/glibc, checks the Mesa/EGL runtime, creates
-`~/.local/share/ncel/venv`, `pip install northcel==0.5.0` (pip verifies the index
+`~/.local/share/ncel/venv`, `pip install northcel==0.7.1` (pip verifies the index
 hashes), verifies the bundle manifest itself, links `~/.local/bin/northcel` and
 `ncel`, and runs `northcel verify`. Non-root; the only privileged action is
 `--install-mesa`, which is opt-in.

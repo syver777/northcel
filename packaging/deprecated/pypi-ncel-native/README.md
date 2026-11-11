@@ -7,7 +7,7 @@ pip install northcel
 ```
 
 This package exists only so that an existing `pip install ncel-native` keeps
-working. It contains no binaries; it depends on `northcel-native==0.3.1` on Linux
+working. It contains no binaries; it depends on `northcel-native==0.4.0` on Linux
 x86_64 and installs nothing on other platforms.
 
 - Source, docs and issues: <https://github.com/syver777/northcel>

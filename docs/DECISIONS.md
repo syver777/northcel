@@ -2,19 +2,19 @@
 
 This document records the key architectural, experimental, and naming decisions behind **NorthCel** (`.ncel`), including the evidence and rejected alternatives.
 
-## Decision 10 · 2026-11-09: Spec 0.5 addressable edits land in the reference first (tools 0.6.0, unreleased)
+## Decision 10 · 2026-11-09: Spec 0.5 addressable edits land in the reference first
 
 - **Decision:** Add named groups with pivots, clipping, opacity and optional
   parent transform paths; deterministic handle-based warp; integer-indexed nudge;
   and reuse keys with `use` plus frame deltas. These are general constructs, not
   subject-specific recipes, rigs or presets. Stable fit ids and evaluated shape
   queries make geometry addressable without inferring semantic parts.
-- **Compatibility:** Explicit 0.1–0.4 headers retain their rules. Headerless
-  documents now mean spec 0.5. Both launchers route the interpreted newer spec
-  and detected 0.4/0.5 constructs to the labelled Python reference; the native
-  runtime stays at spec 0.3. JS checks remain explicitly partial.
-- **Release honesty:** tools 0.6.0 is source-only until Phase 7; published pip,
-  Homebrew and installer paths stay at tools 0.5.0 / spec 0.4 (npm 0.4.0).
+- **Compatibility:** Explicit older headers retain their rules. Headerless
+  documents mean the current spec. Both launchers route the interpreted newer
+  spec and detected 0.4/0.5 constructs to the labelled Python reference; the
+  native runtime stays at spec 0.3. JS checks remain explicitly partial.
+- **Distribution:** the PyPI, Homebrew and installer paths ship the same tools;
+  the native runtime remains spec 0.3 and is never handed a newer document.
 - **Rejected:** declaration-order-dependent parent pivots, truncating fractional
   indices, and passing headerless newer documents to the older native runtime.
 
@@ -23,23 +23,22 @@ This document records the key architectural, experimental, and naming decisions 
 ## Decision 9 · 2026-11-09: Spec 0.4 (mix, morph, frame ranges, opacity) lands in the reference first; native routes away
 
 - **Context:** A 15-second film whose 90 frames were separate AI-drawn images
-  (6 fps, traced with `fit`) was polished to 20 fps by contour correspondence
-  outside NorthCel. It hit seven gaps: `tween` needs identical topology, which
-  independent drawings never have (it always fell back to hold); a planar fit
-  leaks paper through every gap once it moves; colour was static, so every
-  in-between baked `rgb()` literals; there was no interpolation primitive, so the
-  film became 300 baked scenes (15 MB); `frame N` was exact-frame only; cuts were
-  the only fallback; and the reference renderer took 0.8–1.9 s per 1080p frame on
-  an M1 (2.5–4 s with eight workers competing).
+  (6 fps, traced with `fit`) is polished to 20 fps by contour correspondence
+  outside NorthCel. The authoring model needs to cover independently drawn keys:
+  ordered-ring `tween` requires identical topology; a planar fit leaks paper once
+  it moves; static colour bakes `rgb()` literals into every in-between; without an
+  interpolation primitive the film becomes hundreds of baked scenes; `frame N` is
+  exact-frame only; and cuts are the only fallback. The reference renderer also
+  needs to stay responsive at 1080p.
 - **Decision:** Spec 0.4.0-draft adds `mix(a, b, u)` colours (sRGB,
   `floor(a + (b−a)u + 0.5)`, u clamped), `morph name(u: …) { "A" => "B" }`
   (ring i ↔ ring i; winding normalised, arclength resampled, start aligned by the
   least-squares cyclic shift; exact endpoints), inclusive `frame A..B` blocks (an
   exact `frame N` wins, then the last range in source order; one block per frame,
   never merged) and `opacity` on primitives and on `use` (group opacity),
-  composited per 8-bit subpixel as `floor(c + (s−c)α + 0.5)`. Tools 0.5.0 adds
-  `fit --stacked`, `tween --match` and the `northcel.correspond` API, ported from
-  the working prototype with its thresholds as documented defaults.
+  composited per 8-bit subpixel as `floor(c + (s−c)α + 0.5)`. The same tools add
+  `fit --stacked`, `tween --match` and the `northcel.correspond` API, with its
+  thresholds as documented defaults.
 - **Why the reference first, against "two implementations, one truth":** the
   MoonBit/Bend/GLSL runtime cannot be built or verified on the machine where this
   was done, and shipping an unverified native change would break the rule worse
@@ -60,18 +59,15 @@ This document records the key architectural, experimental, and naming decisions 
   memory at 1080p×16 subpixels), keeps fully opaque documents byte-identical,
   and gives a formula a GL host can reproduce on RGBA32F. Group opacity blends a
   saved canvas, so a dissolve needs no alpha channel.
-- **Why old headers ignore `opacity`:** before 0.4 the attribute was accepted and
-  silently ignored, so applying it to a document that declares 0.3 would change
-  its pixels. It is applied for 0.4 headers and headerless documents (which are
-  0.4 at tools 0.5.0, 0.5 at tools 0.6.0); old headers get a warning. `mix`, `morph` and ranges were syntax
-  errors before, so in an old-header document they are validation errors naming
-  the header to use.
+- **Why old headers ignore `opacity`:** applying it to a document that declares
+  0.3 would change its pixels. It is applied for 0.4 and newer headers and
+  headerless documents; older headers get a warning. `mix`, `morph` and ranges
+  are validation errors in an old-header document, naming the header to use.
 - **Matching is evidence, not judgement:** `tween --match` reports the matched
   area fraction and sqrt-area-weighted displacement and falls back to an explicit
   cut or dissolve below thresholds (0.5 and 32 px by default). Colour changes are
   allowed only along author-listed pairs. The receipt is `quality: "unreviewed"`.
-  Big pose changes (crouch, spin, landing) need a drawn key; the prototype needed
-  a hand-written list of forced cuts for exactly those.
+  Big pose changes (crouch, spin, landing) need a drawn key.
 - **Renderer speed without semantic change:** the fill was vectorised (all
   crossings of a layer at once, per-row pairing, span painting) and the box filter
   sums rows in `uint16`; the formulas are unchanged and 153 frames from 57
@@ -120,21 +116,18 @@ This document records the key architectural, experimental, and naming decisions 
 
 ## Decision 7 · 2026-11-04: One install name (`northcel`), its own repository, dual licence
 
-- **Context:** NorthCel was previously developed inside another repository as
-  `packages/northcel`, `docs/northcel`, `native/ncel` and `packaging/`, with two
-  PyPI names (`ncel`, `northcel`), three npm names (one published, one never
-  published, one scope that needs an org) and a proprietary licence. Users and
-  agents had to learn which of several names to install, and "which package is
-  the real one" was impossible to answer.
+- **Context:** NorthCel is an independent drawing language with one install path.
+  A single public repository keeps the package, docs, native tree and packaging
+  together; users and agents need one name to install and one answer to "which
+  package is the real one".
 - **Decision:** NorthCel becomes its own public repository
   (<https://github.com/syver777/northcel>), dual licensed **MIT OR Apache-2.0**, and
   **every install is called `northcel`**: one Python distribution containing the
   reference implementation *and* the launcher (console scripts `northcel` and
   `ncel`), depending on the platform wheel `northcel-native`; one npm package
-  `northcel` depending on `northcel-linux-x64`. `ncel` survives only as a short
-  command alias. The old `ncel`, `ncel-native` (PyPI) and `@ncel/linux-x64` (npm)
-  remain as deprecated alias packages that depend on the real ones. `@ncel/cli`
-  was never published and is dropped.
+  `northcel` depending on `northcel-linux-x64`. `ncel` is a short command alias.
+  On PyPI, `ncel` is a deprecated alias package that installs `northcel`; npm
+  keeps the `northcel` launcher only.
 - **Why `ncel` is not a package name:** npm rejected the bare name as too similar
   to existing packages, and a scoped `@ncel/...` or a `...-cli` suffix would make
   users learn a second name for no benefit.
@@ -254,15 +247,15 @@ This document records the key architectural, experimental, and naming decisions 
   the same crossing/integration formula; golden/oracle comparisons gate release.
 - Fix toolchain reproducibility without redistributing the compiler: immutable
   official URLs use **moonc** `0.10.19+bee578715`, not **moon** `0.1.20261102`.
-  Their checksums equal the previously pinned archives; `latest` had drifted.
+  Their checksums match the archives pinned in `native/toolchain.lock`.
 - In the local film study, the author selected intact-cel mattes and existing
   empty texture patches, then used deterministic Poisson boundary blending to
   restore only occluded stage underpaint. This is numerical **offline authoring**,
   not a learned image generator, semantic/quality judge or a fourth native stage.
   The repaired plate is traced into fully counted vector contours before native
   rendering. Hidden limbs are never reconstructed: occlusions use explicit holds
-  of neighbouring whole existing drawings. Contour-tween trials that folded black
-  torso/limb regions were rejected, rather than reported as smooth animation.
+  of neighbouring whole existing drawings. Contour-tween trials are accepted only
+  when they do not fold black torso/limb regions; otherwise use a hold.
 
 ## 10. NCIR v2 and the Vello tolerance tier (tools 0.7.0)
 

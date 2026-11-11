@@ -5,10 +5,19 @@ implementation, the native runtime, the CLI and the editor tooling.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-The language specification has its own draft number (currently `0.5.0-draft`), which does not
+The language specification has its own draft number (currently `0.6.0-draft`), which does not
 move for packaging-only releases.
 
 ---
+
+## [0.7.1] — 2026-11-11
+
+### Documentation
+- Current-state documentation pass: install and version guidance now describe
+  tools 0.7.1 / spec 0.6.0-draft directly, the stale staged-release pages are
+  folded into the reference and the docs index, and the agent guide, package
+  READMEs and packaging notes describe the launcher, routing and platform support
+  as they are today. No code, spec or rendering semantics changed.
 
 ## [0.7.0] — 2026-11-10
 

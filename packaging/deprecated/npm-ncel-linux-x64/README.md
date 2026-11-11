@@ -7,7 +7,7 @@ npm install -g northcel
 ```
 
 This package exists only so an existing `npm install @ncel/linux-x64` keeps
-resolving. It contains no binaries; it depends on `northcel-linux-x64@0.3.1`.
+resolving. It contains no binaries; it depends on `northcel-linux-x64@0.4.0`.
 
 - Source, docs and issues: <https://github.com/syver777/northcel>
 

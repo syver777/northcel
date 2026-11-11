@@ -1,113 +1,44 @@
 # Releasing NorthCel
 
-## 0.7.0 — release candidate — spec 0.6.0-draft
+## 0.7.1 — spec 0.6.0-draft
 
-Built from `main` after the 0.7.0 PR. Tools-only release of the core package
-(`northcel` + the deprecated `ncel` alias); the native runtime stays 0.4.0.
-It additionally ships **`northcel-vello` 0.7.0**, the optional tolerance-tier
-renderer consumed by `northcel[vello]`.
+Documentation-only release of the tools: `northcel` 0.7.1 plus the deprecated
+`ncel` alias 0.7.1, built from `main`. The native runtime stays 0.4.0 and is not
+rebuilt. `northcel-vello` stays 0.7.0, so `northcel[vello]` keeps
+`northcel-vello==0.7.0`.
 
 Order:
 
-1. `bash packaging/scripts/build_python.sh` for `northcel` 0.7.0 (native 0.4.0
-   is already published; do not rebuild it).
-2. `bash packaging/scripts/build_vello.sh` for the host wheel, and let the
-   `Vello wheels` CI workflow build the other platforms
-   (macOS arm64/x86_64, Linux x86_64/aarch64, Windows x86_64).
-3. Upload `northcel` wheel/sdist, then `ncel` 0.7.0, then every
-   `northcel_vello-0.7.0-*.whl`. PyPI order matters: the extra depends on
-   `northcel-vello==0.7.0`.
-4. The CI `publish` job uses PyPI **trusted publishing** (`id-token: write`) on
-   a `v0.7.0` GitHub release. The PyPI project must have a trusted publisher
-   configured for this repository and the `vello.yml` workflow; until it is,
-   publish from a machine with `NORTH_NOIR_PYPI_API`/twine credentials.
-5. Fresh-venv proof: `pip install northcel==0.7.0`, `northcel --version` reports
-   0.7.0 / spec 0.6.0-draft, `northcel render examples/patterns/12-polishing-ai-frames.ncel`
-   works; `pip install "northcel[vello]==0.7.0"` then
-   `northcel render <file> --renderer vello` reports the tolerance tier.
+1. `bash packaging/scripts/build_python.sh` for `northcel` 0.7.1 (native 0.4.0 is
+   already published; do not rebuild it).
+2. `python -m twine check dist/python/*`; install the wheel in a fresh venv and
+   run `northcel --version`, `northcel doctor` and a render from the examples.
+3. Upload `northcel` wheel/sdist, then `ncel` 0.7.1. PyPI order matters: the alias
+   depends on `northcel==0.7.1`.
+4. Publish the GitHub release `v0.7.1` with `packaging/install.sh` (default
+   `NCEL_VERSION="0.7.1"`). The CI publish job uses PyPI **trusted publishing**
+   (`id-token: write`) on that release. Until a trusted publisher is configured
+   for the repository and workflow, publish with `NORTH_NOIR_PYPI_API`/twine
+   credentials from a machine.
+5. Fresh-venv proof: `pip install northcel==0.7.1`; `northcel --version` reports
+   0.7.1 / spec 0.6.0-draft; `northcel render
+   examples/patterns/12-polishing-ai-frames.ncel` works. Compare the artifact
+   sha256 with the PyPI JSON.
 6. Re-pin `packaging/install.sh` and the Homebrew formula only from the published
-   0.7.0 sdist URL/SHA-256. npm remains with the owner; do not publish it here.
-
-## 0.5.0 — published 2026-11-09 — spec 0.4.0-draft (tools only)
-
-PyPI and Homebrew ship `northcel` 0.5.0 and the deprecated `ncel` PyPI alias
-0.5.0 (`northcel==0.5.0`). npm still serves 0.4.0; the 0.5.0 launcher is
-prepared but not published. The native runtime is not
-rebuilt: `northcel-native`, `ncel-native`, `northcel-linux-x64`,
-`native/toolchain.lock` and `python/northcel/data/pins.json` stay at 0.4.0 /
-spec 0.3, and the 0.5.0 packages keep depending on `northcel-native==0.4.0` and
-`northcel-linux-x64@0.4.0`. Spec 0.4 documents are routed to the Python reference
-by both launchers (Decision 9).
-
-Before publishing: the Python suite (with `northcel[fit]`), JS tests, conformance,
-docs check, `make lint`, and a fresh-venv install whose `northcel render` of
-`examples/patterns/12-polishing-ai-frames.ncel` prints the spec 0.4 routing reason
-on Linux x86_64 with the native bundle present. Homebrew (`packaging/homebrew`) and
-`packaging/install.sh` still pin 0.4.0; update their URLs/SHA-256 and default
-version only from the published 0.5.0 artifacts.
-
-## 0.4.0 candidate — spec 0.3.0-draft
-
-Tools and native runtime both move to 0.4.0 for anchored transforms/easing and
-offline fitting/tween authoring; 0.2 programs retain their pixels. The original
-toolchain is now fetched from immutable official compiler-version URLs.
-
-Release gates: reference + optional fitting tests; native build/tests; both-way
-conformance and shuffled determinism; native `verify` from fresh built installs;
-docs/lint/generated assets; green GitHub CI including the manual native job; and
-the local code-only smoothing study's improved video. Never publish an unchecked
-artifact. Version 0.4.0 publication receipts are added only after live verification.
-
-Build with `packaging/scripts/build_python.sh`, `build_npm.sh` and `verify.sh`.
-The deprecated PyPI aliases depend on the matching new packages. PyPI order is
-`northcel-native`, then `northcel` wheel/sdist, then aliases. Credentials are passed
-in the environment, never printed or written to artifacts.
-
-**npm 0.4.0 is published.** For 0.5.0 publish only the `northcel-0.5.0.tgz`
-launcher; `northcel-linux-x64` stays at 0.4.0. The old `publish_0_3_1.sh` is
-historical and publishes npm; it MUST NOT be used for this task.
-
-Homebrew must pin the actual published 0.5.0 sdist (and 0.4.0 native-wheel) URLs and SHA-256,
-and the tap mirror must match. Do not claim a brew install was tested merely
-because the same wheels passed in a fresh venv.
-
-The repository is the source; the registries are the distribution. A release is a
-set of artifacts at one version, in a fixed order, plus optional deprecated aliases.
+   0.7.1 sdist URL/SHA-256. npm remains with the owner; do not publish it here.
 
 ## Registry state
 
 | Registry | Name | Latest | Notes |
 | --- | --- | --- | --- |
-| PyPI | `northcel` | **0.5.0** | the one package a user installs: reference + launcher, scripts `northcel` and `ncel` |
-| PyPI | `northcel-native` | **0.4.0** | the Linux x86_64 platform wheel `northcel` depends on; unchanged for 0.5.0 |
-| PyPI | `ncel` | **0.5.0** (deprecated) | alias that depends on `northcel` |
+| PyPI | `northcel` | **0.7.1** | the one package a user installs: reference + launcher, scripts `northcel` and `ncel` |
+| PyPI | `northcel-native` | **0.4.0** | the Linux x86_64 platform wheel `northcel` depends on; unchanged |
+| PyPI | `northcel-vello` | **0.7.0** | optional tolerance-tier renderer for `northcel[vello]`; unchanged |
+| PyPI | `ncel` | **0.7.1** (deprecated) | alias that depends on `northcel` |
 | PyPI | `ncel-native` | 0.4.0 (deprecated) | alias that depends on `northcel-native`; unchanged |
-| npm | `northcel` | **0.4.0** | the launcher + partial pre-check; 0.5.0 is not published on npm |
-| npm | `northcel-linux-x64` | **0.4.0** | the native bundle; unchanged |
+| npm | `northcel` | launcher | the launcher + structural pre-check; the owner publishes it |
+| npm | `northcel-linux-x64` | 0.4.0 | the native bundle; unchanged |
 | npm | `@ncel/linux-x64` | 0.2.1 (deprecated) | alias for the bundle; do not publish |
-
-`0.3.1` was chosen for that historical release because npm `0.3.0` already existed. 0.5.0 is the tools-only release described at the top of this file.
-
-## Historical — 0.3.1, published to PyPI on 2026-11-04
-
-Uploaded, in this order, and verified afterwards:
-
-| File | Bytes | sha256 |
-| --- | ---: | --- |
-| `northcel_native-0.3.1-py3-none-manylinux_2_39_x86_64.whl` | 2,815,158 | `bfa79300df1acbc200be245d64bbdcb7b057f22c2be40a5bda409fd90b9e6add` |
-| `northcel-0.3.1-py3-none-any.whl` | 165,595 | `836e36f66c907317f0f6da44bb5eae0101ce0e8af652b3b36a369ef9b3b5afd8` |
-| `northcel-0.3.1.tar.gz` | 164,430 | `57a90003b005864bdf033d686a89b33a3577a81be623a8ca4b6388c9566aeca5` |
-| `ncel-0.3.1-py3-none-any.whl` (deprecated) | — | on PyPI |
-| `ncel_native-0.3.1-py3-none-manylinux_2_39_x86_64.whl` (deprecated) | — | on PyPI |
-
-Evidence: a fresh venv, `pip install northcel==0.3.1` from the
-public index with no local artifacts → `northcel doctor` exit 0 (native, 13/13
-checksums, GL 4.5 Mesa 25.2.8 at homegrown homebrew paths), `ncel verify` 5/5
-(conformance sha256 `be0eb036…` = pinned), and a real 1024×1024 native render whose
-sha256 equals the pinned conformance hash. `pip install ncel==0.3.1` pulls
-`northcel` + `northcel-native` and runs the same launcher.
-
-npm 0.3.1 is **published** (2026-11-04): `northcel` and `northcel-linux-x64` both resolve to 0.3.1, and install from the public registry with a global install.
 
 ## Build and prove
 
@@ -115,71 +46,65 @@ npm 0.3.1 is **published** (2026-11-04): `northcel` and `northcel-linux-x64` bot
 bash packaging/scripts/build_python.sh        # wheels + sdist -> dist/python
 bash packaging/scripts/build_npm.sh           # tarballs        -> dist/npm
 bash packaging/scripts/verify.sh              # installs both paths into /tmp and renders
-bash packaging/scripts/publish_0_5_0.sh --dry-run
+python -m twine check dist/python/* dist/deprecated/*
 ```
 
 `build_python.sh` needs `native/artifacts/ncel-native-0.2.0-linux-x86_64/` (the
 native build for the pinned runtime). If it is absent it tries to build the native
 tree, which needs the MoonBit compiler and a C toolchain — see `native/BUILD.md`.
-`build_npm.sh` needs the same artifacts.
+`build_npm.sh` needs the same artifacts. The 0.7.1 artifacts and their sha256 are
+published on PyPI; record the verified values here after upload:
 
-Published artifacts (PyPI verified 2026-11-09):
-
-| File | Bytes | sha256 |
-| --- | ---: | --- |
-| `northcel-0.5.0-py3-none-any.whl` | 201,152 | `ffcd6b600704cdbd251021b9038aa7f52131ba74b45d80c7af0ba0cbb3d2ca94` |
-| `northcel-0.5.0.tar.gz` | 207,933 | `70f0a40526676703972858e61729abb909cf6dcb12a9c513bcdba0ddadce52df` |
-| `northcel-0.5.0.tgz` (npm) | 23 KB | `039365e23df13ec50e2b3aec3cefe018cefe47c607acbb85ffb740e935057663` |
-| `ncel-0.5.0` wheel/sdist (deprecated) | — | depends on `northcel==0.5.0` |
-| native artifacts | — | **not rebuilt**; `northcel-native` / `northcel-linux-x64` stay 0.4.0 |
+| File | sha256 |
+| --- | --- |
+| `northcel-0.7.1-py3-none-any.whl` | _filled after upload_ |
+| `northcel-0.7.1.tar.gz` | _filled after upload_ |
+| `ncel-0.7.1` wheel/sdist (deprecated) | depends on `northcel==0.7.1` |
 
 ## Publish, in this order
 
-0.5.0 is tools-only: do not upload `northcel-native` or
+0.7.1 is tools-only: do not upload `northcel-native`, `northcel-vello` or
 `northcel-linux-x64` again. A platform artifact from 0.4.0 already satisfies the
 dependency; verify it exists first.
 
 ```sh
 # 1. PyPI — the reference + launcher (native 0.4.0 is already published)
 python3 -m twine upload --non-interactive \
-  dist/python/northcel-0.5.0-py3-none-any.whl dist/python/northcel-0.5.0.tar.gz
+  dist/python/northcel-0.7.1-py3-none-any.whl dist/python/northcel-0.7.1.tar.gz
 
-# 2. npm — the launcher only (northcel-linux-x64 stays 0.4.0)
-npm publish dist/npm/northcel-0.5.0.tgz --access public
-
-# 3. optional: the deprecated PyPI alias (it only depends on northcel==0.5.0)
+# 2. the deprecated PyPI alias (it only depends on northcel==0.7.1)
 python3 -m build --outdir dist/deprecated packaging/deprecated/pypi-ncel
 python3 -m twine upload --non-interactive dist/deprecated/*
-# The npm alias @ncel/linux-x64 stays at 0.2.1; deprecate it, do not republish.
-npm deprecate "@ncel/linux-x64@0.2.1" "NorthCel is one package now: npm install -g northcel"
+
+# 3. the GitHub release that serves install.sh
+gh release create v0.7.1 packaging/install.sh --repo syver777/northcel \
+  --title "NorthCel 0.7.1" --notes "Documentation-only release."
 ```
 
 Credentials: `TWINE_USERNAME=__token__` + `TWINE_PASSWORD` (or `~/.pypirc`) for
-PyPI, `NPM_TOKEN` or `npm login` for npm. `publish_0_3_1.sh` reads the PyPI token
-from the `NORTH_NOIR_PYPI_API` environment variable, maps it to `TWINE_PASSWORD`
-(never echoed, never written to disk) and refuses to start from a dirty tree.
+PyPI. The other release scripts read the PyPI token from the
+`NORTH_NOIR_PYPI_API` environment variable, map it to `TWINE_PASSWORD` (never
+echoed, never written to disk) and refuse to start from a dirty tree.
 
-A note from the 0.3.1 run that is not obvious: the public simple index can serve a
-stale page for a minute or two right after an upload. `pip install` said
-"No matching distribution found for northcel==0.3.1" for the dependency of `ncel`
-while `curl https://pypi.org/simple/northcel/` already listed the file; retrying
-with `--no-cache-dir` a minute later worked. Retry before assuming a bad artifact.
+If the public simple index lags right after an upload, `pip install` can report
+"No matching distribution found" while the file is already listed. Retry with
+`--no-cache-dir` after a minute before assuming a bad artifact.
 
 ## After publishing
 
 ```sh
-python3 -m venv /tmp/nc && /tmp/nc/bin/pip install --no-cache-dir northcel==0.5.0
-/tmp/nc/bin/northcel doctor && /tmp/nc/bin/northcel verify   # 5/5, hash be0eb036…
-npm install -g northcel@0.5.0 && northcel verify
+python3 -m venv /tmp/nc && /tmp/nc/bin/pip install --no-cache-dir northcel==0.7.1
+/tmp/nc/bin/northcel doctor && /tmp/nc/bin/northcel verify
 
-git tag -a v0.5.0 -m "NorthCel 0.5.0" && git push origin v0.5.0
+git tag -a v0.7.1 -m "NorthCel 0.7.1" && git push origin v0.7.1
+curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh | grep NCEL_VERSION
 ```
 
 ## Homebrew formula
 
-`packaging/homebrew/Formula/northcel.rb` pins the **published** artifacts: since
-0.4.0 that is two of them — the `northcel` sdist (this formula's `url`) and the
-`northcel-native` platform wheel. To re-pin, take the `url`/`sha256` pairs from
+`packaging/homebrew/Formula/northcel.rb` pins the **published** artifacts: the
+`northcel` sdist (this formula's `url`) and the `northcel-native` platform wheel.
+To re-pin, take the `url`/`sha256` pairs from
 `https://pypi.org/pypi/<name>/<version>/json`, bump `version` in `test do`, and run:
 
 ```sh
@@ -194,8 +119,9 @@ same change there.
 
 ## Version policy
 
-- The **tools** version moves (`0.3.1`, `0.3.2`, …).
+- The **tools** version moves for any release (`0.7.1`, `0.7.2`, …).
 - The **language specification** moves only when the grammar or rendering
-  semantics change (`0.4.0-draft` today), and an archived draft is never edited.
-- A packaging-only release keeps `spec_version` and the native runtime build
-  identical; `northcel doctor` prints both numbers so they cannot be confused.
+  semantics change (`0.6.0-draft` today), and an archived draft is never edited.
+- A packaging-only or documentation-only release keeps `spec_version` and the
+  native runtime build identical; `northcel doctor` prints both numbers so they
+  cannot be confused.

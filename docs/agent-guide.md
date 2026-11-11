@@ -2,11 +2,10 @@
 
 This guide instructs AI coding agents (Claude Code, OpenCode, Codex, Cursor, Gemini CLI) how to author, verify, and surgically edit AI-drawn images and videos in **NorthCel (`.ncel`)**.
 
-**Version scope:** spec 0.6 / tools 0.7.0 examples
-(unreleased)**, installed in a venv with `python3 -m pip install -e './python[fit]'`.
-Published PyPI/Homebrew/install.sh installs are tools 0.5.0 (spec 0.4); published
-npm is 0.4.0. On published tools 0.5.0, use the writing guide's spec-0.4 examples,
-not the `group`/`warp`/`nudge` examples here.
+**Version scope:** spec 0.6 / tools 0.7.1. Install with
+`pipx install "northcel[fit]"` (or `pip install "northcel[fit]"` in a venv) for
+full validation and rendering; the npm package is a launcher with a structural
+pre-check.
 
 ## The first ten minutes
 
@@ -117,23 +116,23 @@ reproduced by CI. The [architecture page](architecture.md) explains why the
 reference and native renderers can differ by a handful of edge pixels.
 
 <!-- npm-guide:start -->
-# NorthCel quick agent guide — tools 0.7.0, spec 0.6.0-draft
+# NorthCel quick agent guide — tools 0.7.1, spec 0.6.0-draft
 
-Published pip/Homebrew/install.sh installs are tools **0.5.0** (spec 0.4); npm is
-**0.4.0**. Spec-0.5 constructs below require this source checkout installed in a
-venv with `python3 -m pip install -e './python[fit]'`. Do not feed its 0.5 examples
-to published 0.6.0. Start new source-authored files at `northcel "0.6.0-draft"`;
-choose an older explicit header only for intentional compatibility.
+Install `pipx install "northcel[fit]"` (or `pip install "northcel[fit]"` in a
+venv) for full validation and rendering. The npm package is a launcher with a
+zero-dependency structural pre-check. Start new files at
+`northcel "0.6.0-draft"`; choose an older explicit header only for intentional
+compatibility.
 
 Discover this guide offline with `northcel guide` (or `npx northcel guide`). The
 npm package runs the native runtime on Linux x86_64 and otherwise falls back to the
 Python reference, with a zero-dependency **partial JS pre-check** for `check` when
 neither is available. There is no JavaScript renderer.
 
-## Start here (a complete 3-second film, published-compatible spec 0.4)
+## Start here (a complete 3-second film)
 
 ```ncel
-northcel "0.4.0-draft"
+northcel "0.6.0-draft"
 film Kite(width: 320, height: 180, fps: 12, frames: 36, precision: 0.25px, seed: 42) {
   palette { ink: #202830, red: #D65C52 }
   paper { color: #FFF8EC, antialias_grid: 4 }
@@ -157,9 +156,9 @@ Never put expressions inside a quoted ring: move it with `translate: (x, y)`.
 ## Five language features to combine
 
 1. **Reusable shapes:** `def Mark(dx: 0, dy: 0) { stroke line(width: 2) { (0, 0), (8, 4) } }`
-   then `use Mark(dx: 20, dy: 30)`. In 0.5, defs may also contain groups,
-   transforms, warps and nudges; groups may contain `use`. Top-level nested `use`
-   in a def is still unsupported.
+   then `use Mark(dx: 20, dy: 30)`. Defs may also contain groups, transforms,
+   warps and nudges; groups may contain `use`. Top-level nested `use` in a def is
+   still unsupported.
    `dx/dy` auto-translate expanded geometry; don't also add them to coordinates.
    Same-named cels in repeated uses replace one another; use distinct named defs
    for independent cel instances (stroke/ribbon uses append).
@@ -186,9 +185,9 @@ Never put expressions inside a quoted ring: move it with `translate: (x, y)`.
    numeric ranges, expression evaluation, def resolution and render quality remain unchecked.
 2. Run `npx northcel check film.ncel --require-full --json` before claiming full
    validation. Exit 2 = no full validator (clean partial); exit 1 = detected error;
-   exit 0 = Python full check succeeded. For spec 0.4 install `pipx install northcel`
-   (or `pip install northcel` in a venv); for spec 0.5 install this unreleased
-   source checkout as above. Expose its Python CLI on PATH, then repeat.
+   exit 0 = Python full check succeeded. Install the Python CLI with
+   `pipx install "northcel[fit]"` (or `pip install "northcel[fit]"` in a venv),
+   expose it on PATH, then repeat.
    The npm bridge finds importable Python modules or pipx-style Python entrypoints.
    Never suppress exit 2 or call a partial check fully validated.
 3. Python: `northcel render film.ncel -o frame0.png --frame 0`, inspect the PNG;
@@ -239,7 +238,7 @@ and pivot), colour flood (`mix`), squash (nonuniform scale) and ripple (clip/nud
   leaving stale ink. For moving ink use cels or time expressions instead.
 - Undefined def, bad sizes/fps, expression variable errors: JS may miss these;
   use Python full check **and real renders**. No JS success authorizes shipping.
-## Existing drawings and intact-cel motion (spec 0.3)
+## Existing drawings and intact-cel motion
 
 `northcel fit drawing.png -o drawing.ncel` (pip `northcel[fit]`) traces ordinary
 vector contours; it never embeds the image. Compare the round trip. For texture,
@@ -257,23 +256,23 @@ experiment, not an anatomy judge. Topology mismatch errors unless `--fallback
 hold` is requested; inspect every inserted frame and reject doubled/folded lines.
 Matching topology alone proves nothing. Source endpoints remain original geometry.
 
-## In-betweens for independently drawn keys (spec 0.4, Python reference)
+## In-betweens for independently drawn keys
 
-Spec 0.4 adds `color: mix($a, $b, u)` (also outlines and paper; u clamped),
+`color: mix($a, $b, u)` (also outlines and paper; u clamped),
 `morph name(color: $c, u: expr) { "ringsA" => "ringsB" }` (ring i pairs ring i,
 vertex counts may differ, exact A at u<=0 and B at u>=1), `frame 12..18 { ... }`
 (exact `frame N` wins, else the last range) and `opacity: expr` on primitives or
 `use D(opacity: u)` for a group (dissolve: `use A` then `use B(opacity: u)`).
-They need `northcel "0.4.0-draft"` and render with the labelled Python reference;
-the native runtime implements spec 0.3, and the npm launcher without Python
-refuses them (exit 3). `northcel fit img.png -o key.ncel --stacked --palette p.json`
+They need a spec 0.4 or newer header and render with the labelled Python
+reference; the native runtime implements spec 0.3, and the npm launcher without
+Python refuses them (exit 3). `northcel fit img.png -o key.ncel --stacked --palette p.json`
 writes painter's-order shapes; `northcel tween a.ncel b.ncel -o t.ncel --match
 --steps 6` matches shapes across topology mismatch and writes one film. Read the
 receipt: below `--min-match`/`--max-displacement` it cuts (or `--fallback
 dissolve`). A match proves no anatomy: a crouch→jump needs a drawn key. Inspect
 every in-between; unmatched shapes pop at u = 0.5.
 
-## Addressable edits (spec 0.5, source/unreleased Python reference)
+## Addressable edits (Python reference)
 
 This complete illustration uses general constructs, not a subject preset:
 
@@ -310,7 +309,7 @@ and adds `shape_manifest` rows. Inspect with `northcel shapes drawing.ncel`,
 `northcel shapes drawing.ncel --ids ID`, or filter with `--color`, `--area-min`,
 `--bbox x0,y0,x1,y1`, `--centroid x,y,r`, `--parent ID` or `--mask IMAGE`.
 The rows describe evaluated geometry, not semantic parts. Both launchers route
-0.4/0.5 (also headerless) documents to Python; JS-only `check` stays PARTIAL.
+newer (also headerless) documents to Python; JS-only `check` stays PARTIAL.
 <!-- npm-guide:end -->
 
 ---
@@ -318,13 +317,10 @@ The rows describe evaluated geometry, not semantic parts. Both launchers route
 ## 1. The Golden Rules of Authoring `.ncel`
 
 1. **Always Start with the Version Header:**
-   Start new source-authored files with the current `northcel "0.6.0-draft"`
-   (tools 0.7.0, Python reference). On published tools 0.6.0 use
-   `northcel "0.5.0-draft"` for `group`, `warp` and `nudge`; on 0.5.0 use
-   `northcel "0.4.0-draft"` for `mix`, `morph`, `frame A..B` and `opacity`.
-   `warp(mode: arap)` needs 0.6.
-   Choose `northcel "0.3.0-draft"` only when deliberately targeting the native
-   runtime with 0.3-only syntax. Explicit 0.1/0.2 headers remain supported.
+   Start new files with the current `northcel "0.6.0-draft"`
+   (tools 0.7.1, Python reference). Choose `northcel "0.3.0-draft"` only when
+   deliberately targeting the native runtime with 0.3-only syntax. Older explicit
+   headers remain supported for compatibility.
 2. **Separate Washes, Ink Ribbons, and Parallel Swarms by Name:**
    - Use `layer` / `wash` for broad silhouette envelopes (`tile_wall`, `skin_envelope`, `hair_dome`).
    - Use `stroke` or `ribbon` for variable-width anatomical contours and props (`brow_eye`, `ear_loop`, `post_ink`).
@@ -383,17 +379,26 @@ When a user asks to tweak a single detail (e.g., *"make the rain heavier"* or *"
 
 ---
 
-## 4. Lessons from hand-authoring 8 frames of a 90-frame film
+## 4. Lessons from hand-authoring representative film frames
 
-An AI agent authored 8 representative frames (`1536×864`) of a 90-frame AI-drawn film by hand across 3 look-and-fix rounds (`f0001`, `f0028`, `f0037`, `f0043`, `f0055`, `f0067`, `f0076`, `f0085`):
+When authoring representative frames of a 90-frame film by hand, these practices hold:
 
-1. **Always use `cel` + `palette` (`v0.2`) instead of separate `layer` + `stroke` blocks:**
-   In `v0.1`, writing a separate `layer` fill and `stroke` outline for every cloud, shirt, pant leg, and duck part doubled the token count (`8,830 B / 5,052 tok`) and caused gaps where the stroke drifted from the fill. Switching to `v0.2`'s `cel name(color: $shirt, outline: ($ink, 5px))` cut AI-authored file size by **46.6%** (`4,718 B / 3,303 tok`) and guaranteed zero fill-to-outline gaps.
-2. **Beware the SSIM Trap on Hand-Authored Linework:**
-   Adding fine interior lines in later rounds (cloud outlines, facial features, grass tufts) makes the drawing look **much** more like a real cartoon to a human eye, yet can lower pixel-level Block SSIM by `0.01–0.02` if a 5px black outline is shifted by 4–8 pixels from the source frame's exact line position (because a shifted black line on white paper incurs a double pixel penalty). Judge AI-authored frames by **structural completeness + Edge IoU + visual inspection**, not raw pixel SSIM alone.
-3. **Where an Unassisted LLM Struggles Without a Fitter:**
-   - **Easy for an LLM (`0.88–0.93` SSIM):** Isolated heads (`f0001`), simple frontal standing poses (`f0028`), flat sky/ground horizons, and reusable props (`clouds`, `grass_tufts`).
-   - **Hard for an LLM (`0.70–0.75` SSIM):** Complex foreshortened limbs (`f0037` airborne bent knees), articulated hands with 5 spread fingers (`f0055`, `f0067`), and overlapping seated legs (`f0076`, `f0085`). These are observations from that film, not subject rules. For a genuinely new pose, draw or fit the missing key/region; do not substitute a character rig or part-template library for observing the actual references.
+1. **Use `cel` + `palette` instead of separate `layer` + `stroke` blocks:** one
+   `cel name(color: $shirt, outline: ($ink, 5px))` keeps the file compact and
+   guarantees zero fill-to-outline gaps.
+2. **Judge hand-authored linework by structural completeness + Edge IoU + visual
+   inspection, not raw pixel SSIM alone:** adding fine interior lines (cloud
+   outlines, facial features, grass tufts) makes the drawing read much more like a
+   cartoon, yet can lower pixel-level Block SSIM by `0.01–0.02` when a 5px black
+   outline sits 4–8 pixels from the source frame's line.
+3. **What an unassisted LLM handles well and what needs a fitter:**
+   - **Easy (`0.88–0.93` SSIM):** isolated heads, simple frontal standing poses,
+     flat sky/ground horizons, and reusable props (`clouds`, `grass_tufts`).
+   - **Hard (`0.70–0.75` SSIM):** complex foreshortened limbs (airborne bent
+     knees), articulated hands with five spread fingers, and overlapping seated
+     legs. For a genuinely new pose, draw or fit the missing key/region; do not
+     substitute a character rig or part-template library for observing the actual
+     references.
 
 | Diagnostic | Cause | Fix |
 | --- | --- | --- |

@@ -54,10 +54,10 @@ usage: northcel <command> [options]        (short alias: ncel)
   version, --version                   versions (native runtime + spec)
 
 Global: --no-native  force the labelled Python reference path (never called "native")
-Spec 0.4/0.5 documents (mix, morph, opacity, frame A..B, groups, warp, nudge) always
+Spec 0.4–0.6 documents (mix, morph, opacity, frame A..B, groups, warp, nudge, ARAP)
 use the labelled Python reference: the native runtime 0.4.0 implements spec 0.3.
 Platform: Linux x86_64, glibc >= 2.39, Mesa EGL/llvmpipe. macOS/Windows are not
-supported natively in this release; `northcel doctor` explains exactly what is
+supported natively; `northcel doctor` explains exactly what is
 missing and every render there is labelled `python-reference`.
 """
 
@@ -138,7 +138,7 @@ def spec04_reason(args: list[str]) -> str | None:
     features = sorted({name for name, _line, _col in spec04_features(doc)}
                       | {name for name, _line, _col in spec05_features(doc)}) if doc else []
     if features:
-        label = "spec 0.4/0.5 features" if any(f in ("group", "warp", "nudge") for f in features) else "spec 0.4 features"
+        label = "spec 0.5/0.6 features" if any(f in ("group", "warp", "nudge", "arap") for f in features) else "spec 0.4 features"
         return (
             f"{files[0]} uses {label} ({', '.join(features)}); the native runtime "
             f"{NATIVE_RUNTIME_VERSION} implements spec 0.3 only"

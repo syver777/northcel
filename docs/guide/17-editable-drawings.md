@@ -1,9 +1,8 @@
 # 17. Editable drawings: observe, decide, edit, verify
 
-**Source / unreleased tools 0.6.0, spec 0.5.0-draft.** Published tools 0.5.0
-implement spec 0.4 and cannot run these examples. In a virtual environment,
-install this checkout with `python3 -m pip install -e './python[fit]'`.
-Spec-0.5 rendering uses the labelled Python reference, not the native runtime.
+**Tools 0.7.1, spec 0.6.0-draft.** These examples run with the published
+`pip install "northcel[fit]"` (or `pipx install "northcel[fit]"`). Newer-spec
+rendering uses the labelled Python reference, not the native runtime.
 
 The method is **observe → decompose → decide → edit the delta → verify →
 iterate**. The AI decides for each video what constitutes a part, what stays
@@ -91,7 +90,7 @@ vector geometry; an image model is not required.
   contributing handle its normalised displacement is constant, not attenuated
   by distance; use fixed handles as well as moving handles to anchor a bend.
   Outside all handle radii, points stay unchanged. This is not ARAP or a physics
-  simulation. See the [exact formula](../spec/SPEC-0.5.0-draft.md#warp).
+  simulation. See the [exact formula](../spec/SPEC-0.6.0-draft.md#warp).
 - `nudge` uses zero-based integer `ring`/`vertex` indices after painting. Check
   the encoded ring order; it moves a vertex, not an inferred landmark.
 - `mix(a, b, u)` clamps `u` and mixes 8-bit RGB channels without gamma
@@ -132,7 +131,7 @@ face. No new profile or hidden side is invented.
 
 <!-- render: assets/guide/17-head-turn.png frames=0,1,2,3,4 cols=5 -->
 ```ncel
-northcel "0.5.0-draft"
+northcel "0.6.0-draft"
 film TurnIllustration(width: 160, height: 100, fps: 5, frames: 5, seed: 17) {
   paper { color: #FFF8EC }
   def Key {
@@ -172,7 +171,7 @@ belong to this drawing only.
 
 <!-- render: assets/guide/17-flower-sway.png frames=0,1,2,3,4 cols=5 -->
 ```ncel
-northcel "0.5.0-draft"
+northcel "0.6.0-draft"
 film SwayIllustration(width: 160, height: 100, fps: 5, frames: 5, seed: 17) {
   paper { color: #FFF8EC }
   def Key {
@@ -211,7 +210,7 @@ colour flood, not a simulated liquid or a continuously travelling boundary.
 
 <!-- render: assets/guide/17-colour-flood.png frames=0,1,2,3,4 cols=5 -->
 ```ncel
-northcel "0.5.0-draft"
+northcel "0.6.0-draft"
 film FloodIllustration(width: 160, height: 100, fps: 5, frames: 5, seed: 17) {
   palette { dry: #DDD8CB, wet: #2E8FA5, ink: #202830 }
   paper { color: #FFF8EC }
@@ -249,7 +248,7 @@ motion, but it preserves this drawing's contour topology.
 
 <!-- render: assets/guide/17-cloud-squash.png frames=0,1,2,3,4 cols=5 -->
 ```ncel
-northcel "0.5.0-draft"
+northcel "0.6.0-draft"
 film SquashIllustration(width: 160, height: 100, fps: 5, frames: 5, seed: 17) {
   paper { color: #CDE3EA }
   def Key {
@@ -285,7 +284,7 @@ water solver.
 
 <!-- render: assets/guide/17-water-ripple.png frames=0,1,2,3,4 cols=5 -->
 ```ncel
-northcel "0.5.0-draft"
+northcel "0.6.0-draft"
 film RippleIllustration(width: 160, height: 100, fps: 5, frames: 5, seed: 17) {
   paper { color: #FFF8EC }
   def Key {
@@ -378,4 +377,4 @@ and preserve original keys before assembling a film.
 
 See also: [agent guide](../agent-guide.md), [CLI reference](../reference.md),
 [frame precedence](08-films-and-frame-overrides.md) and the
-[spec-0.5 contract](../spec/SPEC-0.5.0-draft.md).
+[spec 0.6 contract](../spec/SPEC-0.6.0-draft.md).

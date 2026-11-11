@@ -1,6 +1,6 @@
 {
   "name": "@ncel/linux-x64",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "DEPRECATED ALIAS — the NorthCel native bundle for Linux x86_64 ships as `northcel-linux-x64` now. Install `northcel`.",
   "license": "MIT OR Apache-2.0",
   "author": "NorthCel contributors",
@@ -15,6 +15,6 @@
   "libc": ["glibc"],
   "files": ["README.md", "LICENSE-MIT", "LICENSE-APACHE"],
   "dependencies": {
-    "northcel-linux-x64": "0.3.1"
+    "northcel-linux-x64": "0.4.0"
   }
 }
