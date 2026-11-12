@@ -71,10 +71,7 @@ move for packaging-only releases.
 
 ## [Unreleased]
 
-### Planned 0.6.0 — Spec 0.5: addressable groups, warp, nudge and frame deltas (source-only)
-
-Not published: PyPI/Homebrew/install.sh still ship tools 0.5.0 (spec 0.4), npm
-ships 0.4.0. The 0.5-spec examples require this source checkout until Phase 7.
+## [0.7.2] — 2026-11-12
 
 ### Added
 - `northcel fit --palette` now writes a `palette_gaps` receipt report naming
@@ -83,34 +80,10 @@ ships 0.4.0. The 0.5-spec examples require this source checkout until Phase 7.
   pixels (default 150), with median/nearest RGB, distance, area and bbox plus
   merged suggested colours; `fit` prints one stderr line when any are found.
   `northcel.fitting.palette_gaps()` exposes the same report without fitting.
-  The fitted shapes and colours are unchanged.
-- Spec **0.5.0-draft** (`docs/spec/SPEC-0.5.0-draft.md`): named `group` blocks with
-  pivot/opacity/clip/parent, group-wide `transform`, handle-based smooth `warp`,
-  per-vertex `nudge`, and cheap key deltas via `use` plus nudges/transforms.
-- `fit --stacked` gives every shape a stable `s<sha1>` id and a `shape_manifest`
-  receipt (colour, area, kind, bbox, centroid, parent, children, neighbours).
-- `northcel shapes FILE` region queries by id/colour/area/bbox/centroid/parent/mask.
-- Groups, warps and nudges are Python-reference features; the native runtime stays
-  at spec 0.3 and 0.4/0.5 documents are routed to the labelled reference.
 
 ### Compatibility
-- 0.1–0.4 documents keep their pixels. Headerless documents are now
-  `0.5.0-draft`; 0.5 constructs in an older header are located validation errors.
-
-### Fixed
-- Accept the launcher routing flags `--no-native` and `--python` for the
-  reference-only `diff`, `onion`, `contact`, `continuity` and `distinct` commands.
-- Scan definitions and nested groups for 0.5 features; route headerless documents
-  to the reference in both launchers, including reference syntax diagnostics.
-- Resolve late-declared parent pivots at transform time, reject fractional nudge
-  indices, preserve single-handle warp tuples through `fmt`, and report located
-  evaluation errors from `shapes` without tracebacks.
-- Parse 0.5 group/delta structure in the PARTIAL JS pre-check, report the real
-  source launcher version, and share evaluated geometry rows between fit receipts
-  and shape queries.
-- Separate published 0.5.0 install guidance from unreleased 0.6.0 examples; sync
-  offline guides and check every current spec/agent-guide fence and frame in CI.
-
+- No change to fitted output, the language specification, the renderer or the
+  native runtime (0.4.0 / spec 0.3). The fitted shapes and colours are unchanged.
 
 ## [0.5.0] — Spec 0.4: colour expressions, morph, frame ranges, opacity; polishing tools (2026-11-09)
 
