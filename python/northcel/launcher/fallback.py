@@ -22,14 +22,9 @@ NOTICE = (
 
 
 def _northcel_version() -> str:
-    try:
-        from importlib.metadata import version
+    from ..config import PACKAGE_VERSION
 
-        return version("northcel")
-    except Exception:
-        from ..config import PACKAGE_VERSION
-
-        return PACKAGE_VERSION
+    return PACKAGE_VERSION
 
 
 def notify(reason: str | None) -> None:
