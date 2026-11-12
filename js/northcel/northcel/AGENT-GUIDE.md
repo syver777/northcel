@@ -1,4 +1,4 @@
-# NorthCel quick agent guide — tools 0.7.1, spec 0.6.0-draft
+# NorthCel quick agent guide — tools 0.7.2, spec 0.6.0-draft
 
 Install `pipx install "northcel[fit]"` (or `pip install "northcel[fit]"` in a
 venv) for full validation and rendering. The npm package is a launcher with a
