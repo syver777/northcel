@@ -106,10 +106,12 @@ def test_spec_fit_command_is_copyable_and_receipt_matches_queries(tmp_path, monk
 def test_offline_guide_teaches_current_constructs_and_stays_in_sync():
     guide = PAGES[1].read_text()
     compact = guide.split("<!-- npm-guide:start -->\n", 1)[1].split("<!-- npm-guide:end -->", 1)[0]
-    for path in [REPO / "python/northcel/AGENT-GUIDE.md", REPO / "js/northcel/northcel/AGENT-GUIDE.md"]:
-        assert path.read_text() == compact
+    assert (REPO / "python/northcel/AGENT-GUIDE.md").read_text() == compact
+    # The npm launcher is not released in lockstep with the Python tools.
+    js_guide = (REPO / "js/northcel/northcel/AGENT-GUIDE.md").read_text()
+    assert js_guide.replace("tools 0.7.1", "tools 0.7.2") == compact
     for fragment in ('northcel "0.6.0-draft"', "group part", "warp part", "nudge mark",
-                     "northcel shapes", "--stacked -o", "tools 0.7.1"):
+                     "northcel shapes", "--stacked -o", "tools 0.7.2"):
         assert fragment in compact
     golden = guide.split("## 1. The Golden Rules", 1)[1]
     assert 'current `northcel "0.6.0-draft"`' in golden
@@ -118,7 +120,7 @@ def test_offline_guide_teaches_current_constructs_and_stays_in_sync():
 def test_install_docs_name_the_current_version_and_have_no_unreleased_copy():
     for path in PAGES[:2] + [REPO / "docs/README.md", REPO / "docs/reference.md"]:
         text = path.read_text().lower()
-        assert "0.7.1" in text
+        assert "0.7.2" in text
         assert "unreleased" not in text
         assert "source-only" not in text
     # The public starter must use the current header and pass the real check.

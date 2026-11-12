@@ -1,6 +1,6 @@
 # 15. Fit a drawing, move it intact, inspect the in-betweens
 
-Tools 0.7.1 implements spec [0.6.0-draft](../spec/SPEC-0.6.0-draft.md).
+Tools 0.7.2 implements spec [0.6.0-draft](../spec/SPEC-0.6.0-draft.md).
 This chapter adds no rig and no image model: it moves an existing drawing without
 changing its wardrobe or inventing a pose.
 

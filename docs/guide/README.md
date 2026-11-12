@@ -13,7 +13,7 @@ animation? Read 8–10 and 14, then the [editable-drawing method](17-editable-dr
 for addressable edits. Writing an AI agent prompt? Read
 [the agent guide](../agent-guide.md) after 1–3.
 
-The guide targets **tools 0.7.1 / spec 0.6.0-draft**. Page 17 teaches the
+The guide targets **tools 0.7.2 / spec 0.6.0-draft**. Page 17 teaches the
 addressable-edit method with five worked illustrations, not templates. The
 [current specification](../spec/SPEC-0.6.0-draft.md) defines the exact contract.
 

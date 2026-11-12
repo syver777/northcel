@@ -1,7 +1,7 @@
 # 16. Colour expressions, morph, frame ranges and opacity
 
 These constructs are part of spec [0.6.0-draft](../spec/SPEC-0.6.0-draft.md),
-implemented by tools 0.7.1. They let one film hold each drawing once and describe
+implemented by tools 0.7.2. They let one film hold each drawing once and describe
 the frames between drawings as expressions, instead of a separate scene per
 frame.
 

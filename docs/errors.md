@@ -4,7 +4,7 @@ This page is **generated** by `docs/scripts/gen_errors.py` from the real parser,
 
 ## How a diagnostic is shaped
 
-**Version scope:** tools 0.7.1, spec 0.6.0-draft. Cases that declare an older header show the compatibility diagnostic for that header.
+**Version scope:** tools 0.7.2, spec 0.6.0-draft. Cases that declare an older header show the compatibility diagnostic for that header.
 
 ```text
 path.ncel:5:20: error: Unknown function 'oklch'
@@ -396,7 +396,7 @@ broken.ncel:3:3: error: nudge vertex must be an integer
 
 **Cause.** Nudge vertex and ring indices are integers; fractions are not silently truncated.
 
-**Fix.** Use a zero-based integer vertex index (tools 0.7.1).
+**Fix.** Use a zero-based integer vertex index (tools 0.7.2).
 
 ### 14. A fractional nudge ring index
 

@@ -19,7 +19,7 @@ same binary.
 | Homebrew on Linux | `brew tap syver777/northcel && brew install northcel` | Yes |
 | A shell + curl | `curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh \| bash` | Yes on Linux x86_64 |
 
-Published tools version **0.7.1**, specification **0.6.0-draft**. The native
+Published tools version **0.7.2**, specification **0.6.0-draft**. The native
 runtime 0.4.0 implements spec 0.3; newer documents render with the labelled Python
 reference (or Vello when chosen).
 
@@ -27,7 +27,7 @@ reference (or Vello when chosen).
 
 ```console
 $ northcel doctor
-northcel 0.7.1  (NorthCel spec 0.6.0-draft)
+northcel 0.7.2  (NorthCel spec 0.6.0-draft)
 platform      linux-x86_64 glibc 2.39
 supported     yes
 native        0.4.0  (bundle checksums verified, stage MoonBit+Bend+GLSL)

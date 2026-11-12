@@ -1,6 +1,6 @@
 # 17. Editable drawings: observe, decide, edit, verify
 
-**Tools 0.7.1, spec 0.6.0-draft.** These examples run with the published
+**Tools 0.7.2, spec 0.6.0-draft.** These examples run with the published
 `pip install "northcel[fit]"` (or `pipx install "northcel[fit]"`). Newer-spec
 rendering uses the labelled Python reference, not the native runtime.
 

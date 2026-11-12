@@ -9,7 +9,7 @@ observe → decompose → decide → edit the delta → verify → iterate. The 
 illustrations use different general mechanisms, not subject templates. Start
 with copies of good geometry; automatic `tween --match` is an optional alternative.
 
-**Version scope:** tools **0.7.1**, spec **0.6.0-draft**. PyPI, Homebrew and
+**Version scope:** tools **0.7.2**, spec **0.6.0-draft**. PyPI, Homebrew and
 install.sh publish the same tools; npm ships the launcher. The native runtime
 implements spec 0.3, so newer documents render with the labelled Python
 reference (or Vello when chosen).
@@ -70,7 +70,7 @@ RIFE and GPL tracing tools remain external alternatives, not bundled backends.
 
 ## Validation contract
 
-**Tools 0.7.1, spec 0.6.0-draft.** Use PyPI or, on Linux x86_64 only,
+**Tools 0.7.2, spec 0.6.0-draft.** Use PyPI or, on Linux x86_64 only,
 Homebrew; macOS uses pipx/pip. The `northcel` distribution is the reference
 parser, validator, formatter and CPU renderer *and* the launcher that runs the
 native runtime. The npm `northcel` package runs the same launcher and adds a

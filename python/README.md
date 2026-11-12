@@ -4,7 +4,7 @@ This directory is one Python distribution: the **normative reference implementat
 (parser, semantic validator, formatter, CPU renderer) *and* the **launcher** that
 runs the native runtime whenever the platform supports it.
 
-**This distribution is tools 0.7.1 / spec 0.6.0-draft.** `pip install northcel`
+**This distribution is tools 0.7.2 / spec 0.6.0-draft.** `pip install northcel`
 installs the same tools from PyPI; Homebrew and install.sh pin them too. The npm
 package is a launcher with a structural pre-check, not a renderer.
 
@@ -17,7 +17,7 @@ ncel doctor                 # short alias, same program
 
 ## Two implementations, one command
 
-**Tools 0.7.1, spec 0.6.0-draft:** addressable `group` blocks with pivots,
+**Tools 0.7.2, spec 0.6.0-draft:** addressable `group` blocks with pivots,
 opacity, clipping and parenting; group-wide `transform`; handle-based `warp`
 (including `warp(mode: arap)`) and per-vertex `nudge`; `use` plus delta frames;
 `mix` colour expressions, `morph`, `frame A..B` ranges and `opacity`;
@@ -39,6 +39,21 @@ These are offline numerical authoring tools, not image models. They emit ordinar
 vector source with no embedded raster. High-fidelity pencil texture can cost
 megabytes per drawing; receipts count all geometry. A legal tween can still fold
 or double lines: inspect every inserted drawing and keep a hold when it looks bad.
+
+With `northcel fit --palette`, the receipt also carries `palette_gaps`: regions
+with no palette colour within `--palette-threshold` (default 60) that are at least
+`--palette-min-area` source pixels (default 150). `fit` prints one stderr line
+when any are found; without `--palette` the key is absent, and the report never
+changes the fitted shapes or colours.
+
+```json
+"palette_gaps": {
+  "threshold": 60, "min_area_px2": 150, "count": 1,
+  "regions": [{"rgb": [253, 138, 129], "nearest": [252, 200, 158],
+               "distance": 68.5, "area_px2": 979, "bbox": [699, 533, 744, 565]}],
+  "suggested": [[253, 138, 129]]
+}
+```
 
 `northcel` dispatches, in this order:
 
@@ -86,7 +101,7 @@ reason, and `render`/`film`/`check` run the Python reference, marked
 ## What `doctor` prints
 
 ```
-northcel 0.7.1  (native runtime 0.4.0, spec 0.3.0-draft, native)
+northcel 0.7.2  (native runtime 0.4.0, spec 0.3.0-draft, native)
 platform      linux-x86_64 glibc 2.39
 supported     yes
 native        0.4.0  (bundle checksums verified, stage MoonBit+Bend+GLSL)

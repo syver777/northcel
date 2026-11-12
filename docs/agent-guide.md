@@ -2,7 +2,7 @@
 
 This guide instructs AI coding agents (Claude Code, OpenCode, Codex, Cursor, Gemini CLI) how to author, verify, and surgically edit AI-drawn images and videos in **NorthCel (`.ncel`)**.
 
-**Version scope:** spec 0.6 / tools 0.7.1. Install with
+**Version scope:** spec 0.6 / tools 0.7.2. Install with
 `pipx install "northcel[fit]"` (or `pip install "northcel[fit]"` in a venv) for
 full validation and rendering; the npm package is a launcher with a structural
 pre-check.
@@ -116,7 +116,7 @@ reproduced by CI. The [architecture page](architecture.md) explains why the
 reference and native renderers can differ by a handful of edge pixels.
 
 <!-- npm-guide:start -->
-# NorthCel quick agent guide — tools 0.7.1, spec 0.6.0-draft
+# NorthCel quick agent guide — tools 0.7.2, spec 0.6.0-draft
 
 Install `pipx install "northcel[fit]"` (or `pip install "northcel[fit]"` in a
 venv) for full validation and rendering. The npm package is a launcher with a
@@ -318,7 +318,7 @@ newer (also headerless) documents to Python; JS-only `check` stays PARTIAL.
 
 1. **Always Start with the Version Header:**
    Start new files with the current `northcel "0.6.0-draft"`
-   (tools 0.7.1, Python reference). Choose `northcel "0.3.0-draft"` only when
+   (tools 0.7.2, Python reference). Choose `northcel "0.3.0-draft"` only when
    deliberately targeting the native runtime with 0.3-only syntax. Older explicit
    headers remain supported for compatibility.
 2. **Separate Washes, Ink Ribbons, and Parallel Swarms by Name:**

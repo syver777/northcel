@@ -8,7 +8,7 @@ the frames.
 - **Commands:** `northcel` (short alias `ncel`)
 - **Packages:** `northcel` on PyPI and npm (plus the `northcel-native` /
   `northcel-linux-x64` platform artifacts)
-- **Current:** tools `0.7.1`; specification `0.6.0-draft` (the native runtime 0.4.0
+- **Current:** tools `0.7.2`; specification `0.6.0-draft` (the native runtime 0.4.0
   implements `0.3.0-draft`; newer documents use the labelled Python reference)
 - **Source:** <https://github.com/syver777/northcel>
 
@@ -86,7 +86,7 @@ See [architecture](architecture.md#the-docs-check).
 ## One command, two implementations
 
 `pip install northcel` (or, on Linux x86_64, Homebrew) installs the current
-**0.7.1** CLI (spec 0.6). **Homebrew is not a macOS path**: the formula requires
+**0.7.2** CLI (spec 0.6). **Homebrew is not a macOS path**: the formula requires
 Linux x86_64; macOS users should use `pipx install northcel` or
 `pip install northcel` and get the labelled Python reference. The installation
 runs the **native runtime** where it can (Linux x86_64: MoonBit typed AST,
