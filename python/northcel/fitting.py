@@ -83,10 +83,12 @@ def _dilate_3x3(mask: np.ndarray) -> np.ndarray:
 
 
 def _open_3x3_twice(mask: np.ndarray) -> np.ndarray:
-    """Remove lines up to 4 px wide (the blended colour at an ink edge)."""
-    for _ in range(2):
-        mask = _dilate_3x3(_erode_3x3(mask))
-    return mask
+    """Remove lines up to 4 px wide (the blended colour at an ink edge).
+
+    Two erosion iterations followed by two dilations are equivalent to a 5x5
+    opening: a 4 px line vanishes, while a real fill five pixels wide survives.
+    """
+    return _dilate_3x3(_dilate_3x3(_erode_3x3(_erode_3x3(mask))))
 
 
 def _components_numpy(mask: np.ndarray, min_area: float):
@@ -143,9 +145,10 @@ def palette_gaps(image, palette, threshold: float = 60.0, min_area: float = 150,
     """Report drawing regions with no suitable colour in a shared palette.
 
     A pixel is a gap when its Euclidean distance in 8-bit RGB to the nearest
-    palette colour is greater than ``threshold``. Two 3x3 openings remove
-    anti-aliased lines up to 4 px wide before 8-connected components of at least
-    ``min_area`` source pixels are measured. Each region carries its median RGB,
+    palette colour is greater than ``threshold``. Two 3x3 erosion/dilation
+    passes remove anti-aliased lines up to 4 px wide before 8-connected
+    components of at least ``min_area`` source pixels are measured. Each region
+    carries its median RGB,
     the nearest palette colour and its distance, area and half-open bbox; the
     largest ``limit`` are returned. ``suggested`` keeps the median of the largest
     region from each group closer than ``threshold``.

@@ -81,6 +81,18 @@ def test_antialiased_ink_edge_is_not_a_palette_gap():
     assert gaps["regions"] == [] and gaps["suggested"] == []
 
 
+def test_off_palette_lines_up_to_four_pixels_are_ignored():
+    from PIL import Image, ImageDraw
+
+    from northcel.fitting import palette_gaps
+
+    for height, expected in ((4, 0), (5, 1)):
+        image = Image.new("RGB", (120, 60), (255, 255, 255))
+        draw = ImageDraw.Draw(image)
+        draw.rectangle([10, 28, 109, 27 + height], fill=(250, 140, 130))
+        assert palette_gaps(image, [(255, 255, 255)])["count"] == expected
+
+
 def test_close_suggestions_merge_to_the_largest_region():
     from PIL import Image, ImageDraw
 
