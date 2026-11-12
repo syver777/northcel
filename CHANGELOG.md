@@ -77,6 +77,13 @@ Not published: PyPI/Homebrew/install.sh still ship tools 0.5.0 (spec 0.4), npm
 ships 0.4.0. The 0.5-spec examples require this source checkout until Phase 7.
 
 ### Added
+- `northcel fit --palette` now writes a `palette_gaps` receipt report naming
+  drawing regions with no palette colour within `--palette-threshold` (default
+  60) after anti-aliased edges are removed, at least `--palette-min-area` source
+  pixels (default 150), with median/nearest RGB, distance, area and bbox plus
+  merged suggested colours; `fit` prints one stderr line when any are found.
+  `northcel.fitting.palette_gaps()` exposes the same report without fitting.
+  The fitted shapes and colours are unchanged.
 - Spec **0.5.0-draft** (`docs/spec/SPEC-0.5.0-draft.md`): named `group` blocks with
   pivot/opacity/clip/parent, group-wide `transform`, handle-based smooth `warp`,
   per-vertex `nudge`, and cheap key deltas via `use` plus nudges/transforms.
