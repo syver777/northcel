@@ -76,7 +76,7 @@ CASES = [
     # --- spec 0.5 addressable edits -------------------------------------------
     dict(id="p-nudge-vertex-integer", title="A fractional nudge vertex index",
          cause="Nudge vertex and ring indices are integers; fractions are not silently truncated.",
-         fix="Use a zero-based integer vertex index (tools 0.7.1).",
+         fix="Use a zero-based integer vertex index (tools 0.7.2).",
          source='northcel "0.5.0-draft"\nscene S {\n  nudge a(vertex: 1.9, dx: 2px)\n}\n'),
     dict(id="p-nudge-ring-integer", title="A fractional nudge ring index",
          cause="A ring index must be a whole integer, not a fractional ring selection.",
@@ -746,7 +746,7 @@ def build() -> str:
     )
     lines.append("## How a diagnostic is shaped\n")
     lines.append(
-        "**Version scope:** tools 0.7.1, spec 0.6.0-draft. Cases that declare an "
+        "**Version scope:** tools 0.7.2, spec 0.6.0-draft. Cases that declare an "
         "older header show the compatibility diagnostic for that header.\n"
     )
     lines.append(

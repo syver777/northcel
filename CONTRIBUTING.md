@@ -137,7 +137,7 @@ publish order, deprecation aliases and the Homebrew formula bump are documented 
 [`packaging/RELEASE.md`](packaging/RELEASE.md), and the install graph contract is
 in [`packaging/DESIGN.md`](packaging/DESIGN.md).
 
-- The **tools** version moves (`0.7.1`, `0.7.2`, …).
+- The **tools** version moves (`0.7.2`, `0.7.3`, …).
 - The **language specification** moves only when the grammar or rendering
   semantics change (`0.6.0-draft` today), and an archived draft is never edited.
 - A packaging-only release keeps `spec_version` and the native runtime build

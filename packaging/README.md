@@ -8,7 +8,7 @@ Mesa/EGL (llvmpipe) context. One command should be enough.
 
 | Path | Command | Status |
 | --- | --- | --- |
-| PyPI (primary) | `pip install northcel` | **0.7.1 published** — one distribution with the reference implementation and the launcher, depending on `northcel-native` 0.4.0 (tools-only release) |
+| PyPI (primary) | `pip install northcel` | **0.7.2** — one distribution with the reference implementation and the launcher, depending on `northcel-native` 0.4.0 (tools-only release) |
 | npm | `npm install -g northcel` | launcher with a structural pre-check; delegates full validation and rendering to Python. Use PyPI or Homebrew for the complete install |
 | Homebrew tap | `brew tap syver777/northcel && brew install northcel` | formula in `packaging/homebrew/`; the tap repository is `syver777/homebrew-northcel` |
 | One-line curl | `curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh \| bash` | the URL is a release asset of the latest published release |

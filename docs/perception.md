@@ -1,6 +1,6 @@
 # Optional perception helpers
 
-**Tools 0.7.1.** These commands are in the package, but each backend remains a
+**Tools 0.7.2.** These commands are in the package, but each backend remains a
 separate optional install. `pip install "northcel[perceive]"` adds the
 PyPI-installable pieces (VTracer, PyTorch/TorchVision, TensorFlow). SAM 2 itself
 is installed from its upstream git repository because it is not on PyPI, and

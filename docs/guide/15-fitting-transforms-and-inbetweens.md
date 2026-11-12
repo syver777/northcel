@@ -1,6 +1,6 @@
 # 15. Fit a drawing, move it intact, inspect the in-betweens
 
-Tools 0.7.1 implements spec [0.6.0-draft](../spec/SPEC-0.6.0-draft.md).
+Tools 0.7.2 implements spec [0.6.0-draft](../spec/SPEC-0.6.0-draft.md).
 This chapter adds no rig and no image model: it moves an existing drawing without
 changing its wardrobe or inventing a pose.
 
@@ -26,6 +26,36 @@ texture, but the price is much larger source. Plain `fit` defaults to 32 colours
 Fitting receipts report these choices, total geometry bytes and `quality:
 "unreviewed"`. Compare the rendered pixels to the input, including small coloured
 regions; a sky-dominated palette can discard the face colour.
+
+### Palette gaps
+
+With `--palette`, the receipt also reports every drawing region that has no
+suitable shared-palette colour, so a missing pink mouth is visible at fit time
+instead of three tools later:
+
+```json
+"palette_gaps": {
+  "threshold": 60,
+  "min_area_px2": 150,
+  "count": 1,
+  "regions": [
+    {"rgb": [253, 138, 129], "nearest": [252, 200, 158], "distance": 68.5,
+     "area_px2": 979, "bbox": [699, 533, 744, 565]}
+  ],
+  "suggested": [[253, 138, 129]]
+}
+```
+
+Distance is Euclidean in 8-bit RGB to the nearest palette colour. Two 3×3 binary
+openings remove anti-aliased ink edges up to 4 px wide before 8-connected regions
+of at least `--palette-min-area` (default 150 px²) are measured; only pixels
+farther than `--palette-threshold` (default 60) from every palette colour count.
+Regions are largest first (at most 20), with their median RGB, nearest palette
+colour, distance, area and half-open source-pixel bbox. `suggested` merges medians
+closer than the threshold, keeping the largest region's colour. `fit` also prints
+one stderr line when `count > 0`. If every region is covered, `count` is 0 and
+both lists are empty; without `--palette` the key is absent. This report never
+changes the fitted shapes or colours.
 
 Keep the fitted file's declared `paper` when composing scenes; receipts also name
 `underpaint_rgb`. Near-white paper may be #FEFEFE, not #FFFFFF. With all 256 grey

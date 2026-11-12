@@ -57,7 +57,7 @@ $ brew tap syver777/northcel && brew install northcel
 $ curl -fsSL https://github.com/syver777/northcel/releases/latest/download/install.sh | bash
 ```
 
-These install tools **0.7.1** (spec **0.6.0-draft**), which use the native
+These install tools **0.7.2** (spec **0.6.0-draft**), which use the native
 runtime where it can and the labelled Python reference everywhere else.
 **Homebrew is for Linux x86_64 only** (the formula pins the manylinux native
 wheel); on macOS use `pipx install northcel` or `pip install northcel`, which run
