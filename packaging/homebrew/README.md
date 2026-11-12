@@ -48,7 +48,7 @@ and nothing is downloaded on first run**:
 
 | Artifact | Size | Role |
 | --- | ---: | --- |
-| `northcel` 0.7.1 (sdist, this formula's `url`) | 161 KB | the reference implementation (parser, validator, formatter, renderer — the conformance oracle, `fmt`, `--no-native`) **and** the launcher (doctor/verify/check/info/render/film/guide); scripts `northcel` and `ncel` |
+| `northcel` 0.7.2 (sdist, this formula's `url`) | 161 KB | the reference implementation (parser, validator, formatter, renderer — the conformance oracle, `fmt`, `--no-native`) **and** the launcher (doctor/verify/check/info/render/film/guide); scripts `northcel` and `ncel` |
 | `northcel-native` 0.4.0 (`manylinux_2_39_x86_64`) | 2.8 MB | MoonBit stage, Bend 0.2.38, HVM 2.0.22, EGL GL host, GLSL shaders |
 | `setuptools` 84.2.1, `wheel` 0.48.0 | 0.9 MB | build tools for the pinned sdist |
 | `numpy` 2.5.4, `pillow` 13.0.0 | 22 MB | required by the reference renderer |
