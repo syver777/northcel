@@ -367,7 +367,7 @@ def fit_stacked(image: Image.Image, colors: int = 32, tolerance: float = 0.6,
 def _report_palette_gaps(receipt: dict, image_path, palette, threshold: float,
                          min_area: float) -> None:
     """Attach the palette-gap report to a fit receipt and warn once on stderr."""
-    if palette is None:
+    if not palette:
         return
     with Image.open(image_path) as image:
         gaps = palette_gaps(image, palette, threshold=threshold, min_area=min_area)
