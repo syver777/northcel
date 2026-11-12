@@ -17,7 +17,9 @@
   never feeds back into quantisation, tracing or stacking.
 
 Implementation commit: `71909c0` (`python: report palette gaps during fit`).
-Tests commit: `bf2ad1a`. Docs/changelog commit: `496966e`.
+Tests commit: `bf2ad1a`. Docs/changelog commit: `496966e`. Follow-ups:
+`fec728b` (four-pixel anti-aliasing removal and its test) and `f181e59`
+(align the docs example with that result).
 
 ## Commands used
 
