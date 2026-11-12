@@ -39,9 +39,9 @@ After the change:
 
 ```console
 $ PYTHONPATH=python python -m pytest python/tests -q
-# 279 passed, 6 skipped, 73 subtests passed in 9.58s
+# 280 passed, 6 skipped, 73 subtests passed in 9.22s
 $ PYTHONPATH=python python -m pytest python/tests/test_palette_gaps.py -q
-# 7 passed in 1.26s
+# 8 passed in 1.29s
 ```
 
 There were no pre-existing test failures to list. `ruff check` on the changed
@@ -66,8 +66,8 @@ Test 1, `palette_gaps` with defaults (`threshold=60`, `min_area=150`):
       "rgb": [253, 138, 129],
       "nearest": [252, 200, 158],
       "distance": 68.45436436049933,
-      "area_px2": 995,
-      "bbox": [698, 533, 745, 565]
+      "area_px2": 979,
+      "bbox": [699, 533, 744, 565]
     }
   ],
   "suggested": [[253, 138, 129]]
@@ -128,7 +128,8 @@ $ ... --palette-threshold 40 --palette-min-area 500 ...
 ## Other tests
 
 - Synthetic palette-coloured rectangle with a 4× supersampled anti-aliased black
-  outline: `count == 0` for outline widths 1–4 px.
+  outline: `count == 0` for outline widths 1–4 px. A solid off-palette line is
+  removed at 4 px wide and reported at 5 px wide.
 - Synthetic off-palette rectangle through `fit`: receipt has the gap,
   `.ncel` equals the direct `fit_image` output byte-for-byte, one stderr line.
 - `--stacked` and `--stacked --figure` synthetic runs both carry the gap report.

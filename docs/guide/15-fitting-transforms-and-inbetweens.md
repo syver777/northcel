@@ -40,7 +40,7 @@ instead of three tools later:
   "count": 1,
   "regions": [
     {"rgb": [253, 138, 129], "nearest": [252, 200, 158], "distance": 68.5,
-     "area_px2": 995, "bbox": [698, 533, 745, 565]}
+     "area_px2": 979, "bbox": [699, 533, 744, 565]}
   ],
   "suggested": [[253, 138, 129]]
 }
