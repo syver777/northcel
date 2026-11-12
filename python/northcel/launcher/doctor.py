@@ -16,14 +16,13 @@ def pins() -> dict:
         return {}
 
 
-def reference_version() -> str:
-    """Version of the Python reference bundled with this launcher.
+def reference_version() -> str | None:
+    try:
+        from importlib.metadata import version
 
-    The launcher and the reference ship in the same distribution, so prefer the
-    package config over stale installed metadata (for example when running from
-    a source checkout through ``PYTHONPATH``).
-    """
-    return __version__
+        return version("northcel")
+    except Exception:
+        return None
 
 
 def collect() -> dict:
