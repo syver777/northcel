@@ -1,6 +1,6 @@
 # NorthCel install graph — design
 
-## Tools 0.7.1 / spec 0.6.0-draft
+## Tools 0.7.2 / spec 0.6.0-draft
 
 The install graph has one wheel for the tools and one platform bundle. The Python
 and npm tools depend on the 0.4.0 native packages, which implement spec 0.3. The
@@ -45,11 +45,11 @@ never falls back (`native/BUILD.md` §7).
 
 ## 2. Packages, versions, contents
 
-The language spec is `0.6.0-draft`; the tools version is **0.7.1**. The bundled
+The language spec is `0.6.0-draft`; the tools version is **0.7.2**. The bundled
 native runtime is the `0.4.0` build; `northcel doctor` prints both numbers so they
 can never be confused.
 
-### 2.1 PyPI `northcel` 0.7.1 — reference + launcher (`py3-none-any`)
+### 2.1 PyPI `northcel` 0.7.2 — reference + launcher (`py3-none-any`)
 
 One distribution, two roles: the reference implementation *and* the launcher.
 This replaces the old pair (`ncel` → `northcel` + `ncel-native`), which is why
@@ -222,7 +222,7 @@ Human output plus `--json` with the same fields:
 
 ```json
 {
-  "ok": true, "northcel_version": "0.7.1",
+  "ok": true, "northcel_version": "0.7.2",
   "platform": {"os":"linux","arch":"x86_64","glibc":"2.39","supported":true},
   "native": {"available": true, "runtime_version": "0.4.0", "spec_version": "0.3.0-draft",
              "bundle": "/…/northcel_native_bundle", "checksums": {"verified": 13, "failed": []},
@@ -235,7 +235,7 @@ Human output plus `--json` with the same fields:
     "glsl_shaders": {"draw430": {"sha256": "14829a…", "compiles": true}, "draw410": {"sha256": "fe4d0c…", "compiles": true}},
     "ffmpeg": {"present": true, "optional": true}
   },
-  "reference": {"package": "northcel", "version": "0.7.1", "role": "fallback only — non-native"},
+  "reference": {"package": "northcel", "version": "0.7.2", "role": "fallback only — non-native"},
   "errors": []
 }
 ```
