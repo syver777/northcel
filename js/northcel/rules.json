@@ -5,7 +5,7 @@
     "FILE_EXTENSION": ".ncel",
     "CLI_COMMAND": "northcel",
     "CLI_SHORT_ALIAS": "ncel",
-    "PACKAGE_VERSION": "0.7.1",
+    "PACKAGE_VERSION": "0.7.2",
     "SPEC_VERSION": "0.6.0-draft",
     "SUPPORTED_SPEC_VERSIONS": [
       "0.1",
