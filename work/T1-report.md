@@ -18,8 +18,9 @@
 
 Implementation commit: `71909c0` (`python: report palette gaps during fit`).
 Tests commit: `bf2ad1a`. Docs/changelog commit: `496966e`. Follow-ups:
-`fec728b` (four-pixel anti-aliasing removal and its test) and `f181e59`
-(align the docs example with that result).
+`fec728b` (four-pixel anti-aliasing removal and its test), `f181e59`
+(align the docs example with that result) and `ab7146d` (an empty palette is
+treated as no gap report, matching the existing fit behaviour).
 
 ## Commands used
 
@@ -41,7 +42,7 @@ After the change:
 
 ```console
 $ PYTHONPATH=python python -m pytest python/tests -q
-# 280 passed, 6 skipped, 73 subtests passed in 9.22s
+# 280 passed, 6 skipped, 73 subtests passed in 10.36s
 $ PYTHONPATH=python python -m pytest python/tests/test_palette_gaps.py -q
 # 8 passed in 1.29s
 ```
