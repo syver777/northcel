@@ -18,6 +18,179 @@ from PIL import Image
 from .rings import encode_ring_b63_q25
 
 
+def _rgb_array(image) -> np.ndarray:
+    """Flatten alpha onto white, exactly as `_quantize` does, as int32 RGB."""
+    if not isinstance(image, Image.Image):
+        image = Image.fromarray(np.asarray(image, dtype=np.uint8))
+    base = Image.new("RGBA", image.size, "white")
+    base.alpha_composite(image.convert("RGBA"))
+    return np.asarray(base.convert("RGB"), dtype=np.int32)
+
+
+def _palette_array(palette) -> np.ndarray:
+    pal = np.asarray(palette)
+    if pal.ndim != 2 or pal.shape[1] != 3 or not len(pal):
+        raise ValueError("palette must be a nonempty list of [r,g,b] colours")
+    if not np.issubdtype(pal.dtype, np.integer):
+        rounded = np.rint(pal)
+        if not np.allclose(pal, rounded):
+            raise ValueError("palette colours must be integer 8-bit RGB")
+        pal = rounded
+    pal = pal.astype(np.int32)
+    if np.any(pal < 0) or np.any(pal > 255):
+        raise ValueError("palette colours must be 8-bit RGB in 0..255")
+    return pal
+
+
+def _nearest_distances(rgb: np.ndarray, palette: np.ndarray) -> np.ndarray:
+    """Euclidean distance from every pixel to its nearest palette colour."""
+    best = None
+    for colour in palette:
+        delta = rgb - colour
+        distance2 = np.sum(delta * delta, axis=2)
+        if best is None:
+            best = distance2
+        else:
+            np.minimum(best, distance2, out=best)
+    return np.sqrt(best)
+
+
+def _nearest_colour(rgb, palette: np.ndarray) -> tuple[list[int], float]:
+    delta = palette - np.asarray(rgb, dtype=np.int32)
+    distance2 = np.sum(delta * delta, axis=1)
+    index = int(np.argmin(distance2))
+    return palette[index].tolist(), float(np.sqrt(float(distance2[index])))
+
+
+def _erode_3x3(mask: np.ndarray) -> np.ndarray:
+    height, width = mask.shape
+    padded = np.pad(mask, 1, constant_values=False)
+    out = np.ones((height, width), dtype=bool)
+    for y in range(3):
+        for x in range(3):
+            out &= padded[y:y+height, x:x+width]
+    return out
+
+
+def _dilate_3x3(mask: np.ndarray) -> np.ndarray:
+    height, width = mask.shape
+    padded = np.pad(mask, 1, constant_values=False)
+    out = np.zeros((height, width), dtype=bool)
+    for y in range(3):
+        for x in range(3):
+            out |= padded[y:y+height, x:x+width]
+    return out
+
+
+def _open_3x3_twice(mask: np.ndarray) -> np.ndarray:
+    """Remove lines up to 4 px wide (the blended colour at an ink edge)."""
+    for _ in range(2):
+        mask = _dilate_3x3(_erode_3x3(mask))
+    return mask
+
+
+def _components_numpy(mask: np.ndarray, min_area: float):
+    """8-connected components, pure NumPy fallback when cv2 is unavailable."""
+    height, width = mask.shape
+    visited = np.zeros((height, width), dtype=bool)
+    components = []
+    for y0, x0 in np.argwhere(mask):
+        y0, x0 = int(y0), int(x0)
+        if visited[y0, x0]:
+            continue
+        visited[y0, x0] = True
+        stack = [(y0, x0)]
+        ys: list[int] = []
+        xs: list[int] = []
+        while stack:
+            y, x = stack.pop()
+            ys.append(y)
+            xs.append(x)
+            for ny in (y - 1, y, y + 1):
+                if ny < 0 or ny >= height:
+                    continue
+                for nx in (x - 1, x, x + 1):
+                    if 0 <= nx < width and mask[ny, nx] and not visited[ny, nx]:
+                        visited[ny, nx] = True
+                        stack.append((ny, nx))
+        if len(ys) < min_area:
+            continue
+        components.append((len(ys), [min(xs), min(ys), max(xs) + 1, max(ys) + 1],
+                           np.asarray(ys), np.asarray(xs)))
+    return components
+
+
+def _components_8(mask: np.ndarray, min_area: float):
+    """Return (area, bbox, ys, xs) for 8-connected components at least min_area."""
+    try:
+        import cv2
+    except ImportError:
+        return _components_numpy(mask, min_area)
+    count, labels, stats, _ = cv2.connectedComponentsWithStats(mask.astype(np.uint8), 8)
+    components = []
+    for label in range(1, count):
+        area = int(stats[label, 4])
+        if area < min_area:
+            continue
+        x, y, w, h = (int(v) for v in stats[label, :4])
+        ys, xs = np.where(labels[y:y+h, x:x+w] == label)
+        components.append((area, [x, y, x+w, y+h], ys + y, xs + x))
+    return components
+
+
+def palette_gaps(image, palette, threshold: float = 60.0, min_area: float = 150,
+                 limit: int = 20) -> dict:
+    """Report drawing regions with no suitable colour in a shared palette.
+
+    A pixel is a gap when its Euclidean distance in 8-bit RGB to the nearest
+    palette colour is greater than ``threshold``. Two 3x3 openings remove
+    anti-aliased lines up to 4 px wide before 8-connected components of at least
+    ``min_area`` source pixels are measured. Each region carries its median RGB,
+    the nearest palette colour and its distance, area and half-open bbox; the
+    largest ``limit`` are returned. ``suggested`` keeps the median of the largest
+    region from each group closer than ``threshold``.
+
+    This is a report only; it does not quantise, trace or change a fitted shape.
+    """
+    if threshold < 0 or min_area < 0 or limit < 0:
+        raise ValueError("palette gap threshold/min_area/limit must be nonnegative")
+    rgb = _rgb_array(image)
+    pal = _palette_array(palette)
+    mask = _nearest_distances(rgb, pal) > threshold
+    mask = _open_3x3_twice(mask)
+    components = _components_8(mask, min_area)
+    components.sort(key=lambda row: (-row[0], row[1][1], row[1][0]))
+    regions = []
+    for area, bbox, ys, xs in components[:limit]:
+        median = np.rint(np.median(rgb[ys, xs], axis=0)).astype(np.int32)
+        nearest, distance = _nearest_colour(median, pal)
+        regions.append({"rgb": median.tolist(), "nearest": nearest,
+                        "distance": distance, "area_px2": area, "bbox": bbox})
+    # Merge suggestions closer than the threshold, transitively, and keep the
+    # largest region's median as each cluster's representative.
+    parent = list(range(len(regions)))
+
+    def find(index: int) -> int:
+        while parent[index] != index:
+            parent[index] = parent[parent[index]]
+            index = parent[index]
+        return index
+
+    for i in range(len(regions)):
+        for j in range(i + 1, len(regions)):
+            delta = np.asarray(regions[i]["rgb"], dtype=np.int32) \
+                - np.asarray(regions[j]["rgb"], dtype=np.int32)
+            if float(np.sum(delta * delta)) < threshold * threshold:
+                parent[find(j)] = find(i)
+    clusters: dict[int, list[int]] = {}
+    for index in range(len(regions)):
+        clusters.setdefault(find(index), []).append(index)
+    suggested = [regions[min(members)]["rgb"]
+                 for _, members in sorted(clusters.items(), key=lambda item: min(item[1]))]
+    return {"threshold": threshold, "min_area_px2": min_area,
+            "count": len(regions), "regions": regions, "suggested": suggested}
+
+
 def trace_mask(mask: np.ndarray, tolerance: float = 0.6, min_area: float = 2.0,
                cell_edges: bool = False) -> list[str]:
     try:
@@ -188,6 +361,22 @@ def fit_stacked(image: Image.Image, colors: int = 32, tolerance: float = 0.6,
     return drawing, receipt
 
 
+def _report_palette_gaps(receipt: dict, image_path, palette, threshold: float,
+                         min_area: float) -> None:
+    """Attach the palette-gap report to a fit receipt and warn once on stderr."""
+    if palette is None:
+        return
+    with Image.open(image_path) as image:
+        gaps = palette_gaps(image, palette, threshold=threshold, min_area=min_area)
+    receipt["palette_gaps"] = gaps
+    if gaps["count"]:
+        suggested = ", ".join("#" + "".join(f"{c:02X}" for c in rgb)
+                              for rgb in gaps["suggested"])
+        print(f"northcel fit: palette_gaps: {gaps['count']} region(s) >= "
+              f"{gaps['min_area_px2']:g} px^2 have no palette colour within "
+              f"{gaps['threshold']:g}; suggested {suggested}", file=sys.stderr)
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="northcel fit", description=__doc__)
     p.add_argument("image")
@@ -197,6 +386,10 @@ def main(argv=None) -> int:
     p.add_argument("--min-area", type=float, default=2.0)
     p.add_argument("--cell-edges", action="store_true", help="preserve quantised pixel-cell contour corners (larger source)")
     p.add_argument("--palette", help="JSON file containing [[r,g,b], ...]")
+    p.add_argument("--palette-threshold", type=float, default=60.0,
+                   help="--palette: report regions farther than this RGB distance from every palette colour (default: 60)")
+    p.add_argument("--palette-min-area", type=float, default=150.0,
+                   help="--palette: report gap regions at least this many source pixels (default: 150)")
     p.add_argument("--mask", help="author-supplied nonzero grayscale matte (one intact cel)")
     p.add_argument("--receipt", help="write JSON fitting receipt")
     p.add_argument("--stacked", action="store_true",
@@ -214,6 +407,8 @@ def main(argv=None) -> int:
     a = p.parse_args(argv)
     try:
         palette = json.loads(Path(a.palette).read_text()) if a.palette else None
+        if a.palette_threshold < 0 or a.palette_min_area < 0:
+            raise ValueError("--palette-threshold and --palette-min-area must be nonnegative")
         mask = np.asarray(Image.open(a.mask).convert("L")) > 0 if a.mask else None
         if a.stacked:
             from .shapes import stacked_source
@@ -241,12 +436,14 @@ def main(argv=None) -> int:
                                                underpaint_min_area=a.underpaint_min_area, ink=ink)
             source = stacked_source(drawing)
             receipt["bytes"] = len(source.encode())
+            _report_palette_gaps(receipt, a.image, palette, a.palette_threshold, a.palette_min_area)
             Path(a.out).write_text(source, encoding="utf-8")
             if a.receipt:
                 Path(a.receipt).write_text(json.dumps(receipt, indent=2)+"\n")
             print(json.dumps(receipt))
             return 0
         source, receipt = fit_image(Image.open(a.image), a.colors, a.tolerance, a.min_area, palette, cell_edges=a.cell_edges, mask=mask)
+        _report_palette_gaps(receipt, a.image, palette, a.palette_threshold, a.palette_min_area)
         Path(a.out).write_text(source, encoding="utf-8")
         if a.receipt:
             Path(a.receipt).write_text(json.dumps(receipt, indent=2)+"\n")
