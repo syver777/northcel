@@ -4,8 +4,7 @@
 
 Tools release `northcel` 0.7.2, built from `main`. The native runtime stays
 0.4.0 and is not rebuilt. `northcel-vello` stays 0.7.0, so `northcel[vello]`
-keeps `northcel-vello==0.7.0`. The deprecated `ncel` alias stays at 0.7.1 until
-it is re-pinned after publication.
+keeps `northcel-vello==0.7.0`. The deprecated `ncel` alias is re-pinned to 0.7.2.
 
 Order:
 
@@ -13,8 +12,8 @@ Order:
    already published; do not rebuild it).
 2. `python -m twine check dist/python/*`; install the wheel in a fresh venv and
    run `northcel --version`, `northcel doctor` and a render from the examples.
-3. Upload `northcel` wheel/sdist. Do not upload an `ncel` alias: it stays at
-   0.7.1 until it is re-pinned after publication.
+3. Upload `northcel` wheel/sdist, then the `ncel` alias (it depends on
+   `northcel==0.7.2`).
 4. Publish the GitHub release `v0.7.2` with `packaging/install.sh`. The script is
    re-pinned to 0.7.2 after publication. The CI publish job uses PyPI **trusted
    publishing** (`id-token: write`) on that release. Until a trusted publisher is
@@ -32,10 +31,10 @@ Order:
 
 | Registry | Name | Latest | Notes |
 | --- | --- | --- | --- |
-| PyPI | `northcel` | **0.7.1** | the one package a user installs: reference + launcher, scripts `northcel` and `ncel`; 0.7.2 prepared |
+| PyPI | `northcel` | **0.7.2** | the one package a user installs: reference + launcher, scripts `northcel` and `ncel` |
 | PyPI | `northcel-native` | **0.4.0** | the Linux x86_64 platform wheel `northcel` depends on; unchanged |
 | PyPI | `northcel-vello` | **0.7.0** | optional tolerance-tier renderer for `northcel[vello]`; unchanged |
-| PyPI | `ncel` | **0.7.1** (deprecated) | alias that depends on `northcel`; re-pinned after 0.7.2 is published |
+| PyPI | `ncel` | **0.7.2** (deprecated) | alias that depends on `northcel==0.7.2` |
 | PyPI | `ncel-native` | 0.4.0 (deprecated) | alias that depends on `northcel-native`; unchanged |
 | npm | `northcel` | launcher | the launcher + structural pre-check; the owner publishes it |
 | npm | `northcel-linux-x64` | 0.4.0 | the native bundle; unchanged |
