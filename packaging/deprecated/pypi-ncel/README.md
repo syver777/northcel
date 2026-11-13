@@ -7,7 +7,7 @@ pip install northcel
 ```
 
 This package exists only so that an existing `pip install ncel` keeps working. It
-contains no code and no binaries; it depends on `northcel==0.7.1`, which provides
+contains no code and no binaries; it depends on `northcel==0.7.2`, which provides
 both the `northcel` command and the `ncel` short alias.
 
 - Source, docs and issues: <https://github.com/syver777/northcel>
